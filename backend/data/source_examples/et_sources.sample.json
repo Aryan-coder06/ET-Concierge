@@ -1,0 +1,41 @@
+[
+  {
+    "kind": "knowledge",
+    "source_id": "etprime_overview_v2",
+    "title": "ET Prime Overview",
+    "product_name": "ET Prime",
+    "url": "https://economictimes.indiatimes.com/prime/about-us",
+    "category": "premium_analysis",
+    "intent_tags": ["news", "investing", "growing_business"],
+    "personas": ["corporate_professional", "startup_founder", "senior_executive"],
+    "priority": 1,
+    "tags": ["premium", "analysis", "business_intelligence"],
+    "text": "ET Prime is a premium members-only business intelligence platform from The Economic Times. It focuses on depth, context, and sharper analysis rather than just breaking headlines. It is useful for professionals, founders, operators, and investors who want expert-led reporting, market insights, and premium explainers."
+  },
+  {
+    "kind": "knowledge",
+    "source_id": "etmarkets_trading_tools_v2",
+    "title": "ET Markets Trading Tools",
+    "product_name": "ET Markets",
+    "url": "https://economictimes.indiatimes.com/markets",
+    "category": "active_trading",
+    "intent_tags": ["investing"],
+    "personas": ["active_trader", "salaried_employee", "corporate_professional"],
+    "priority": 1,
+    "tags": ["markets", "trading", "screeners"],
+    "text": "ET Markets helps users track live markets, evaluate stocks, and explore trading tools. It includes market movers, technical analysis support, screeners, and real-time market intelligence for users who want to act on opportunities with stronger context."
+  },
+  {
+    "kind": "persona",
+    "source_id": "student_beginner_trading_path_v1",
+    "title": "Student Beginner Trading Path",
+    "goal": "wealth_building",
+    "profession": "student",
+    "sophistication": "beginner",
+    "type": "persona_journey",
+    "journey_steps": ["ET Markets", "ET Prime", "ET Masterclass"],
+    "avoid": ["complex derivatives", "leveraged products"],
+    "tags": ["student", "trading", "beginner"],
+    "text": "A student who wants to understand trading should begin with ET Markets for market familiarity, then use ET Prime for deeper explainers and premium context, and later use ET Masterclass for structured learning."
+  }
+]

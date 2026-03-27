@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { etCompassContent } from "@/content/etCompassContent";
 
 function LogoMark() {
   return (
@@ -20,16 +21,16 @@ export default function FloatingChatButton() {
     <div className="pointer-events-none fixed inset-0 z-[70]">
       <div className="pointer-events-auto absolute bottom-4 right-4 sm:bottom-6 sm:right-6">
         <Link
-          href="/search"
+          href={etCompassContent.brand.floatingWidget.href}
           className="group flex items-center gap-3 border-2 border-black bg-[#121212] px-4 py-3 text-white shadow-[6px_6px_0px_0px_#F0C020] transition-all hover:-translate-y-1 hover:shadow-[8px_8px_0px_0px_#F0C020]"
         >
           <LogoMark />
           <div className="leading-none">
             <div className="text-[11px] font-bold uppercase tracking-[0.22em] text-white/70">
-              ET /
+              {etCompassContent.brand.floatingWidget.topLabel}
             </div>
             <div className="text-sm font-black uppercase tracking-wide">
-              Open AI Concierge
+              {etCompassContent.brand.floatingWidget.bottomLabel}
             </div>
           </div>
         </Link>

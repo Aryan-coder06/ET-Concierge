@@ -32,3 +32,71 @@ body {
   background-image: radial-gradient(rgba(18, 18, 18, 0.18) 2px, transparent 2px);
   background-size: 22px 22px;
 }
+
+@keyframes insight-float {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-6px);
+  }
+}
+
+@keyframes signal-rise {
+  0%,
+  100% {
+    transform: scaleY(0.72);
+    opacity: 0.72;
+  }
+  50% {
+    transform: scaleY(1);
+    opacity: 1;
+  }
+}
+
+@keyframes pulse-ring {
+  0% {
+    transform: scale(0.88);
+    opacity: 0.42;
+  }
+  70% {
+    transform: scale(1.06);
+    opacity: 0.92;
+  }
+  100% {
+    transform: scale(1.14);
+    opacity: 0;
+  }
+}
+
+.insight-float {
+  animation: insight-float 2.8s ease-in-out infinite;
+}
+
+.insight-node {
+  animation: insight-float 2.4s ease-in-out infinite;
+}
+
+.signal-bar {
+  transform-origin: bottom center;
+  animation: signal-rise 1.8s ease-in-out infinite;
+}
+
+.insight-pulse-ring {
+  animation: pulse-ring 2.2s ease-out infinite;
+}
+
+@keyframes trace-drift {
+  0% {
+    stroke-dashoffset: 24;
+  }
+  100% {
+    stroke-dashoffset: 0;
+  }
+}
+
+.insight-trace {
+  stroke-dasharray: 6 4;
+  animation: trace-drift 1.8s linear infinite alternate;
+}

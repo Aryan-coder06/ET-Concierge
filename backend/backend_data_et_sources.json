@@ -1,0 +1,537 @@
+[
+  {
+    "source_id": "et_prime_faq",
+    "product_area": "ET Prime",
+    "title": "ET Prime FAQ",
+    "url": "https://economictimes.indiatimes.com/prime/faq",
+    "domain": "economictimes.indiatimes.com",
+    "page_type": "faq",
+    "source_tier": "primary",
+    "source_of_truth": true,
+    "verification_status": "official_public",
+    "last_verified_at": "2026-03-27",
+    "notes": "Canonical benefits, access, refund/cancellation, trial, international membership, and invoice FAQs.",
+    "recommended_use": [
+      "membership_benefits",
+      "access_rules",
+      "subscription_faq",
+      "conflict_checks"
+    ],
+    "evidence_highlights": [
+      "Benefits mention insights across 20+ industries, ePaper, market tools, Wealth edition, minimal ads, community, and virtual event invites.",
+      "Membership gets access on all platforms.",
+      "FAQ states no trial is currently offered."
+    ]
+  },
+  {
+    "source_id": "et_prime_about",
+    "product_area": "ET Prime",
+    "title": "ET Prime About Us",
+    "url": "https://economictimes.indiatimes.com/prime/about-us",
+    "domain": "economictimes.indiatimes.com",
+    "page_type": "about",
+    "source_tier": "primary",
+    "source_of_truth": true,
+    "verification_status": "official_public",
+    "last_verified_at": "2026-03-27",
+    "notes": "Best source for product positioning and editorial intent.",
+    "recommended_use": [
+      "brand_positioning",
+      "product_summary",
+      "who_is_it_for"
+    ],
+    "evidence_highlights": [
+      "Describes ET Prime as a members-only business storytelling platform from The Economic Times.",
+      "Explains fast insight-rich analysis and long-reads that outlive the news cycle."
+    ]
+  },
+  {
+    "source_id": "et_prime_plans",
+    "product_area": "ET Prime",
+    "title": "ET Prime Plans / Membership Page",
+    "url": "https://economictimes.indiatimes.com/plans.cms?dc=offpricerisewb10&noredirect=1&offerType=Sale&optz=1&planGroup=NonLoggedIn_2",
+    "domain": "economictimes.indiatimes.com",
+    "page_type": "plans",
+    "source_tier": "primary",
+    "source_of_truth": true,
+    "verification_status": "official_public",
+    "last_verified_at": "2026-03-27",
+    "notes": "Public membership/plans page with product benefits and partner offers. Dynamic pricing may change.",
+    "recommended_use": [
+      "plan_benefits",
+      "value_props",
+      "pricing_notes",
+      "partner_offers"
+    ],
+    "evidence_highlights": [
+      "Mentions comprehensive stock reports, clean experience with minimal ads, Wealth/Print launches, and partner offers.",
+      "Includes student/corporate plan hooks and partner benefits."
+    ]
+  },
+  {
+    "source_id": "et_prime_trial_paywall",
+    "product_area": "ET Prime",
+    "title": "ET Prime Paywall Screen with Trial Messaging",
+    "url": "https://economictimes.indiatimes.com/prime/collections/in-five-stories-how-india-inc-is-warming-up-to-esg/primearticleshow/96550987.cms?ocid=budgethub",
+    "domain": "economictimes.indiatimes.com",
+    "page_type": "paywall",
+    "source_tier": "secondary",
+    "source_of_truth": false,
+    "verification_status": "conflicting_public_signals",
+    "last_verified_at": "2026-03-27",
+    "notes": "Public paywall screen showed a free-trial prompt in prior research. Use only for conflict detection, not as canonical truth.",
+    "recommended_use": [
+      "conflict_checks",
+      "trial_status"
+    ],
+    "evidence_highlights": [
+      "Use alongside ET Prime FAQ and terms when resolving free-trial contradictions."
+    ]
+  },
+  {
+    "source_id": "et_markets_google_play",
+    "product_area": "ET Markets",
+    "title": "ET Markets: Stock Tools & News – Google Play",
+    "url": "https://play.google.com/store/apps/details?hl=en_IN&id=com.et.market",
+    "domain": "play.google.com",
+    "page_type": "app_store_listing",
+    "source_tier": "primary",
+    "source_of_truth": true,
+    "verification_status": "official_public",
+    "last_verified_at": "2026-03-27",
+    "notes": "Strong public summary of app capabilities and target users.",
+    "recommended_use": [
+      "app_features",
+      "who_is_it_for",
+      "platforms",
+      "product_summary"
+    ],
+    "evidence_highlights": [
+      "Describes smart market tools, investment ideas, real-time updates, watchlist, 4000+ stock reports, Big Bull Portfolio, Market Mood, Market Pulse, screeners, smart alerts, live stream, and recommendations."
+    ]
+  },
+  {
+    "source_id": "et_markets_ios",
+    "product_area": "ET Markets",
+    "title": "ET Markets – Apple App Store",
+    "url": "https://apps.apple.com/kw/app/et-markets/id895812527",
+    "domain": "apps.apple.com",
+    "page_type": "app_store_listing",
+    "source_tier": "primary",
+    "source_of_truth": true,
+    "verification_status": "official_public",
+    "last_verified_at": "2026-03-27",
+    "notes": "Useful secondary platform confirmation for iOS availability and mobile positioning.",
+    "recommended_use": [
+      "platforms",
+      "mobile_support",
+      "feature_cross_check"
+    ],
+    "evidence_highlights": [
+      "Confirms iOS app presence and market/live data positioning."
+    ]
+  },
+  {
+    "source_id": "et_mobile_apps",
+    "product_area": "ET Apps",
+    "title": "ET Mobile Applications",
+    "url": "https://m.economictimes.com/etmobileapps.cms",
+    "domain": "m.economictimes.com",
+    "page_type": "mobile_apps_portal",
+    "source_tier": "primary",
+    "source_of_truth": true,
+    "verification_status": "official_public",
+    "last_verified_at": "2026-03-27",
+    "notes": "Official ET page listing mobile apps and features.",
+    "recommended_use": [
+      "app_catalog",
+      "feature_cross_check"
+    ],
+    "evidence_highlights": [
+      "Mentions ET Markets features such as charting, watchlists, and smart voice search."
+    ]
+  },
+  {
+    "source_id": "stock_reports_plus",
+    "product_area": "ET Markets",
+    "title": "Stock Reports Plus",
+    "url": "https://economictimes.indiatimes.com/markets/benefits/stockreportsplus",
+    "domain": "economictimes.indiatimes.com",
+    "page_type": "tool_page",
+    "source_tier": "primary",
+    "source_of_truth": true,
+    "verification_status": "official_public",
+    "last_verified_at": "2026-03-27",
+    "notes": "Dedicated page for stock analysis benefit/tool.",
+    "recommended_use": [
+      "tool_explanations",
+      "feature_detail"
+    ],
+    "evidence_highlights": [
+      "Positioned around stock scores, ratings, forecasts, peer analysis, and analyst recommendations."
+    ]
+  },
+  {
+    "source_id": "stock_report_sample",
+    "product_area": "ET Markets",
+    "title": "Sample Stock Report Page",
+    "url": "https://economictimes.indiatimes.com/prime-securities-ltd/stockreports/reportid-9152.cms",
+    "domain": "economictimes.indiatimes.com",
+    "page_type": "sample_report",
+    "source_tier": "secondary",
+    "source_of_truth": false,
+    "verification_status": "official_public",
+    "last_verified_at": "2026-03-27",
+    "notes": "Useful for explaining scoring dimensions, not for top-level product positioning.",
+    "recommended_use": [
+      "tool_explanations",
+      "example_chunk"
+    ],
+    "evidence_highlights": [
+      "Shows scoring dimensions such as earnings, fundamentals, relative valuation, risk, and price momentum."
+    ]
+  },
+  {
+    "source_id": "market_mood",
+    "product_area": "ET Markets",
+    "title": "Market Mood",
+    "url": "https://economictimes.indiatimes.com/markets/stock-market-mood",
+    "domain": "economictimes.indiatimes.com",
+    "page_type": "tool_page",
+    "source_tier": "primary",
+    "source_of_truth": true,
+    "verification_status": "official_public",
+    "last_verified_at": "2026-03-27",
+    "notes": "Official explainer for sentiment tool.",
+    "recommended_use": [
+      "tool_explanations",
+      "qa_routing"
+    ],
+    "evidence_highlights": [
+      "Explains green/yellow/red market state, overview, periodic high-low, and advance-decline ideas."
+    ]
+  },
+  {
+    "source_id": "upside_radar",
+    "product_area": "ET Markets",
+    "title": "Upside Radar",
+    "url": "https://economictimes.indiatimes.com/markets/upside-radar",
+    "domain": "economictimes.indiatimes.com",
+    "page_type": "tool_page",
+    "source_tier": "primary",
+    "source_of_truth": true,
+    "verification_status": "official_public",
+    "last_verified_at": "2026-03-27",
+    "notes": "Official tool page for identifying upside ideas.",
+    "recommended_use": [
+      "tool_explanations",
+      "idea_discovery"
+    ],
+    "evidence_highlights": [
+      "Promoted as a way to discover stocks with maximum upside based on investment themes."
+    ]
+  },
+  {
+    "source_id": "stock_screener",
+    "product_area": "ET Markets",
+    "title": "Stock Screener",
+    "url": "https://m.economictimes.com/markets/stock-screener",
+    "domain": "m.economictimes.com",
+    "page_type": "tool_page",
+    "source_tier": "primary",
+    "source_of_truth": true,
+    "verification_status": "official_public",
+    "last_verified_at": "2026-03-27",
+    "notes": "Official screener entry point; useful for screeners and AI mode references.",
+    "recommended_use": [
+      "tool_explanations",
+      "feature_detail"
+    ],
+    "evidence_highlights": [
+      "References Create Screener (AI Mode) and large data-point coverage."
+    ]
+  },
+  {
+    "source_id": "et_portfolio_home",
+    "product_area": "ET Portfolio",
+    "title": "ET Portfolio Home",
+    "url": "https://etportfolio.economictimes.indiatimes.com/",
+    "domain": "etportfolio.economictimes.indiatimes.com",
+    "page_type": "product_home",
+    "source_tier": "primary",
+    "source_of_truth": true,
+    "verification_status": "official_public",
+    "last_verified_at": "2026-03-27",
+    "notes": "Canonical portfolio product home.",
+    "recommended_use": [
+      "portfolio_features",
+      "who_is_it_for"
+    ],
+    "evidence_highlights": [
+      "Single-window portfolio monitoring, watchlists/alerts, and financial goals."
+    ]
+  },
+  {
+    "source_id": "et_portfolio_mobile",
+    "product_area": "ET Portfolio",
+    "title": "ET Portfolio Home (mobile)",
+    "url": "https://m.economictimes.com/pf_portfoliohome.cms",
+    "domain": "m.economictimes.com",
+    "page_type": "mobile_product_page",
+    "source_tier": "primary",
+    "source_of_truth": true,
+    "verification_status": "official_public",
+    "last_verified_at": "2026-03-27",
+    "notes": "Mobile-facing portfolio home with simplified positioning.",
+    "recommended_use": [
+      "portfolio_features",
+      "mobile_support"
+    ],
+    "evidence_highlights": [
+      "Mentions real-time stock updates, SIP auto updates, and watchlists/alerts."
+    ]
+  },
+  {
+    "source_id": "et_wealth_edition",
+    "product_area": "ET Wealth Edition",
+    "title": "Wealth Edition ePaper",
+    "url": "https://epaper.indiatimes.com/wealth_edition.cms",
+    "domain": "epaper.indiatimes.com",
+    "page_type": "edition_page",
+    "source_tier": "primary",
+    "source_of_truth": true,
+    "verification_status": "official_public",
+    "last_verified_at": "2026-03-27",
+    "notes": "Best public page for ET Wealth Edition benefit/access.",
+    "recommended_use": [
+      "benefit_access",
+      "wealth_positioning"
+    ],
+    "evidence_highlights": [
+      "Calls it a weekly money management guide and says it is free with ET Prime membership."
+    ]
+  },
+  {
+    "source_id": "et_print_edition",
+    "product_area": "ET Print Edition",
+    "title": "ET Print Edition",
+    "url": "https://epaper.indiatimes.com/print_edition",
+    "domain": "epaper.indiatimes.com",
+    "page_type": "edition_page",
+    "source_tier": "primary",
+    "source_of_truth": true,
+    "verification_status": "official_public",
+    "last_verified_at": "2026-03-27",
+    "notes": "Official digital newspaper page.",
+    "recommended_use": [
+      "benefit_access",
+      "membership_benefits"
+    ],
+    "evidence_highlights": [
+      "Useful for explaining ET Print Edition access as part of ET Prime."
+    ]
+  },
+  {
+    "source_id": "et_masterclass_home",
+    "product_area": "ETMasterclass",
+    "title": "ETMasterclass Home",
+    "url": "https://masterclass.economictimes.indiatimes.com/",
+    "domain": "masterclass.economictimes.indiatimes.com",
+    "page_type": "product_home",
+    "source_tier": "primary",
+    "source_of_truth": true,
+    "verification_status": "official_public",
+    "last_verified_at": "2026-03-27",
+    "notes": "Canonical source for ETMasterclass portfolio and categories.",
+    "recommended_use": [
+      "learning_catalog",
+      "product_summary",
+      "who_is_it_for"
+    ],
+    "evidence_highlights": [
+      "Mentions Guru Masterclasses, Executive Workshops, Certification Courses, 200+ trainings, 6000+ executives, 350+ experts."
+    ]
+  },
+  {
+    "source_id": "et_masterclass_new",
+    "product_area": "ETMasterclass",
+    "title": "ETMasterclass New / About-like Page",
+    "url": "https://masterclass.economictimes.indiatimes.com/new",
+    "domain": "masterclass.economictimes.indiatimes.com",
+    "page_type": "about_or_marketing",
+    "source_tier": "secondary",
+    "source_of_truth": false,
+    "verification_status": "official_public",
+    "last_verified_at": "2026-03-27",
+    "notes": "Useful for brand and mission framing.",
+    "recommended_use": [
+      "brand_positioning",
+      "learning_positioning"
+    ],
+    "evidence_highlights": [
+      "Frames ETMasterclass as an ET initiative for knowledge dissemination among professionals and leaders."
+    ]
+  },
+  {
+    "source_id": "et_b2b_events",
+    "product_area": "ET Events",
+    "title": "ET B2B Events Portal",
+    "url": "https://b2b.economictimes.indiatimes.com/events",
+    "domain": "b2b.economictimes.indiatimes.com",
+    "page_type": "events_portal",
+    "source_tier": "primary",
+    "source_of_truth": true,
+    "verification_status": "official_public",
+    "last_verified_at": "2026-03-27",
+    "notes": "Central ET B2B events portal.",
+    "recommended_use": [
+      "events_discovery",
+      "event_routing"
+    ],
+    "evidence_highlights": [
+      "Good starting portal for harvesting upcoming events."
+    ]
+  },
+  {
+    "source_id": "enterprise_ai_events",
+    "product_area": "ET Events",
+    "title": "ET Enterprise AI Events",
+    "url": "https://enterpriseai.economictimes.indiatimes.com/events",
+    "domain": "enterpriseai.economictimes.indiatimes.com",
+    "page_type": "events_portal",
+    "source_tier": "primary",
+    "source_of_truth": true,
+    "verification_status": "official_public",
+    "last_verified_at": "2026-03-27",
+    "notes": "Enterprise AI-focused ET events portal.",
+    "recommended_use": [
+      "events_discovery",
+      "ai_event_routing"
+    ],
+    "evidence_highlights": [
+      "Useful to show ET ecosystem goes beyond news into events and conferences."
+    ]
+  },
+  {
+    "source_id": "cio_events",
+    "product_area": "ET Events",
+    "title": "ET CIO Events",
+    "url": "https://cio.economictimes.indiatimes.com/events",
+    "domain": "cio.economictimes.indiatimes.com",
+    "page_type": "events_portal",
+    "source_tier": "primary",
+    "source_of_truth": true,
+    "verification_status": "official_public",
+    "last_verified_at": "2026-03-27",
+    "notes": "Vertical-specific ET events portal.",
+    "recommended_use": [
+      "events_discovery",
+      "enterprise_routing"
+    ],
+    "evidence_highlights": [
+      "Useful vertical event discovery source."
+    ]
+  },
+  {
+    "source_id": "bfsi_events",
+    "product_area": "ET Events",
+    "title": "ET BFSI Events",
+    "url": "https://bfsi.economictimes.indiatimes.com/events",
+    "domain": "bfsi.economictimes.indiatimes.com",
+    "page_type": "events_portal",
+    "source_tier": "primary",
+    "source_of_truth": true,
+    "verification_status": "official_public",
+    "last_verified_at": "2026-03-27",
+    "notes": "Vertical-specific ET events portal.",
+    "recommended_use": [
+      "events_discovery",
+      "finance_routing"
+    ],
+    "evidence_highlights": [
+      "Useful BFSI event discovery source."
+    ]
+  },
+  {
+    "source_id": "government_events",
+    "product_area": "ET Events",
+    "title": "ET Government Events",
+    "url": "https://government.economictimes.indiatimes.com/events",
+    "domain": "government.economictimes.indiatimes.com",
+    "page_type": "events_portal",
+    "source_tier": "primary",
+    "source_of_truth": true,
+    "verification_status": "official_public",
+    "last_verified_at": "2026-03-27",
+    "notes": "Government vertical ET events portal.",
+    "recommended_use": [
+      "events_discovery",
+      "policy_routing"
+    ],
+    "evidence_highlights": [
+      "Useful government/policy event discovery source."
+    ]
+  },
+  {
+    "source_id": "maharashtra_business_summit",
+    "product_area": "ET Events",
+    "title": "Maharashtra Business Summit",
+    "url": "https://b2b.economictimes.indiatimes.com/maharashtra-business-summit",
+    "domain": "b2b.economictimes.indiatimes.com",
+    "page_type": "event_detail",
+    "source_tier": "secondary",
+    "source_of_truth": false,
+    "verification_status": "official_public",
+    "last_verified_at": "2026-03-27",
+    "notes": "Example flagship event detail page.",
+    "recommended_use": [
+      "event_detail_examples"
+    ],
+    "evidence_highlights": [
+      "Example summit detail page suitable for richer event chunks."
+    ]
+  },
+  {
+    "source_id": "et_benefits",
+    "product_area": "ET Partner Benefits",
+    "title": "ET Benefits / Complimentary Benefits",
+    "url": "https://economictimes.indiatimes.com/et_benefits.cms?from=mdr",
+    "domain": "economictimes.indiatimes.com",
+    "page_type": "benefits_portal",
+    "source_tier": "primary",
+    "source_of_truth": true,
+    "verification_status": "official_public",
+    "last_verified_at": "2026-03-27",
+    "notes": "Official logged-in benefits portal for complimentary subscriptions and partner offers.",
+    "recommended_use": [
+      "partner_benefits",
+      "activation_constraints",
+      "membership_value"
+    ],
+    "evidence_highlights": [
+      "Mentions Times Prime, TOI+, Docubay, Sony LIV, Amazon Prime, and activation constraints.",
+      "TimesPrime activation limited to Indian mobile number."
+    ]
+  },
+  {
+    "source_id": "et_terms",
+    "product_area": "ET Platform",
+    "title": "ET Terms & Conditions",
+    "url": "https://economictimes.indiatimes.com/terms-conditions",
+    "domain": "economictimes.indiatimes.com",
+    "page_type": "terms",
+    "source_tier": "primary",
+    "source_of_truth": true,
+    "verification_status": "official_public",
+    "last_verified_at": "2026-03-27",
+    "notes": "Useful for ownership and occasional offer-language conflict checks.",
+    "recommended_use": [
+      "ownership",
+      "legal_checks",
+      "conflict_checks"
+    ],
+    "evidence_highlights": [
+      "Describes site ownership/operation and may contain offer-related references."
+    ]
+  }
+]

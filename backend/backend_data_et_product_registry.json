@@ -1,0 +1,403 @@
+[
+  {
+    "product_name": "ET Prime",
+    "category": "membership",
+    "summary": "Members-only premium business storytelling and benefits membership from The Economic Times.",
+    "who_is_it_for": [
+      "users who want deeper business analysis",
+      "professionals who value curated insights over breaking-news volume",
+      "users who want ET ecosystem benefits beyond articles"
+    ],
+    "key_features": [
+      "sharp insights across 20+ industries",
+      "ePaper access",
+      "ET market tools such as Stock Report Plus, Bigbull Portfolio and Stock Analyzer references",
+      "Wealth edition access",
+      "minimal-ads reading experience",
+      "community comments and virtual-event invites"
+    ],
+    "benefits": [
+      "cross-platform access",
+      "digital print edition access",
+      "premium stories and long-form analysis",
+      "partner benefits through ET benefits portal"
+    ],
+    "platforms": [
+      "web",
+      "mobile app",
+      "cross-platform membership"
+    ],
+    "pricing_notes": [
+      {
+        "fact": "trial_status",
+        "value": "conflicting_public_signals",
+        "details": "FAQ says no trial is currently offered, but other public ET surfaces have shown free-trial messaging.",
+        "verification_status": "conflicting_public_signals",
+        "evidence_urls": [
+          "https://economictimes.indiatimes.com/prime/faq",
+          "https://economictimes.indiatimes.com/plans.cms?dc=offpricerisewb10&noredirect=1&offerType=Sale&optz=1&planGroup=NonLoggedIn_2",
+          "https://economictimes.indiatimes.com/prime/collections/in-five-stories-how-india-inc-is-warming-up-to-esg/primearticleshow/96550987.cms?ocid=budgethub",
+          "https://economictimes.indiatimes.com/terms-conditions"
+        ]
+      },
+      {
+        "fact": "international_membership",
+        "value": "Annual international subscription listed at USD 99 in FAQ",
+        "verification_status": "official_public",
+        "evidence_urls": [
+          "https://economictimes.indiatimes.com/prime/faq"
+        ]
+      }
+    ],
+    "events_or_courses": [
+      "virtual event invites"
+    ],
+    "partner_or_service_types": [
+      "Times Prime",
+      "TOI+",
+      "Docubay",
+      "Sony LIV",
+      "Amazon Prime",
+      "other partner offers"
+    ],
+    "cta_labels": [
+      "Subscribe",
+      "Buy membership",
+      "Read Prime",
+      "Upgrade plan"
+    ],
+    "canonical_sources": [
+      "et_prime_faq",
+      "et_prime_about",
+      "et_prime_plans"
+    ],
+    "verification_status": "official_public_with_conflict_fields",
+    "last_verified_at": "2026-03-27"
+  },
+  {
+    "product_name": "ET Markets",
+    "category": "market_tools_and_news_app",
+    "summary": "ET's stock-market app and market-tools surface combining news, watchlists, screeners, stock reports, alerts, and sentiment tools.",
+    "who_is_it_for": [
+      "beginner investors",
+      "active market followers",
+      "users who want market tools plus research/news in one place"
+    ],
+    "key_features": [
+      "market news and real-time updates",
+      "watchlist",
+      "4000+ stock reports",
+      "Big Bull Portfolio",
+      "Market Mood",
+      "Market Pulse",
+      "stock screeners",
+      "smart alerts",
+      "live stream",
+      "stock recommendations"
+    ],
+    "benefits": [
+      "faster market discovery",
+      "tools plus content in one app",
+      "research stories and ET Prime upsell path"
+    ],
+    "platforms": [
+      "Android",
+      "iOS",
+      "web/mobile ET pages"
+    ],
+    "pricing_notes": [
+      {
+        "fact": "prime_linkage",
+        "value": "ET Prime unlocks additional market research stories, advanced market tools, ePaper, and other benefits inside app ecosystem.",
+        "verification_status": "official_public",
+        "evidence_urls": [
+          "https://play.google.com/store/apps/details?hl=en_IN&id=com.et.market",
+          "https://economictimes.indiatimes.com/prime/faq"
+        ]
+      }
+    ],
+    "events_or_courses": [],
+    "partner_or_service_types": [],
+    "cta_labels": [
+      "Install app",
+      "Open Markets",
+      "Use tools",
+      "Track portfolio"
+    ],
+    "canonical_sources": [
+      "et_markets_google_play",
+      "et_markets_ios",
+      "et_mobile_apps",
+      "market_mood",
+      "stock_screener",
+      "stock_reports_plus"
+    ],
+    "verification_status": "official_public",
+    "last_verified_at": "2026-03-27"
+  },
+  {
+    "product_name": "ET Portfolio",
+    "category": "portfolio_tracking",
+    "summary": "Portfolio-tracking product for monitoring holdings, goals, watchlists, alerts, and SIP-related updates.",
+    "who_is_it_for": [
+      "investors who want one view of holdings and goals",
+      "users managing watchlists and SIP-linked journeys"
+    ],
+    "key_features": [
+      "portfolio manager",
+      "watchlists",
+      "alerts",
+      "financial goals",
+      "real-time stock updates",
+      "SIP auto updates"
+    ],
+    "benefits": [
+      "single-window monitoring",
+      "goal-oriented tracking",
+      "works well with ET Markets discovery"
+    ],
+    "platforms": [
+      "web",
+      "mobile web"
+    ],
+    "pricing_notes": [],
+    "events_or_courses": [],
+    "partner_or_service_types": [],
+    "cta_labels": [
+      "Track portfolio",
+      "Open portfolio",
+      "Monitor investments"
+    ],
+    "canonical_sources": [
+      "et_portfolio_home",
+      "et_portfolio_mobile"
+    ],
+    "verification_status": "official_public",
+    "last_verified_at": "2026-03-27"
+  },
+  {
+    "product_name": "ET Wealth Edition",
+    "category": "wealth_content_edition",
+    "summary": "Weekly money-management edition positioned around investment planning ideas, mutual fund and stock research, and wealth guidance.",
+    "who_is_it_for": [
+      "users seeking personal finance guidance",
+      "users exploring ET Prime benefits",
+      "mutual fund and stock learners"
+    ],
+    "key_features": [
+      "weekly wealth edition",
+      "investment planning ideas",
+      "analysis on top mutual funds and stocks"
+    ],
+    "benefits": [
+      "free with ET Prime membership",
+      "clear weekly wealth-focused reading lane"
+    ],
+    "platforms": [
+      "ePaper web"
+    ],
+    "pricing_notes": [
+      {
+        "fact": "access",
+        "value": "Free with ET Prime membership; page also references ET Prime Elite in upgrade prompt.",
+        "verification_status": "official_public",
+        "evidence_urls": [
+          "https://epaper.indiatimes.com/wealth_edition.cms"
+        ]
+      }
+    ],
+    "events_or_courses": [],
+    "partner_or_service_types": [],
+    "cta_labels": [
+      "View latest edition",
+      "Subscribe now",
+      "Upgrade"
+    ],
+    "canonical_sources": [
+      "et_wealth_edition"
+    ],
+    "verification_status": "official_public",
+    "last_verified_at": "2026-03-27"
+  },
+  {
+    "product_name": "ET Print Edition",
+    "category": "digital_newspaper",
+    "summary": "Digital replica of the Economic Times newspaper accessible as part of ET Prime benefits.",
+    "who_is_it_for": [
+      "users who want the newspaper digitally",
+      "ET Prime members who prefer edition-style reading"
+    ],
+    "key_features": [
+      "digital newspaper replica",
+      "today's print edition access"
+    ],
+    "benefits": [
+      "included in ET Prime",
+      "edition-style reading"
+    ],
+    "platforms": [
+      "ePaper web"
+    ],
+    "pricing_notes": [],
+    "events_or_courses": [],
+    "partner_or_service_types": [],
+    "cta_labels": [
+      "Read today's print edition"
+    ],
+    "canonical_sources": [
+      "et_print_edition",
+      "et_prime_faq",
+      "et_prime_plans"
+    ],
+    "verification_status": "official_public",
+    "last_verified_at": "2026-03-27"
+  },
+  {
+    "product_name": "ETMasterclass",
+    "category": "learning_and_exec_education",
+    "summary": "ET's executive learning portfolio spanning guru masterclasses, executive workshops, and certification courses.",
+    "who_is_it_for": [
+      "working professionals",
+      "business leaders",
+      "users seeking leadership, AI, strategy, finance, or skill-up programs"
+    ],
+    "key_features": [
+      "guru masterclasses",
+      "executive workshops",
+      "certification courses",
+      "for enterprise",
+      "industry-acknowledged certificates",
+      "peer cohort learning"
+    ],
+    "benefits": [
+      "flexible professional learning",
+      "industry experts and academicians",
+      "topic-based exploration across AI, management, HR and more"
+    ],
+    "platforms": [
+      "web"
+    ],
+    "pricing_notes": [],
+    "events_or_courses": [
+      "200+ trainings",
+      "6000+ executives",
+      "350+ experts"
+    ],
+    "partner_or_service_types": [
+      "for enterprise learning"
+    ],
+    "cta_labels": [
+      "Browse programs",
+      "Browse workshops",
+      "Browse masterclasses",
+      "For Enterprise"
+    ],
+    "canonical_sources": [
+      "et_masterclass_home",
+      "et_masterclass_new"
+    ],
+    "verification_status": "official_public",
+    "last_verified_at": "2026-03-27"
+  },
+  {
+    "product_name": "ET Events",
+    "category": "events_and_summits",
+    "summary": "Network of ET-owned vertical event portals and summit pages across B2B, enterprise AI, CIO, BFSI, government and other domains.",
+    "who_is_it_for": [
+      "users looking for conferences, summits, and community touchpoints",
+      "enterprise buyers",
+      "policy and industry professionals"
+    ],
+    "key_features": [
+      "central events portals",
+      "vertical events pages",
+      "flagship summit pages",
+      "registration pathways"
+    ],
+    "benefits": [
+      "shows ET ecosystem extends beyond articles and apps",
+      "supports concierge routing to live touchpoints and communities"
+    ],
+    "platforms": [
+      "web"
+    ],
+    "pricing_notes": [],
+    "events_or_courses": [
+      "B2B events",
+      "Enterprise AI events",
+      "CIO events",
+      "BFSI events",
+      "Government events"
+    ],
+    "partner_or_service_types": [],
+    "cta_labels": [
+      "Register",
+      "Explore events",
+      "View summit"
+    ],
+    "canonical_sources": [
+      "et_b2b_events",
+      "enterprise_ai_events",
+      "cio_events",
+      "bfsi_events",
+      "government_events"
+    ],
+    "verification_status": "official_public",
+    "last_verified_at": "2026-03-27"
+  },
+  {
+    "product_name": "ET Partner Benefits",
+    "category": "complimentary_benefits",
+    "summary": "Complimentary subscriptions and partner offers available through ET Prime membership.",
+    "who_is_it_for": [
+      "ET Prime members",
+      "users comparing membership value beyond content"
+    ],
+    "key_features": [
+      "Times Prime",
+      "TOI+",
+      "Docubay",
+      "Sony LIV via OTTplay",
+      "Amazon Prime",
+      "health/yoga-related offer surfaces"
+    ],
+    "benefits": [
+      "enhanced membership value",
+      "cross-brand offer access"
+    ],
+    "platforms": [
+      "web"
+    ],
+    "pricing_notes": [
+      {
+        "fact": "activation_constraint",
+        "value": "TimesPrime activation limited to Indian mobile number",
+        "verification_status": "official_public",
+        "evidence_urls": [
+          "https://economictimes.indiatimes.com/et_benefits.cms?from=mdr"
+        ]
+      }
+    ],
+    "events_or_courses": [],
+    "partner_or_service_types": [
+      "lifestyle membership",
+      "news",
+      "documentaries",
+      "entertainment",
+      "shopping",
+      "travel",
+      "wellness"
+    ],
+    "cta_labels": [
+      "Activate",
+      "Redeem",
+      "Avail voucher code"
+    ],
+    "canonical_sources": [
+      "et_benefits",
+      "et_prime_plans"
+    ],
+    "verification_status": "official_public",
+    "last_verified_at": "2026-03-27"
+  }
+]

@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Outfit } from "next/font/google";
+import { etCompassContent } from "@/content/etCompassContent";
 import "./globals.css";
 
 const outfit = Outfit({
@@ -9,8 +10,8 @@ const outfit = Outfit({
 });
 
 export const metadata: Metadata = {
-  title: "ET / AI Concierge",
-  description: "Economic Times AI Concierge landing page",
+  title: etCompassContent.brand.name,
+  description: etCompassContent.footer.description,
 };
 
 export default function RootLayout({
