@@ -1,0 +1,30 @@
+services:
+  - type: web
+    name: et-concierge-backend
+    runtime: python
+    rootDir: backend
+    plan: free
+    buildCommand: pip install -r requirements.txt
+    startCommand: uvicorn app.main:app --host 0.0.0.0 --port $PORT
+    healthCheckPath: /health
+    envVars:
+      - key: GOOGLE_API_KEY
+        sync: false
+      - key: MONGODB_URI
+        sync: false
+      - key: EMBEDDING_MODEL
+        value: gemini-embedding-001
+      - key: GOOGLE_CHAT_MODEL
+        value: gemini-2.5-flash
+      - key: MONGODB_DB_NAME
+        value: et_concierge
+      - key: MONGODB_KNOWLEDGE_COLLECTION
+        value: knowledge_base
+      - key: MONGODB_PERSONA_COLLECTION
+        value: persona_base
+      - key: MONGODB_SESSIONS_COLLECTION
+        value: sessions
+      - key: MONGODB_VECTOR_INDEX
+        value: vector_index
+      - key: ALLOWED_ORIGINS
+        sync: false

@@ -361,6 +361,38 @@
 - Why: The old README did not explain what was actually built here. For a hackathon and for future contributors, the documentation needs to sell and explain the system properly.
 - Practical effect in simple English: Anyone opening the repo now gets a clear picture of ET Compass as a RAG concierge, not a random Next.js starter.
 
+## 2026-03-27 - Deployment prep for Vercel + Render
+
+### 1. I made backend CORS configurable for production
+- Where: [backend/app/chatbot/config.py](/home/aryan-s/Documents/GENAI/ET-Concierge/backend/app/chatbot/config.py)
+- What I changed: I added support for reading `ALLOWED_ORIGINS` as a comma-separated environment variable instead of keeping the backend hardcoded to only localhost.
+- Why: The deployed Vercel frontend would be blocked by CORS if the backend only allowed local origins.
+- Practical effect in simple English: You can now deploy the frontend on Vercel and simply list that domain in the backend environment without editing code again.
+
+### 2. I added deploy-ready env templates
+- Where: [.env.example](/home/aryan-s/Documents/GENAI/ET-Concierge/.env.example), [backend/.env.example](/home/aryan-s/Documents/GENAI/ET-Concierge/backend/.env.example), [.gitignore](/home/aryan-s/Documents/GENAI/ET-Concierge/.gitignore)
+- What I changed: I added example env files for both frontend and backend, and updated gitignore so those examples can stay committed safely.
+- Why: Deployment usually fails on hackathon projects because env variables are remembered in someone’s local machine but not documented for hosting.
+- Practical effect in simple English: You now have copy-paste templates for Vercel and Render instead of rebuilding the config manually.
+
+### 3. I added a Render blueprint
+- Where: [render.yaml](/home/aryan-s/Documents/GENAI/ET-Concierge/render.yaml)
+- What I changed: I added a Render web-service blueprint for the FastAPI backend with the root directory, build command, start command, health check path, and required env vars.
+- Why: This makes backend deployment more repeatable and faster than clicking through every setting manually.
+- Practical effect in simple English: The backend is now much closer to one-click deployment on Render.
+
+### 4. I expanded the README with a real deployment guide
+- Where: [README.md](/home/aryan-s/Documents/GENAI/ET-Concierge/README.md)
+- What I changed: I added a deployment section covering the Vercel frontend, Render backend, env vars, Firebase production checklist, CORS, and deployment order.
+- Why: A project like this needs deployment instructions that match the real stack, not generic starter text.
+- Practical effect in simple English: The repo now explains exactly how to take ET Compass from local dev to a hosted demo setup.
+
+### 5. I added an explicit Vercel config marker
+- Where: [vercel.json](/home/aryan-s/Documents/GENAI/ET-Concierge/vercel.json)
+- What I changed: I added a minimal `vercel.json` that marks the frontend as a Next.js app.
+- Why: Vercel can usually auto-detect this repo anyway, but an explicit config file makes the deployment intent clearer.
+- Practical effect in simple English: The frontend deployment setup is now more obvious to anyone opening the repo.
+
 ## 2026-03-27 - Concierge rail and structured market snapshot for the hackathon demo
 
 ### 1. I added a structured market snapshot service instead of scraping ET pages for numbers

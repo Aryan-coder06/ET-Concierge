@@ -15,6 +15,15 @@ def _env(name: str, default: str = "") -> str:
     return str(value).strip().strip("'").strip('"')
 
 
+def _env_list(name: str, default: list[str]) -> list[str]:
+    raw_value = os.getenv(name)
+    if raw_value is None or not raw_value.strip():
+        return default
+
+    values = [item.strip() for item in raw_value.split(",")]
+    return [item for item in values if item]
+
+
 class Settings(BaseModel):
     google_api_key: str = Field(default_factory=lambda: _env("GOOGLE_API_KEY"))
     mongodb_uri: str = Field(default_factory=lambda: _env("MONGODB_URI"))
@@ -52,10 +61,13 @@ class Settings(BaseModel):
         default_factory=lambda: int(_env("PERSONA_CHUNK_OVERLAP", "100"))
     )
     allowed_origins: list[str] = Field(
-        default_factory=lambda: [
-            "http://localhost:3000",
-            "http://127.0.0.1:3000",
-        ]
+        default_factory=lambda: _env_list(
+            "ALLOWED_ORIGINS",
+            [
+                "http://localhost:3000",
+                "http://127.0.0.1:3000",
+            ],
+        )
     )
 
     @property

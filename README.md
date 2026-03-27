@@ -34,6 +34,7 @@
 - [Frontend Experience](#frontend-experience)
 - [Backend API Surface](#backend-api-surface)
 - [Data, Ingestion, And Evaluation](#data-ingestion-and-evaluation)
+- [Deployment](#deployment)
 - [Local Setup](#local-setup)
 - [Repo Structure](#repo-structure)
 - [Current Limitations](#current-limitations)
@@ -533,6 +534,128 @@ It is:
 - benchmarked
 - failure-aware
 - improved with controlled passes
+
+---
+
+## Deployment
+
+### Recommended platform split
+
+| Layer | Platform | Why |
+| --- | --- | --- |
+| **Frontend** | **Vercel** | Best fit for Next.js, simplest preview/prod workflow |
+| **Backend** | **Render** | Better fit for a persistent FastAPI + LangGraph + Mongo service than serverless Python functions |
+
+### Why not put the backend on Vercel too?
+
+Vercel is excellent for the Next.js app, but this backend behaves more like a long-lived application service than a tiny serverless function:
+
+- FastAPI API layer
+- LangGraph orchestration
+- Gemini model calls
+- MongoDB vector retrieval
+- session history persistence
+- market snapshot service
+
+For this prototype, **Render is the safer and simpler backend deployment target**.
+
+### Frontend deployment on Vercel
+
+1. Import the GitHub repo into Vercel
+2. Let Vercel detect the project as **Next.js**
+3. Keep the root directory as the repo root
+4. Add the frontend env vars from [.env.example](./.env.example)
+5. Set `NEXT_PUBLIC_API_BASE_URL` to your deployed Render backend URL
+6. Deploy
+
+#### Vercel frontend env vars
+
+| Variable | Purpose |
+| --- | --- |
+| `NEXT_PUBLIC_API_BASE_URL` | URL of the deployed FastAPI backend |
+| `NEXT_PUBLIC_FIREBASE_API_KEY` | Firebase web config |
+| `NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN` | Firebase auth domain |
+| `NEXT_PUBLIC_FIREBASE_PROJECT_ID` | Firebase project id |
+| `NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET` | Firebase storage bucket |
+| `NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID` | Firebase messaging sender id |
+| `NEXT_PUBLIC_FIREBASE_APP_ID` | Firebase app id |
+| `NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID` | Firebase analytics id |
+
+### Backend deployment on Render
+
+This repo includes a ready Render blueprint at [render.yaml](./render.yaml).
+
+You can deploy either:
+
+- from the Render dashboard manually, or
+- from the blueprint config in the repo
+
+#### Manual Render service settings
+
+| Setting | Value |
+| --- | --- |
+| **Root Directory** | `backend` |
+| **Runtime** | `Python` |
+| **Build Command** | `pip install -r requirements.txt` |
+| **Start Command** | `uvicorn app.main:app --host 0.0.0.0 --port $PORT` |
+| **Health Check Path** | `/health` |
+
+#### Render backend env vars
+
+Use [backend/.env.example](./backend/.env.example) as the base.
+
+| Variable | Required | Purpose |
+| --- | --- | --- |
+| `GOOGLE_API_KEY` | Yes | Gemini / Google model access |
+| `MONGODB_URI` | Yes | MongoDB Atlas connection |
+| `EMBEDDING_MODEL` | Yes | Embedding model name |
+| `GOOGLE_CHAT_MODEL` | Recommended | Primary chat model |
+| `MONGODB_DB_NAME` | Yes | Database name |
+| `MONGODB_KNOWLEDGE_COLLECTION` | Yes | Knowledge collection |
+| `MONGODB_PERSONA_COLLECTION` | Yes | Persona collection |
+| `MONGODB_SESSIONS_COLLECTION` | Yes | Sessions collection |
+| `MONGODB_VECTOR_INDEX` | Yes | Vector index name |
+| `ALLOWED_ORIGINS` | Yes | Comma-separated frontend origins allowed by CORS |
+
+### CORS for production
+
+The backend now reads `ALLOWED_ORIGINS` from environment variables.
+
+Example:
+
+```text
+ALLOWED_ORIGINS=http://localhost:3000,http://127.0.0.1:3000,https://your-vercel-project.vercel.app
+```
+
+This is required so your deployed Vercel frontend can call the Render backend.
+
+### Firebase production checklist
+
+In Firebase Console:
+
+- enable `Email/Password`
+- enable `Google`
+- add `localhost` to authorized domains for local development
+- add your Vercel production domain to authorized domains
+
+### Recommended go-live order
+
+1. Deploy the backend to Render
+2. Copy the Render URL
+3. Set `NEXT_PUBLIC_API_BASE_URL` in Vercel
+4. Deploy the frontend to Vercel
+5. Add the Vercel domain to:
+   - Firebase authorized domains
+   - backend `ALLOWED_ORIGINS`
+
+### Deployment files included in this repo
+
+| File | Purpose |
+| --- | --- |
+| [.env.example](./.env.example) | Frontend env template |
+| [backend/.env.example](./backend/.env.example) | Backend env template |
+| [render.yaml](./render.yaml) | Render blueprint for the backend |
+| [vercel.json](./vercel.json) | Explicit Vercel frontend config marker |
 
 ---
 
