@@ -33,6 +33,23 @@ export type NavigatorSummary = {
   next_move?: string;
 };
 
+export type AnswerStyle =
+  | "brief"
+  | "standard"
+  | "overview"
+  | "compare"
+  | "roadmap"
+  | "detailed";
+
+export type ResponsePresentation = {
+  answer_style?: AnswerStyle | string;
+  show_visual_panel?: boolean;
+  show_recommended_products?: boolean;
+  show_navigator_summary?: boolean;
+  show_roadmap?: boolean;
+  show_chips?: boolean;
+};
+
 export type VisualHint =
   | "ecosystem_map"
   | "trust_signal"
@@ -54,6 +71,8 @@ export type ChatMessage = {
   chips?: string[];
   navigatorSummary?: NavigatorSummary | null;
   visualHint?: string | null;
+  answerStyle?: AnswerStyle | string | null;
+  presentation?: ResponsePresentation | null;
 };
 
 export type ThreadSummary = {
@@ -86,6 +105,8 @@ export type JourneyEvent = {
   roadmap?: Roadmap | null;
   chips?: string[];
   visual_hint?: string | null;
+  answer_style?: string | null;
+  presentation?: ResponsePresentation | null;
   profile_snapshot?: ProfileSnapshot;
 };
 

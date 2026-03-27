@@ -64,6 +64,8 @@ class ChatResponse(BaseModel):
     chips: list[str] = Field(default_factory=list)
     verification_notes: list[str] = Field(default_factory=list)
     visual_hint: str | None = None
+    answer_style: str | None = None
+    presentation: dict[str, Any] | None = None
     response_type: str = "product_query"
 
 

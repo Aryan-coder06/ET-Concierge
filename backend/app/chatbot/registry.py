@@ -14,6 +14,8 @@ BOOTSTRAP_CHUNKS_PATH = BACKEND_ROOT / "backend_data_et_chunks.jsonl"
 PRODUCT_NAME_OVERRIDES = {
     "et masterclass": "ETMasterclass",
     "masterclass": "ETMasterclass",
+    "et edge": "ET Events",
+    "et edge events": "ET Events",
     "et benefits": "ET Partner Benefits",
     "partner benefits": "ET Partner Benefits",
     "times prime": "ET Partner Benefits",

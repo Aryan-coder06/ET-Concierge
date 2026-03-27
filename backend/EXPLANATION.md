@@ -288,6 +288,79 @@
 - Why this matters: A strong concierge is not only about producing a paragraph. It is also about choosing the best form of guidance for the user.
 - Practical effect in simple English: This makes Luna feel less like a plain chatbot and more like an ET guide that knows when a visual shortcut will help the user faster.
 
+## 2026-03-27 - RAG response quality and visual-clutter reduction pass
+
+### 1. I added a real route for “latest news” requests instead of forcing profiling
+- Where: [backend/app/chatbot/agents.py](/home/aryan-s/Documents/GENAI/ET-Concierge/backend/app/chatbot/agents.py), [backend/app/chatbot/graph.py](/home/aryan-s/Documents/GENAI/ET-Concierge/backend/app/chatbot/graph.py), [backend/app/chatbot/state.py](/home/aryan-s/Documents/GENAI/ET-Concierge/backend/app/chatbot/state.py)
+- What I changed: I added a dedicated `news_query` route for direct requests like “give me the latest news in India.”
+- Why: Before this, the router only really knew how to do profiling, product queries, or chitchat. So a live-news question got pushed into profiling and ET product mapping, which felt wrong to the user.
+- Practical effect in simple English: If someone asks for live latest headlines, Luna now gives a short honest response instead of dragging the user through product questions.
+
+### 2. I made the backend understand how different questions need different answer shapes
+- Where: [backend/app/chatbot/agents.py](/home/aryan-s/Documents/GENAI/ET-Concierge/backend/app/chatbot/agents.py)
+- What I changed: I added answer-style detection with modes like:
+  - `brief`
+  - `standard`
+  - `overview`
+  - `compare`
+  - `roadmap`
+  - `detailed`
+- Why: The older answer prompt treated almost everything the same way. That made roadmap requests, product-overview requests, and quick factual requests all feel too similar.
+- Practical effect in simple English: A roadmap-style question now gets a more stepwise answer, while a short factual question stays short.
+
+### 3. I tightened when Luna is allowed to show visual widgets
+- Where: [backend/app/chatbot/agents.py](/home/aryan-s/Documents/GENAI/ET-Concierge/backend/app/chatbot/agents.py)
+- What I changed: I made `build_visual_hint()` much stricter and also added presentation rules that only allow the heavy visual panel for the strongest cases:
+  - market tools
+  - portfolio tracking
+  - trust / verification cases
+- Why: The UI was showing animated product maps and network panels too often, even when plain text was enough.
+- Practical effect in simple English: The chat should now feel more disciplined. Visuals appear when they help, not on every answer.
+
+### 4. I reduced the “too many extras” problem in the frontend by sending presentation hints from the backend
+- Where: [backend/app/chatbot/agents.py](/home/aryan-s/Documents/GENAI/ET-Concierge/backend/app/chatbot/agents.py), [backend/app/chatbot/service.py](/home/aryan-s/Documents/GENAI/ET-Concierge/backend/app/chatbot/service.py), [backend/app/main.py](/home/aryan-s/Documents/GENAI/ET-Concierge/backend/app/main.py), [src/app/search/page.tsx](/home/aryan-s/Documents/GENAI/ET-Concierge/src/app/search/page.tsx), [src/components/search/types.ts](/home/aryan-s/Documents/GENAI/ET-Concierge/src/components/search/types.ts)
+- What I changed: The backend now returns a `presentation` object that tells the frontend whether it should show:
+  - recommended products
+  - navigator summary
+  - roadmap card
+  - chips
+  - visual panel
+- Why: Earlier the frontend mostly showed everything whenever it was available. That created clutter and repeated ET path blocks.
+- Practical effect in simple English: The backend now decides when the extra UI is actually useful, and the frontend respects that.
+
+### 5. I reduced repeated “broad ET path” summaries
+- Where: [backend/app/chatbot/agents.py](/home/aryan-s/Documents/GENAI/ET-Concierge/backend/app/chatbot/agents.py)
+- What I changed: I narrowed `build_navigator_summary()` so it only appears for real start-path / fit / trust-sensitive questions instead of almost every ET answer.
+- Why: The old behavior kept repeating broad “best ET starting point” guidance even when the user had asked something more direct.
+- Practical effect in simple English: Luna now gets out of the way more often and lets the direct answer lead.
+
+### 6. I added a registry-backed answer for “what ET products do you know?”
+- Where: [backend/app/chatbot/agents.py](/home/aryan-s/Documents/GENAI/ET-Concierge/backend/app/chatbot/agents.py), [backend/app/chatbot/registry.py](/home/aryan-s/Documents/GENAI/ET-Concierge/backend/app/chatbot/registry.py)
+- What I changed: For explicit all-products questions, I now return a deterministic answer from the official ET product registry instead of leaving it fully to the model.
+- Why: The model could know the right lane but still only mention a partial subset of products. A catalog-style question should not rely on lucky retrieval.
+- Practical effect in simple English: If someone asks which ET products Luna knows, the answer now covers the full registered product set much more reliably.
+
+### 7. I improved ET alias handling a bit more
+- Where: [backend/app/chatbot/agents.py](/home/aryan-s/Documents/GENAI/ET-Concierge/backend/app/chatbot/agents.py), [backend/app/chatbot/registry.py](/home/aryan-s/Documents/GENAI/ET-Concierge/backend/app/chatbot/registry.py)
+- What I changed: I added `ET Edge` / `ET Edge events` alias handling so those queries map better into the ET Events lane.
+- Why: Users will naturally say “ET Edge” even if the registry’s canonical product is stored under a different ET event grouping.
+- Practical effect in simple English: Fewer “I do not know this exact product” moments for ET Edge event queries.
+
+### 8. I rewrote the root README so it actually documents the ET concierge
+- Where: [README.md](/home/aryan-s/Documents/GENAI/ET-Concierge/README.md)
+- What I changed: I replaced the default Next.js README with a detailed project README covering:
+  - product purpose
+  - frontend + backend architecture
+  - RAG flow
+  - stages
+  - APIs
+  - evaluation
+  - ingestion
+  - limitations
+  - roadmap
+- Why: The old README did not explain what was actually built here. For a hackathon and for future contributors, the documentation needs to sell and explain the system properly.
+- Practical effect in simple English: Anyone opening the repo now gets a clear picture of ET Compass as a RAG concierge, not a random Next.js starter.
+
 ## 2026-03-27 - Concierge rail and structured market snapshot for the hackathon demo
 
 ### 1. I added a structured market snapshot service instead of scraping ET pages for numbers

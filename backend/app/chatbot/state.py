@@ -25,6 +25,8 @@ class JourneyEvent(TypedDict):
     roadmap: dict[str, Any] | None
     chips: list[str]
     visual_hint: str | None
+    answer_style: str | None
+    presentation: dict[str, Any] | None
     profile_snapshot: UserProfile
 
 
@@ -36,7 +38,7 @@ class AgentState(TypedDict):
     onboarding_complete: bool
     questions_asked: list[str]
     journey_history: list[JourneyEvent]
-    intent: Literal["profiling", "product_query", "chitchat"]
+    intent: Literal["profiling", "product_query", "chitchat", "news_query"]
     retrieved_chunks: list[Any]
     response: dict[str, Any]
 

@@ -6,11 +6,13 @@ import { LunaThinkingPanel } from "@/components/search/LunaThinkingPanel";
 import { ResponseInsightPanel } from "@/components/search/ResponseInsightPanel";
 import { ThreadRail } from "@/components/search/ThreadRail";
 import type {
+  AnswerStyle,
   ChatMessage,
   JourneyEvent,
   MarketSnapshot,
   NavigatorSummary,
   ProfileSnapshot,
+  ResponsePresentation,
   Roadmap,
   RoadmapStep,
   SessionDocument,
@@ -235,6 +237,28 @@ function extractProfileSnapshot(value: unknown): ProfileSnapshot {
   };
 }
 
+function extractPresentation(value: unknown): ResponsePresentation | null {
+  if (!isJsonRecord(value)) return null;
+
+  return {
+    answer_style: readString(value.answer_style) as AnswerStyle | string | undefined,
+    show_visual_panel:
+      typeof value.show_visual_panel === "boolean" ? value.show_visual_panel : undefined,
+    show_recommended_products:
+      typeof value.show_recommended_products === "boolean"
+        ? value.show_recommended_products
+        : undefined,
+    show_navigator_summary:
+      typeof value.show_navigator_summary === "boolean"
+        ? value.show_navigator_summary
+        : undefined,
+    show_roadmap:
+      typeof value.show_roadmap === "boolean" ? value.show_roadmap : undefined,
+    show_chips:
+      typeof value.show_chips === "boolean" ? value.show_chips : undefined,
+  };
+}
+
 function extractJourneyEvent(value: unknown): JourneyEvent | null {
   if (!isJsonRecord(value)) return null;
 
@@ -266,6 +290,8 @@ function extractJourneyEvent(value: unknown): JourneyEvent | null {
     roadmap: roadmap ? extractRoadmap(roadmap) : undefined,
     chips: extractStringArray(value.chips),
     visual_hint: readString(value.visual_hint),
+    answer_style: readString(value.answer_style),
+    presentation: extractPresentation(value.presentation),
     profile_snapshot: extractProfileSnapshot(value.profile_snapshot),
   };
 }
@@ -854,6 +880,8 @@ export default function SearchPage() {
         chips: extractStringArray(data.chips),
         navigatorSummary: extractNavigatorSummary(data),
         visualHint: readString(data.visual_hint) || null,
+        answerStyle: readString(data.answer_style),
+        presentation: extractPresentation(data.presentation),
       };
 
       appendMessage(threadId, assistantMessage);
@@ -1015,6 +1043,21 @@ export default function SearchPage() {
                     }
 
                     const isUser = message.role === "user";
+                    const showRecommendedProducts =
+                      message.presentation?.show_recommended_products ??
+                      Boolean(message.recommendedProducts && message.recommendedProducts.length > 0);
+                    const showNavigatorSummary =
+                      message.presentation?.show_navigator_summary ??
+                      Boolean(message.navigatorSummary);
+                    const showVisualPanel =
+                      message.presentation?.show_visual_panel ??
+                      Boolean(message.visualHint);
+                    const showRoadmap =
+                      message.presentation?.show_roadmap ??
+                      Boolean(message.roadmap && message.roadmap.steps && message.roadmap.steps.length > 0);
+                    const showChips =
+                      message.presentation?.show_chips ??
+                      Boolean(message.chips && message.chips.length > 0);
 
                     return (
                       <div
@@ -1044,7 +1087,7 @@ export default function SearchPage() {
                             {message.content}
                           </p>
 
-                          {!isUser && message.recommendedProducts && message.recommendedProducts.length > 0 ? (
+                          {!isUser && showRecommendedProducts && message.recommendedProducts && message.recommendedProducts.length > 0 ? (
                             <div className="mt-3 border-t-2 border-black/80 pt-2.5">
                               <p className="mb-2 text-[10px] font-black uppercase tracking-[0.18em] text-black/65">
                                 Recommended Products
@@ -1062,7 +1105,7 @@ export default function SearchPage() {
                             </div>
                           ) : null}
 
-                          {!isUser && message.navigatorSummary ? (
+                          {!isUser && showNavigatorSummary && message.navigatorSummary ? (
                             <div className="mt-3 border-2 border-black bg-white p-3">
                               <p className="text-[10px] font-black uppercase tracking-[0.18em] text-[#D02020]">
                                 {message.navigatorSummary.title}
@@ -1093,7 +1136,7 @@ export default function SearchPage() {
                             </div>
                           ) : null}
 
-                          {!isUser ? (
+                          {!isUser && showVisualPanel ? (
                             <ResponseInsightPanel
                               visualHint={message.visualHint}
                               sourceCitations={message.sourceCitations}
@@ -1119,7 +1162,7 @@ export default function SearchPage() {
                             </div>
                           ) : null}
 
-                          {!isUser && message.roadmap && message.roadmap.steps && message.roadmap.steps.length > 0 ? (
+                          {!isUser && showRoadmap && message.roadmap && message.roadmap.steps && message.roadmap.steps.length > 0 ? (
                             <div className="mt-3 border-2 border-black bg-white p-3">
                               <p className="text-[10px] font-black uppercase tracking-[0.18em] text-[#D02020]">
                                 {message.roadmap.title}
@@ -1173,7 +1216,7 @@ export default function SearchPage() {
                             </div>
                           ) : null}
 
-                          {!isUser && message.chips && message.chips.length > 0 ? (
+                          {!isUser && showChips && message.chips && message.chips.length > 0 ? (
                             <div className="mt-3 border-t-2 border-black/80 pt-2.5">
                               <p className="mb-2 text-[10px] font-black uppercase tracking-[0.18em] text-black/65">
                                 Try Next
