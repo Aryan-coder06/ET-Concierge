@@ -5,9 +5,7 @@ import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
 import { useFirebaseAuth } from "@/components/auth/FirebaseAuthProvider";
 import type { JourneyEvent, SessionDocument } from "@/components/search/types";
-
-const API_BASE_URL =
-  process.env.NEXT_PUBLIC_API_BASE_URL || "http://127.0.0.1:8000";
+import { getApiBaseUrl } from "@/lib/api-base-url";
 const STORAGE_KEY = "et-compass-luna-chat-state";
 
 function BrandMark() {
@@ -131,6 +129,13 @@ export function ProfileDashboard() {
     }
 
     const controller = new AbortController();
+    const apiBaseUrl = getApiBaseUrl();
+
+    if (!apiBaseUrl) {
+      setSession(null);
+      setLoading(false);
+      return;
+    }
 
     async function loadDashboard() {
       try {
@@ -146,7 +151,7 @@ export function ProfileDashboard() {
           return;
         }
 
-        const sessionResponse = await fetch(`${API_BASE_URL}/sessions/${sessionId}`, {
+        const sessionResponse = await fetch(`${apiBaseUrl}/sessions/${sessionId}`, {
           signal: controller.signal,
         });
         if (!sessionResponse.ok) throw new Error("Failed to fetch session document");

@@ -21,12 +21,11 @@ import type {
   ThreadSummary,
 } from "@/components/search/types";
 import { etCompassContent } from "@/content/etCompassContent";
+import { getApiBaseUrl, getApiConfigurationError } from "@/lib/api-base-url";
 
 type JsonRecord = Record<string, unknown>;
 
 const STORAGE_KEY = "et-compass-luna-chat-state";
-const API_BASE_URL =
-  process.env.NEXT_PUBLIC_API_BASE_URL || "http://127.0.0.1:8000";
 const API_CHAT_PATH = "/chat";
 
 const SHELL_HEADER_H = 68;
@@ -597,10 +596,16 @@ export default function SearchPage() {
     }
 
     const controller = new AbortController();
+    const apiBaseUrl = getApiBaseUrl();
+
+    if (!apiBaseUrl) {
+      setActiveSession(null);
+      return;
+    }
 
     async function loadSession() {
       try {
-        const response = await fetch(`${API_BASE_URL}/sessions/${activeThreadId}`, {
+        const response = await fetch(`${apiBaseUrl}/sessions/${activeThreadId}`, {
           signal: controller.signal,
         });
 
@@ -640,11 +645,18 @@ export default function SearchPage() {
     }
 
     const controller = new AbortController();
+    const apiBaseUrl = getApiBaseUrl();
+
+    if (!apiBaseUrl) {
+      setMarketSnapshot(null);
+      setMarketSnapshotLoading(false);
+      return;
+    }
 
     async function loadMarketSnapshot() {
       setMarketSnapshotLoading(true);
       try {
-        const response = await fetch(`${API_BASE_URL}/market-snapshot`, {
+        const response = await fetch(`${apiBaseUrl}/market-snapshot`, {
           signal: controller.signal,
         });
 
@@ -843,12 +855,17 @@ export default function SearchPage() {
     setIsSending(true);
 
     try {
+      const apiBaseUrl = getApiBaseUrl();
+      if (!apiBaseUrl) {
+        throw new Error(getApiConfigurationError());
+      }
+
       const minimumLoader = new Promise<void>((resolve) => {
         window.setTimeout(resolve, 1050);
       });
 
       const [response] = await Promise.all([
-        fetch(`${API_BASE_URL}${API_CHAT_PATH}`, {
+        fetch(`${apiBaseUrl}${API_CHAT_PATH}`, {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
