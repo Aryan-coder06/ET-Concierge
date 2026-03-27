@@ -2,7 +2,6 @@ from langgraph.graph import END, StateGraph
 
 from .agents import (
     chitchat_node,
-    news_query_node,
     output_formatter_node,
     profile_extractor_node,
     profiler_node,
@@ -22,7 +21,6 @@ def build_graph():
     graph.add_node("profiler", profiler_node)
     graph.add_node("rag_retriever", rag_retriever_node)
     graph.add_node("chitchat", chitchat_node)
-    graph.add_node("news_query", news_query_node)
     graph.add_node("response_generator", response_generator_node)
     graph.add_node("output_formatter", output_formatter_node)
     graph.add_node("state_updater", state_updater_node)
@@ -36,13 +34,11 @@ def build_graph():
             "profiling": "profiler",
             "product_query": "rag_retriever",
             "chitchat": "chitchat",
-            "news_query": "news_query",
         },
     )
     graph.add_edge("profiler", "output_formatter")
     graph.add_edge("rag_retriever", "response_generator")
     graph.add_edge("chitchat", "response_generator")
-    graph.add_edge("news_query", "output_formatter")
     graph.add_edge("response_generator", "output_formatter")
     graph.add_edge("output_formatter", "state_updater")
     graph.add_edge("state_updater", END)

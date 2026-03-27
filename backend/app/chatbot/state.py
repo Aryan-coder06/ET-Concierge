@@ -2,6 +2,7 @@ from typing import Any, Literal, TypedDict
 
 
 class UserProfile(TypedDict):
+    name: str | None
     intent: str | None
     sophistication: str | None
     goal: str | None
@@ -25,8 +26,6 @@ class JourneyEvent(TypedDict):
     roadmap: dict[str, Any] | None
     chips: list[str]
     visual_hint: str | None
-    answer_style: str | None
-    presentation: dict[str, Any] | None
     profile_snapshot: UserProfile
 
 
@@ -38,7 +37,7 @@ class AgentState(TypedDict):
     onboarding_complete: bool
     questions_asked: list[str]
     journey_history: list[JourneyEvent]
-    intent: Literal["profiling", "product_query", "chitchat", "news_query"]
+    intent: Literal["profiling", "product_query", "chitchat"]
     retrieved_chunks: list[Any]
     response: dict[str, Any]
 
@@ -48,6 +47,7 @@ REQUIRED_PROFILE_FIELDS = ("intent", "sophistication", "goal", "profession")
 
 def empty_profile() -> UserProfile:
     return {
+        "name": None,
         "intent": None,
         "sophistication": None,
         "goal": None,

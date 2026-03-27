@@ -393,6 +393,36 @@
 - Why: Vercel can usually auto-detect this repo anyway, but an explicit config file makes the deployment intent clearer.
 - Practical effect in simple English: The frontend deployment setup is now more obvious to anyone opening the repo.
 
+## 2026-03-28 - Profiling dead-end fix and better product-intent detection
+
+### 1. I fixed the false “I have enough context” profiling loop
+- Where: [backend/app/chatbot/agents.py](/home/aryan-s/Documents/GENAI/ET-Concierge/backend/app/chatbot/agents.py)
+- What I changed: I updated the profiler so it no longer stops just because a profile field was asked once before. If a required field is still missing, the profiler now asks for it again with a short retry-style prompt instead of pretending profiling is complete.
+- Why: Earlier, if Luna asked for something like user intent once but failed to successfully extract it from the reply, that field could stay empty while the system still said “I have enough context to guide you now.” That created a dead-end loop.
+- Practical effect in simple English: Luna now keeps collecting the truly missing field instead of getting stuck in a fake completion state.
+
+### 2. I widened detection for product-fit and service-discovery questions
+- Where: [backend/app/chatbot/agents.py](/home/aryan-s/Documents/GENAI/ET-Concierge/backend/app/chatbot/agents.py)
+- What I changed: I expanded the product-query and starter-path phrase detection to include asks like:
+  - “what services do you offer?”
+  - “what can you do?”
+  - “what ET will be of use to me?”
+  - “what should I use?”
+- Why: These are natural concierge questions, but the older detection logic was too narrow and often pushed them into profiling.
+- Practical effect in simple English: Luna is now much more likely to answer those queries directly as ET guidance instead of asking another unnecessary profile question.
+
+### 3. I added support for short follow-up prompts after Luna says it has enough context
+- Where: [backend/app/chatbot/agents.py](/home/aryan-s/Documents/GENAI/ET-Concierge/backend/app/chatbot/agents.py)
+- What I changed: I added a small follow-up detector for prompts like `then tell`, `go on`, `continue`, or `tell me`, but only when the previous Luna turn was the “I have enough context” message.
+- Why: Users naturally respond with short follow-ups after a setup message. The system should interpret those as “okay, now answer me,” not as random chitchat.
+- Practical effect in simple English: Short follow-up prompts after profiling now correctly move into product guidance instead of stalling.
+
+### 4. I made retry-style profiling prompts sound more natural again
+- Where: [backend/app/chatbot/agents.py](/home/aryan-s/Documents/GENAI/ET-Concierge/backend/app/chatbot/agents.py)
+- What I changed: I replaced the mechanical retry text with more conversational field-specific prompts. If the user introduces themselves, Luna can now acknowledge that naturally before asking the missing ET question again.
+- Why: The previous fix solved the dead-end loop, but it made the retry prompts sound too hardcoded and repetitive.
+- Practical effect in simple English: Luna still asks for the missing required field, but now it sounds much more like a real concierge again instead of a strict form.
+
 ## 2026-03-27 - Concierge rail and structured market snapshot for the hackathon demo
 
 ### 1. I added a structured market snapshot service instead of scraping ET pages for numbers
@@ -415,3 +445,35 @@
   - the UI can animate and feel “live” without us building fragile scraping infrastructure
 - Why this matters: Judges are more likely to reward a clean concierge product with working live context than a complicated but unstable finance screen.
 - Practical effect in simple English: The app now demonstrates a believable “ET front door” experience that is easier to demo and easier to explain.
+
+## 2026-03-28 - Making profiling feel like a real concierge again
+
+### 1. I added name memory to the user profile
+- Where: [backend/app/chatbot/state.py](/home/aryan-s/Documents/GENAI/ET-Concierge/backend/app/chatbot/state.py), [backend/app/chatbot/agents.py](/home/aryan-s/Documents/GENAI/ET-Concierge/backend/app/chatbot/agents.py)
+- What I changed: I added `name` to the stored user profile and updated profile extraction so Luna can save a name when the user says things like `I am Aryan`, `I'm Aryan`, or `my name is Aryan`.
+- Why: The old flow could not remember the user's name at all, so even simple social messages like `do you know my name` felt broken and robotic.
+- Practical effect in simple English: Luna can now remember who the user is and use that naturally in follow-up replies.
+
+### 2. I replaced the rigid profiling step with a model-generated conversational follow-up
+- Where: [backend/app/chatbot/agents.py](/home/aryan-s/Documents/GENAI/ET-Concierge/backend/app/chatbot/agents.py)
+- What I changed: Instead of always replying with the next fixed profiling question, the profiler now gives the LLM the latest user message, recent conversation, current profile, and the one missing field it still needs. The model then writes a short natural reply and asks only that one missing question.
+- Why: Users do not speak in a clean form flow. They greet the bot, introduce themselves, ask meta questions, and then continue. The old profiler ignored all of that and just repeated a fixed question.
+- Practical effect in simple English: Luna now sounds much more like a real concierge. It can acknowledge `Hi, I'm Aryan` or a meta question first, then smoothly ask the one thing it still needs.
+
+### 3. I fixed the fake-completion profiling bug properly
+- Where: [backend/app/chatbot/agents.py](/home/aryan-s/Documents/GENAI/ET-Concierge/backend/app/chatbot/agents.py)
+- What I changed: The profiler now re-checks the first truly missing required field every time, even if that field was asked earlier. It no longer stops just because a question was already asked once.
+- Why: Earlier, a field could remain empty after a confusing reply, but the system could still fall through into `I have enough context to guide you now.` That made the conversation feel broken.
+- Practical effect in simple English: If Luna still does not have the user's intent, goal, experience level, or profession, it keeps gathering the missing piece instead of pretending onboarding is done.
+
+### 4. I widened early routing for natural ET service-discovery questions
+- Where: [backend/app/chatbot/agents.py](/home/aryan-s/Documents/GENAI/ET-Concierge/backend/app/chatbot/agents.py)
+- What I changed: I expanded the early product-query detection to catch natural asks like `what services do you offer`, `what can you do`, and `what ET will be of use to me`.
+- Why: These are valid concierge questions, but the earlier routing logic was too narrow and pushed them into profiling too often.
+- Practical effect in simple English: Luna is now more likely to answer real ET discovery questions directly instead of treating them like empty onboarding chatter.
+
+### 5. I restored short follow-up handling after profiling
+- Where: [backend/app/chatbot/agents.py](/home/aryan-s/Documents/GENAI/ET-Concierge/backend/app/chatbot/agents.py)
+- What I changed: I added follow-up detection for short user turns like `then tell`, `go on`, `continue`, and `retry` when they come right after Luna says it has enough context.
+- Why: Real users often reply with very short follow-ups after setup. The backend should understand that as `okay, now answer me`.
+- Practical effect in simple English: Luna is less likely to stall after profiling and more likely to continue into actual ET guidance.

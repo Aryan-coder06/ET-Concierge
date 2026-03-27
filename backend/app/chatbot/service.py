@@ -42,8 +42,6 @@ class ConciergeService:
             "chips": response.get("chips", []),
             "verification_notes": response.get("verification_notes", []),
             "visual_hint": response.get("visual_hint"),
-            "answer_style": response.get("answer_style"),
-            "presentation": response.get("presentation"),
             "response_type": response.get("response_type", "product_query"),
         }
 

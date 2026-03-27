@@ -13,10 +13,8 @@ from .registry import (
     build_verification_notes,
     canonical_product_name,
     canonical_sources_for_product,
-    get_product_registry,
     get_source_by_url,
     get_source_metadata,
-    official_product_names,
     product_registry_context,
     route_user_intent_to_products,
 )
@@ -73,8 +71,6 @@ PRODUCT_ALIASES = {
     "etmasterclass": "ETMasterclass",
     "masterclass": "ETMasterclass",
     "et events": "ET Events",
-    "et edge": "ET Events",
-    "et edge events": "ET Events",
     "et benefits": "ET Partner Benefits",
     "partner benefits": "ET Partner Benefits",
     "times prime": "ET Partner Benefits",
@@ -89,6 +85,54 @@ def _normalize_scalar(value: str | None, aliases: dict[str, str] | None = None) 
     if aliases:
         normalized = aliases.get(normalized, normalized)
     return normalized
+
+
+def _normalize_name(value: str | None) -> str | None:
+    if value in (None, "", "null"):
+        return None
+
+    cleaned = re.sub(r"[^A-Za-z .'-]", " ", str(value)).strip()
+    cleaned = re.sub(r"\s+", " ", cleaned)
+    if not cleaned:
+        return None
+
+    parts = cleaned.split()
+    if len(parts) > 4:
+        return None
+
+    blocked = {"hi", "hello", "hola", "brother", "friend", "luna", "et"}
+    if cleaned.lower() in blocked:
+        return None
+
+    return " ".join(part.capitalize() for part in parts)
+
+
+def _extract_name_from_message(message: str) -> str | None:
+    patterns = [
+        r"\bmy name is\s+([A-Za-z][A-Za-z .'-]{0,40})",
+        r"\bi am\s+([A-Za-z][A-Za-z .'-]{0,40})",
+        r"\bi'm\s+([A-Za-z][A-Za-z .'-]{0,40})",
+        r"\bcall me\s+([A-Za-z][A-Za-z .'-]{0,40})",
+    ]
+    lowered = message.lower()
+
+    for pattern in patterns:
+        match = re.search(pattern, lowered, flags=re.IGNORECASE)
+        if not match:
+            continue
+
+        candidate = match.group(1)
+        candidate = re.split(
+            r"\b(and|but|because|so|nice to meet|targetting|targeting|want|would|looking)\b",
+            candidate,
+            maxsplit=1,
+            flags=re.IGNORECASE,
+        )[0]
+        normalized = _normalize_name(candidate)
+        if normalized:
+            return normalized
+
+    return None
 
 
 def _normalize_products(values: list[str] | None) -> list[str]:
@@ -108,6 +152,37 @@ def _strip_markdown_formatting(text: str) -> str:
     cleaned = text.replace("**", "").replace("__", "").replace("`", "")
     cleaned = re.sub(r"\n{3,}", "\n\n", cleaned)
     return cleaned.strip()
+
+
+def _is_followup_guidance_request(message: str, messages: list[dict[str, str]]) -> bool:
+    normalized = message.strip().lower()
+    if normalized not in {
+        "then tell",
+        "tell me",
+        "go on",
+        "continue",
+        "okay tell me",
+        "retry",
+        "then?",
+    }:
+        return False
+
+    for previous in reversed(messages):
+        if previous.get("role") != "assistant":
+            continue
+        return "i have enough context to guide you now" in previous.get("content", "").lower()
+
+    return False
+
+
+def _field_description(field: str) -> str:
+    descriptions = {
+        "intent": "whether they are here for investing, business news, or growing a business",
+        "sophistication": "their current experience level",
+        "goal": "their main goal right now",
+        "profession": "what best describes their current role",
+    }
+    return descriptions.get(field, field)
 
 
 def _has_explicit_profile_signal(message: str) -> bool:
@@ -131,181 +206,6 @@ def _has_explicit_profile_signal(message: str) -> bool:
         "advanced",
     ]
     return any(marker in normalized for marker in markers)
-
-
-def _is_latest_news_request(message: str) -> bool:
-    normalized = message.lower()
-    if "news" not in normalized and "headline" not in normalized:
-        return False
-
-    live_terms = [
-        "latest",
-        "breaking",
-        "today",
-        "current",
-        "headline",
-        "headlines",
-        "top 10",
-        "top ten",
-        "top news",
-        "news in india",
-        "india news",
-    ]
-    ask_terms = ["give me", "show me", "tell me", "provide", "what are", "what is"]
-    et_guided_terms = [
-        "using et",
-        "with et",
-        "through et",
-        "on et",
-        "et product",
-        "et products",
-        "et app",
-        "et prime",
-        "et markets",
-        "et print edition",
-    ]
-
-    return (
-        any(term in normalized for term in live_terms)
-        and any(term in normalized for term in ask_terms)
-        and not any(term in normalized for term in et_guided_terms)
-    )
-
-
-def _detect_answer_style(query: str) -> str:
-    normalized = query.lower()
-
-    if _is_latest_news_request(query):
-        return "brief"
-
-    if any(
-        phrase in normalized
-        for phrase in [
-            "roadmap",
-            "plan",
-            "step by step",
-            "5 day",
-            "5-day",
-            "7 day",
-            "7-day",
-            "day 1",
-            "utilise",
-            "utilize",
-            "how to use et",
-        ]
-    ):
-        return "roadmap"
-
-    if any(
-        phrase in normalized
-        for phrase in [
-            "all products",
-            "all et products",
-            "what are all the products",
-            "what all products",
-            "tell me all products",
-            "list all products",
-            "which products are you aware of",
-            "ecosystem",
-        ]
-    ):
-        return "overview"
-
-    if any(
-        phrase in normalized
-        for phrase in [
-            "difference between",
-            "compare",
-            "vs",
-            "versus",
-        ]
-    ):
-        return "compare"
-
-    if any(
-        phrase in normalized
-        for phrase in [
-            "in detail",
-            "detailed",
-            "elaborate",
-            "deep dive",
-            "explain properly",
-        ]
-    ):
-        return "detailed"
-
-    return "standard"
-
-
-def _is_all_products_query(query: str) -> bool:
-    normalized = query.lower()
-    return any(
-        phrase in normalized
-        for phrase in [
-            "all products",
-            "all et products",
-            "what are all the products",
-            "what all products",
-            "tell me all products",
-            "list all products",
-            "which products are you aware of",
-            "what are all the products you are aware of",
-            "what all can you do",
-            "show the et ecosystem",
-        ]
-    )
-
-
-def _starter_path_query(query: str) -> bool:
-    normalized = query.lower()
-    return any(
-        phrase in normalized
-        for phrase in [
-            "what product is right for me",
-            "what et product",
-            "which et product",
-            "which product fits",
-            "where should i start",
-            "best place to begin",
-            "new to et",
-            "what et path",
-            "what fits me",
-        ]
-    )
-
-
-def _build_news_redirect_sources() -> tuple[list[dict[str, str | None]], list[dict[str, str | None]]]:
-    sources = [
-        {
-            "label": "Economic Times",
-            "href": "https://economictimes.indiatimes.com/",
-        },
-        {
-            "label": "ET Markets",
-            "href": PRODUCT_LINKS["ET Markets"],
-        },
-        {
-            "label": "ET Mobile Applications",
-            "href": "https://economictimes.indiatimes.com/mobile",
-        },
-    ]
-    citations = [
-        {
-            "label": "ET Markets: Stock Tools & News – Google Play",
-            "href": "https://play.google.com/store/apps/details?hl=en_IN&id=com.et.market",
-            "source_id": "et_markets_google_play",
-            "verification_status": "official_public",
-            "page_type": "app_store_listing",
-        },
-        {
-            "label": "ET Mobile Applications",
-            "href": "https://economictimes.indiatimes.com/mobile",
-            "source_id": "mobile_apps_portal",
-            "verification_status": "official_public",
-            "page_type": "mobile_apps_portal",
-        },
-    ]
-    return sources, citations
 
 
 @lru_cache(maxsize=None)
@@ -390,8 +290,6 @@ def _obvious_product_query(message: str) -> bool:
         "et masterclass",
         "etmasterclass",
         "et events",
-        "et edge",
-        "et edge events",
         "et benefits",
         "times prime",
         "subscription",
@@ -424,6 +322,19 @@ def _obvious_product_query(message: str) -> bool:
         "can et help me",
         "does et have",
         "does et offer",
+        "what services do you offer",
+        "what services do u offer",
+        "what can you do",
+        "what can u do",
+        "what all do you offer",
+        "what all can you do",
+        "what all can u do",
+        "what et can do for me",
+        "what et will be of use to me",
+        "what will be of use to me",
+        "what should i use",
+        "which et service",
+        "which et services",
         "help me find",
         "beyond articles",
         "data is uncertain",
@@ -483,10 +394,12 @@ def build_visual_hint(
             "market mood",
             "stock reports plus",
             "stock report plus",
+            "markets",
+            "trading",
+            "investing",
             "screeners",
             "watchlist",
             "stock tools",
-            "markets tools",
         ]
     ):
         return "markets_tools"
@@ -537,17 +450,25 @@ def build_visual_hint(
             "beyond articles",
             "what product is right for me",
             "what et product",
+            "new to et",
+            "where should i start",
+            "best place to begin",
+            "help me find",
         ]
     ):
         return "ecosystem_map"
 
     primary_product = recommended_products[0] if recommended_products else None
+    if primary_product == "ET Markets":
+        return "markets_tools"
     if primary_product == "ET Portfolio":
         return "portfolio_view"
     if primary_product == "ETMasterclass":
         return "learning_lane"
     if primary_product == "ET Events":
         return "events_network"
+    if primary_product in {"ET Prime", "ET Wealth Edition", "ET Print Edition"}:
+        return "ecosystem_map"
     if primary_product == "ET Partner Benefits":
         return "trust_signal"
 
@@ -570,6 +491,7 @@ User message:
 "{state["current_message"]}"
 
 Return JSON only. Use only these exact enums when clearly inferable:
+- name: user's first name or preferred name if they explicitly mention it, otherwise null
 - intent: investing | news | growing_business | null
 - sophistication: beginner | intermediate | expert | null
 - goal: wealth_building | saving_specific | protecting_wealth | career_growth | professional_authority | business_scaling | null
@@ -589,6 +511,12 @@ Never guess. Only include fields with new evidence.
         logger.warning("Profile extraction failed: %s", exc)
 
     profile = dict(state["profile"])
+    extracted_name = _normalize_name(extracted.get("name")) or _extract_name_from_message(
+        state["current_message"]
+    )
+    if extracted_name:
+        profile["name"] = extracted_name
+
     scalar_updates = {
         "intent": _normalize_scalar(extracted.get("intent"), INTENT_ALIASES),
         "sophistication": _normalize_scalar(
@@ -624,10 +552,9 @@ Never guess. Only include fields with new evidence.
 
 
 def router_node(state: AgentState) -> AgentState:
-    if _is_latest_news_request(state["current_message"]):
-        return {**state, "intent": "news_query"}
-
-    if _obvious_product_query(state["current_message"]):
+    if _obvious_product_query(state["current_message"]) or _is_followup_guidance_request(
+        state["current_message"], state.get("messages", [])
+    ):
         return {**state, "intent": "product_query"}
 
     if not state["onboarding_complete"]:
@@ -661,6 +588,65 @@ Return JSON only in this shape:
     return {**state, "intent": intent}
 
 
+def _generate_profile_followup_message(
+    state: AgentState,
+    *,
+    missing_field: str,
+    fallback_prompt: str,
+    starter_products: list[str],
+    starter_query: bool,
+) -> str:
+    history_lines: list[str] = []
+    for item in state.get("messages", [])[-4:]:
+        role = "Assistant" if item.get("role") == "assistant" else "User"
+        history_lines.append(f"{role}: {item.get('content', '').strip()}")
+
+    starter_hint = ""
+    if starter_query and starter_products:
+        starter_hint = (
+            f"If it helps, you may briefly mention that {starter_products[0]} is a broad ET "
+            "starting point, but do not turn this into a full recommendation yet."
+        )
+
+    prompt = f"""
+You are LUNA for ET. You are in the profiling stage of an ET concierge conversation.
+
+Current profile:
+{json.dumps(state["profile"], indent=2)}
+
+Recent conversation:
+{chr(10).join(history_lines) if history_lines else "No recent conversation."}
+
+Latest user message:
+"{state["current_message"]}"
+
+The one missing field you still need is: {missing_field}
+That field means: {_field_description(missing_field)}
+
+Write one short, natural assistant reply.
+
+Rules:
+- First, briefly respond to the user's latest message if it was a greeting, meta question, or personal introduction.
+- If the profile already includes the user's name, you may use it naturally.
+- End by asking exactly one question that helps collect the missing field.
+- Keep it to 1 or 2 sentences.
+- No markdown, no bullets, no JSON, no labels.
+- Do not sound like a form or repeat robotic phrasing.
+- {starter_hint if starter_hint else "Do not over-explain ET products yet."}
+"""
+
+    try:
+        return _strip_markdown_formatting(
+            _response_text(_invoke_llm([HumanMessage(content=prompt)]))
+        )
+    except Exception as exc:
+        logger.warning("Conversational profiler prompt failed: %s", exc)
+        profile_name = state["profile"].get("name")
+        if profile_name:
+            return f"{profile_name}, one quick thing before I guide you properly: {fallback_prompt[0].lower() + fallback_prompt[1:]}"
+        return fallback_prompt
+
+
 def profiler_node(state: AgentState) -> AgentState:
     question_flow = {
         "intent": "What brings you to ET today: investing, staying sharp on business news, or growing a business?",
@@ -670,11 +656,14 @@ def profiler_node(state: AgentState) -> AgentState:
     }
 
     asked = list(state.get("questions_asked", []))
+    next_field = None
     next_prompt = None
     for field, prompt in question_flow.items():
-        if not state["profile"].get(field) and field not in asked:
+        if not state["profile"].get(field):
+            next_field = field
             next_prompt = prompt
-            asked.append(field)
+            if field not in asked:
+                asked.append(field)
             break
 
     starter_products = route_user_intent_to_products(
@@ -693,13 +682,13 @@ def profiler_node(state: AgentState) -> AgentState:
     )
 
     if next_prompt:
-        if starter_query and starter_products:
-            message = (
-                f"{starter_products[0]} is the broadest ET starting point if you want overall ET access. "
-                f"To guide you properly from there, {next_prompt[0].lower() + next_prompt[1:]}"
-            )
-        else:
-            message = next_prompt
+        message = _generate_profile_followup_message(
+            state,
+            missing_field=next_field or "intent",
+            fallback_prompt=next_prompt,
+            starter_products=starter_products,
+            starter_query=starter_query,
+        )
     else:
         message = (
             "I have enough context to guide you now. Ask me what ET product, pathway, or starting point fits you best."
@@ -790,38 +779,10 @@ def chitchat_node(state: AgentState) -> AgentState:
     }
 
 
-def news_query_node(state: AgentState) -> AgentState:
-    sources, citations = _build_news_redirect_sources()
-    return {
-        **state,
-        "retrieved_chunks": [],
-        "response": {
-            "type": "news_query",
-            "message": (
-                "I cannot reliably give you live latest India headlines yet because this version of LUNA is "
-                "built around the ET product ecosystem, not a live news feed. For current headlines, open the "
-                "Economic Times homepage or ET Markets right now. If you want, I can still help you build a "
-                "strong ET news-following setup after that."
-            ),
-            "profile": state["profile"],
-            "onboarding_complete": state["onboarding_complete"],
-            "recommendations": [],
-            "recommended_products": [],
-            "verification_notes": [],
-            "source_citations": citations,
-            "sources": sources,
-            "navigator_summary": None,
-            "visual_hint": None,
-            "show_roadmap": False,
-        },
-    }
-
-
 def response_generator_node(state: AgentState) -> AgentState:
     if state.get("response", {}).get("type") == "profiling":
         return state
 
-    answer_style = _detect_answer_style(state["current_message"])
     recommended_products = route_user_intent_to_products(
         state["current_message"],
         state["profile"],
@@ -888,11 +849,8 @@ Retrieved ET context:
 Verification notes:
 {json.dumps(verification_notes, indent=2) if verification_notes else "No special verification note for this turn."}
 
-Answer style for this turn:
-{answer_style}
-
 Rules:
-- Be concise and useful. Shape the answer exactly for the requested style.
+- Be concise and useful. Keep the answer within 3 to 5 sentences.
 - If you recommend a product, explain why it fits this user.
 - Use the retrieved ET context and structured registry facts when available and do not invent product features.
 - Return plain text only. Do not use markdown, asterisks, bold markers, or code formatting.
@@ -903,7 +861,6 @@ Rules:
 - If verification notes mention mixed public signals, explicitly say public ET pages show mixed signals and tell the user to verify the latest live ET page or checkout.
 - If verification notes mention an activation or eligibility constraint, ask one short follow-up before promising activation.
 - Prefer ET Prime as a broad ET entry point only when the user wants broad ET access. Prefer ET Markets for market tools, ET Portfolio for tracking holdings/goals, ETMasterclass for learning, ET Events for event discovery, and ET Wealth Edition as a Prime benefit lane.
-- {_answer_style_rules(answer_style)}
 """
     )
 
@@ -918,16 +875,6 @@ Rules:
             )
         )
 
-    presentation = _build_presentation_hints(
-        query=state["current_message"],
-        response_type=state["intent"],
-        answer_style=answer_style,
-        onboarding_complete=state["onboarding_complete"],
-        recommended_products=recommended_products,
-        navigator_summary=navigator_summary,
-        visual_hint=visual_hint,
-    )
-
     return {
         **state,
         "response": {
@@ -941,8 +888,6 @@ Rules:
             "source_citations": source_citations,
             "navigator_summary": navigator_summary,
             "visual_hint": visual_hint,
-            "answer_style": answer_style,
-            "presentation": presentation,
             "show_roadmap": False,
         },
     }
@@ -1095,23 +1040,6 @@ def _direct_verified_response(
 ) -> str | None:
     normalized_query = query.lower()
 
-    if _is_all_products_query(query):
-        lines: list[str] = [
-            "Here is the main ET product set I am aware of right now:"
-        ]
-        for product_name in official_product_names():
-            product = get_product_registry(product_name) or {}
-            summary = str(product.get("summary", "")).strip()
-            short_summary = summary.split(".")[0].strip() if summary else ""
-            if short_summary:
-                lines.append(f"- {product_name}: {short_summary}.")
-            else:
-                lines.append(f"- {product_name}")
-        lines.append(
-            "If you want, I can next group these into news, markets, tracking, learning, events, and partner-benefit lanes."
-        )
-        return "\n".join(lines)
-
     if (
         any(keyword in normalized_query for keyword in ["free trial", "trial", "pricing"])
         and "ET Prime" in recommended_products
@@ -1145,87 +1073,6 @@ def _direct_verified_response(
     return None
 
 
-def _answer_style_rules(answer_style: str) -> str:
-    if answer_style == "brief":
-        return (
-            "Use 2 to 3 short sentences. Do not add extra product lanes, side explanations, or long follow-ups unless the user asked for them."
-        )
-    if answer_style == "roadmap":
-        return (
-            "Return a day-wise or step-wise roadmap in plain text. Use short numbered lines such as Day 1, Day 2, Step 3. Keep each line practical and specific."
-        )
-    if answer_style == "overview":
-        return (
-            "Return a clean product overview in plain text. List the main ET products one by one, and give one short purpose line for each."
-        )
-    if answer_style == "compare":
-        return (
-            "Return a compact comparison. Name each option clearly and explain the difference in one short line per option."
-        )
-    if answer_style == "detailed":
-        return (
-            "Return a fuller explanation with multiple short paragraphs or numbered points. Stay grounded in ET context and avoid fluff."
-        )
-    return (
-        "Use a balanced answer: short opening, direct answer, then one or two practical next steps only if they help."
-    )
-
-
-def _build_presentation_hints(
-    *,
-    query: str,
-    response_type: str,
-    answer_style: str,
-    onboarding_complete: bool,
-    recommended_products: list[str],
-    navigator_summary: dict[str, object] | None,
-    visual_hint: str | None,
-) -> dict[str, object]:
-    normalized_query = query.lower()
-    show_visual_panel = visual_hint in {"markets_tools", "portfolio_view", "trust_signal"}
-    show_recommended_products = bool(recommended_products)
-    show_navigator_summary = navigator_summary is not None
-    show_roadmap = "et roadmap" in normalized_query or "show me my roadmap" in normalized_query
-    show_chips = onboarding_complete and response_type == "product_query"
-
-    if response_type in {"news_query", "chitchat"}:
-        return {
-            "answer_style": answer_style,
-            "show_visual_panel": False,
-            "show_recommended_products": False,
-            "show_navigator_summary": False,
-            "show_roadmap": False,
-            "show_chips": False,
-        }
-
-    if answer_style in {"brief", "overview", "roadmap", "compare"}:
-        show_visual_panel = False
-
-    if answer_style in {"overview", "roadmap", "compare"}:
-        show_recommended_products = False
-
-    if answer_style in {"brief", "overview", "roadmap", "compare", "detailed"}:
-        show_navigator_summary = False
-
-    if answer_style != "roadmap":
-        show_roadmap = False
-
-    if answer_style in {"overview", "roadmap", "compare", "detailed"}:
-        show_chips = False
-
-    if not _starter_path_query(query):
-        show_navigator_summary = False
-
-    return {
-        "answer_style": answer_style,
-        "show_visual_panel": show_visual_panel,
-        "show_recommended_products": show_recommended_products,
-        "show_navigator_summary": show_navigator_summary,
-        "show_roadmap": show_roadmap,
-        "show_chips": show_chips,
-    }
-
-
 def build_navigator_summary(
     profile: dict,
     recommended_products: list[str],
@@ -1242,20 +1089,6 @@ def build_navigator_summary(
     profession = profile.get("profession")
     sophistication = profile.get("sophistication")
     normalized_query = query.lower()
-    wants_path_guidance = _starter_path_query(query) or any(
-        phrase in normalized_query
-        for phrase in [
-            "trial",
-            "pricing",
-            "benefits",
-            "activate",
-            "redeem",
-            "voucher",
-        ]
-    )
-
-    if not wants_path_guidance:
-        return None
 
     if not onboarding_complete:
         return {
@@ -1525,44 +1358,11 @@ def get_chips(state: AgentState) -> list[str]:
 def output_formatter_node(state: AgentState) -> AgentState:
     profile = state["profile"]
     response = state["response"]
-    answer_style = response.get("answer_style") or _detect_answer_style(state["current_message"])
-    presentation = response.get("presentation") or _build_presentation_hints(
-        query=state["current_message"],
-        response_type=response.get("type", "product_query"),
-        answer_style=answer_style,
-        onboarding_complete=state["onboarding_complete"],
-        recommended_products=response.get(
-            "recommended_products",
-            response.get("recommendations", []),
-        ),
-        navigator_summary=response.get("navigator_summary"),
-        visual_hint=response.get("visual_hint"),
-    )
     show_roadmap = (
         state["onboarding_complete"]
         and response.get("type") in {"product_query", "profiling"}
-        and bool(presentation.get("show_roadmap"))
         and len(state["messages"]) < 12
     )
-    recommended_products = response.get(
-        "recommended_products",
-        response.get("recommendations", []),
-    )
-    if not presentation.get("show_recommended_products"):
-        recommended_products = []
-    navigator_summary = (
-        response.get("navigator_summary")
-        if presentation.get("show_navigator_summary")
-        else None
-    )
-    visual_hint = response.get("visual_hint") if presentation.get("show_visual_panel") else None
-    chips = get_chips(state) if presentation.get("show_chips") else []
-    sources = response.get("sources")
-    if not sources:
-        sources = _build_sources(
-            state["retrieved_chunks"],
-            response.get("recommended_products", response.get("recommendations", [])),
-        )
 
     structured_response = {
         "session_id": state["session_id"],
@@ -1576,17 +1376,21 @@ def output_formatter_node(state: AgentState) -> AgentState:
             "onboarding_complete": state["onboarding_complete"],
         },
         "recommendations": response.get("recommendations", []),
-        "recommended_products": recommended_products,
-        "navigator_summary": navigator_summary,
+        "recommended_products": response.get(
+            "recommended_products",
+            response.get("recommendations", []),
+        ),
+        "navigator_summary": response.get("navigator_summary"),
         "roadmap": build_roadmap(profile) if show_roadmap else None,
-        "chips": chips,
+        "chips": get_chips(state),
         "response_type": response.get("type", "product_query"),
-        "sources": sources,
+        "sources": _build_sources(
+            state["retrieved_chunks"],
+            response.get("recommended_products", response.get("recommendations", [])),
+        ),
         "source_citations": response.get("source_citations", []),
         "verification_notes": response.get("verification_notes", []),
-        "visual_hint": visual_hint,
-        "answer_style": answer_style,
-        "presentation": presentation,
+        "visual_hint": response.get("visual_hint"),
     }
 
     return {**state, "response": structured_response}
@@ -1621,8 +1425,6 @@ def state_updater_node(state: AgentState) -> AgentState:
         "roadmap": state["response"].get("roadmap"),
         "chips": list(state["response"].get("chips", [])),
         "visual_hint": state["response"].get("visual_hint"),
-        "answer_style": state["response"].get("answer_style"),
-        "presentation": state["response"].get("presentation"),
         "profile_snapshot": {
             "intent": state["profile"].get("intent"),
             "sophistication": state["profile"].get("sophistication"),
