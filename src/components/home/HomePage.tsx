@@ -2,8 +2,10 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import FloatingChatButton from "@/components/FloatingChatButton";
+import { useFirebaseAuth } from "@/components/auth/FirebaseAuthProvider";
+import { UserAvatar } from "@/components/UserAvatar";
 import {
   etCompassContent,
   type EtCompassStatShape,
@@ -56,15 +58,6 @@ const statAccentByIndex = [
   "bg-[#1040C0]",
   "bg-[#F0C020]",
   "bg-[#D02020]",
-] as const;
-
-const ecosystemPreviewAccents = [
-  "bg-[#D02020]",
-  "bg-[#1040C0]",
-  "bg-[#F0C020]",
-  "bg-white",
-  "bg-[#D02020]",
-  "bg-[#1040C0]",
 ] as const;
 
 const ecosystemUnderlineAccents = [
@@ -205,65 +198,51 @@ function ShapeGlyph({
   );
 }
 
-function PosterArt({ accent }: { accent: string }) {
-  return (
-    <div className={`relative aspect-[4/3] overflow-hidden border-4 border-black ${accent}`}>
-      <div className="absolute inset-0 dot-grid-dark opacity-50" />
-      <div className="absolute right-6 top-6 h-16 w-16 rounded-full border-4 border-black bg-white" />
-      <div className="absolute bottom-6 left-6 h-20 w-20 border-4 border-black bg-[#F0C020]" />
-      <div
-        className="absolute bottom-8 right-10 h-16 w-16 border-4 border-black bg-[#D02020]"
-        style={{ clipPath: "polygon(50% 0%, 0% 100%, 100% 100%)" }}
-      />
-    </div>
-  );
-}
-
 function EcosystemPreview({
   label,
-  accent,
   imageSrc,
   imageAlt,
 }: {
   label: string;
-  accent: string;
   imageSrc: string;
   imageAlt: string;
 }) {
   return (
-    <div className="relative aspect-[5/4] w-full overflow-hidden border-4 border-black shadow-[6px_6px_0px_0px_black]">
+    <div className="relative aspect-[5/4] w-full overflow-hidden border-4 border-black bg-[#D9D9D9] shadow-[6px_6px_0px_0px_black]">
       <Image
         src={imageSrc}
         alt={imageAlt}
         fill
         sizes="(max-width: 640px) 280px, (max-width: 1024px) 320px, 340px"
-        className="object-cover grayscale saturate-0 contrast-125 transition-[filter,transform] duration-500 group-hover:scale-[1.05] group-hover:grayscale-0 group-hover:saturate-100 group-hover:contrast-100"
+        className="object-contain p-5 grayscale saturate-0 contrast-125 transition-[filter,transform] duration-500 group-hover:scale-[1.02] group-hover:grayscale-0 group-hover:saturate-100 group-hover:contrast-100 sm:p-6"
       />
-      <div className="absolute inset-0 bg-black/20 transition-opacity duration-500 group-hover:opacity-0" />
       <div className="absolute left-4 top-4 border-2 border-black bg-white px-2.5 py-1 text-[10px] font-black uppercase tracking-[0.2em]">
         {label}
       </div>
-      <div className="absolute right-4 top-4 h-12 w-12 rounded-full border-4 border-black bg-white/95" />
-      <div className="absolute bottom-4 left-4 h-14 w-14 border-4 border-black bg-[#F0C020]" />
-      <div
-        className={`absolute bottom-5 right-5 h-12 w-12 border-4 border-black ${accent}`}
-        style={{ clipPath: "polygon(50% 0%, 0% 100%, 100% 100%)" }}
-      />
-      <div className="absolute inset-x-0 bottom-0 flex items-end justify-between p-4">
-        <div className="border-2 border-black bg-white px-3 py-2 shadow-[4px_4px_0px_0px_black]">
-          <LogoMark />
-        </div>
-        <span className="border-2 border-black bg-[#121212] px-2.5 py-1 text-[10px] font-black uppercase tracking-[0.18em] text-white">
-          Hover
-        </span>
-      </div>
+    </div>
+  );
+}
+
+function PosterArt({ accent }: { accent: string }) {
+  return (
+    <div className="relative aspect-[5/4] overflow-hidden border-4 border-black bg-[#EFEFEF]">
+      <div className={`absolute inset-x-0 top-0 h-8 ${accent}`} />
+      <div className="absolute inset-x-8 top-14 h-16 border-4 border-black bg-white" />
+      <div className="absolute inset-x-8 top-40 h-4 bg-black" />
+      <div className="absolute bottom-8 left-8 right-8 h-24 border-4 border-black bg-white" />
+      <div className="absolute bottom-12 left-12 h-3 w-28 bg-black" />
+      <div className="absolute bottom-12 right-12 h-3 w-16 bg-[#D02020]" />
+      <div className="absolute bottom-8 left-8 h-6 w-6 border-r-4 border-t-4 border-black bg-[#F0C020]" />
+      <div className="absolute right-8 top-8 h-24 w-24 border-4 border-black bg-white/55" />
     </div>
   );
 }
 
 export default function HomePage() {
   const [mobileOpen, setMobileOpen] = useState(false);
+  const [showIntro, setShowIntro] = useState(false);
   const ecosystemScrollRef = useRef<HTMLDivElement | null>(null);
+  const { authLoading, user } = useFirebaseAuth();
   const heroDemoIsExternal = /^https?:\/\//.test(
     etCompassContent.hero.secondaryCta.href
   );
@@ -278,8 +257,65 @@ export default function HomePage() {
     });
   }
 
+  useEffect(() => {
+    try {
+      if (window.sessionStorage.getItem("et-compass-intro-seen") === "1") {
+        return;
+      }
+    } catch {}
+
+    const timeout = window.setTimeout(() => {
+      setShowIntro(true);
+    }, 0);
+
+    return () => window.clearTimeout(timeout);
+  }, []);
+
+  useEffect(() => {
+    if (!showIntro) return;
+
+    const timeout = window.setTimeout(() => {
+      setShowIntro(false);
+      try {
+        window.sessionStorage.setItem("et-compass-intro-seen", "1");
+      } catch {}
+    }, 7200);
+
+    return () => window.clearTimeout(timeout);
+  }, [showIntro]);
+
+  function dismissIntro() {
+    setShowIntro(false);
+    try {
+      window.sessionStorage.setItem("et-compass-intro-seen", "1");
+    } catch {}
+  }
+
   return (
     <div className="min-h-screen overflow-x-hidden bg-[#F0F0F0] text-[#121212] selection:bg-[#F0C020] selection:text-black">
+      {showIntro ? (
+        <div className="fixed inset-0 z-[120] bg-black">
+          <video
+            autoPlay
+            muted
+            playsInline
+            preload="auto"
+            onEnded={dismissIntro}
+            className="h-full w-full object-cover"
+          >
+            <source src="/INTRO.mp4" type="video/mp4" />
+          </video>
+
+          <button
+            type="button"
+            onClick={dismissIntro}
+            className="absolute right-5 top-5 border-2 border-white bg-black/65 px-4 py-2 text-[11px] font-black uppercase tracking-[0.2em] text-white shadow-[4px_4px_0px_0px_black]"
+          >
+            Skip Intro
+          </button>
+        </div>
+      ) : null}
+
       <FloatingChatButton />
 
       <nav className="sticky top-0 z-50 border-b-4 border-black bg-white">
@@ -309,12 +345,28 @@ export default function HomePage() {
           </div>
 
           <div className="hidden shrink-0 items-center gap-3 md:flex lg:min-w-[270px] lg:justify-end">
-            <Link
-              href={etCompassContent.brand.headerCta.href}
-              className={`${btnSecondary} h-12 rounded-full px-6 text-sm`}
-            >
-              {etCompassContent.brand.headerCta.label}
-            </Link>
+            {authLoading ? (
+              <div className="h-12 w-12 animate-pulse rounded-full border-2 border-black bg-[#E8E8E8] shadow-[4px_4px_0px_0px_black]" />
+            ) : user ? (
+              <Link
+                href="/profile"
+                aria-label="Open profile dashboard"
+                className="transition-transform hover:-translate-y-0.5"
+              >
+                <UserAvatar
+                  photoURL={user.photoURL}
+                  displayName={user.displayName}
+                  email={user.email}
+                />
+              </Link>
+            ) : (
+              <Link
+                href="/login"
+                className={`${btnSecondary} h-12 rounded-full px-6 text-sm`}
+              >
+                Login / Signup
+              </Link>
+            )}
             <Link
               href={etCompassContent.hero.primaryCta.href}
               className={`${btnPrimary} h-12 rounded-none px-6 text-sm`}
@@ -348,13 +400,39 @@ export default function HomePage() {
                   {link.label}
                 </Link>
               ))}
-              <Link
-                href={etCompassContent.brand.headerCta.href}
-                onClick={() => setMobileOpen(false)}
-                className={`${btnSecondary} justify-center px-4 py-3`}
-              >
-                {etCompassContent.brand.headerCta.label}
-              </Link>
+              {authLoading ? (
+                <div className="h-12 w-12 animate-pulse rounded-full border-2 border-black bg-[#E8E8E8] shadow-[4px_4px_0px_0px_black]" />
+              ) : user ? (
+                <Link
+                  href="/profile"
+                  onClick={() => setMobileOpen(false)}
+                  className="flex items-center gap-3 border-2 border-black bg-[#FFF8D8] px-3 py-3 shadow-[4px_4px_0px_0px_black]"
+                >
+                  <UserAvatar
+                    photoURL={user.photoURL}
+                    displayName={user.displayName}
+                    email={user.email}
+                    sizeClassName="h-11 w-11"
+                    className="shadow-none"
+                  />
+                  <div className="min-w-0">
+                    <p className="text-[10px] font-black uppercase tracking-[0.22em] text-[#D02020]">
+                      Signed In
+                    </p>
+                    <p className="truncate text-sm font-black uppercase text-black">
+                      {user.displayName || user.email || "Open Profile"}
+                    </p>
+                  </div>
+                </Link>
+              ) : (
+                <Link
+                  href="/login"
+                  onClick={() => setMobileOpen(false)}
+                  className={`${btnSecondary} justify-center px-4 py-3`}
+                >
+                  Login / Signup
+                </Link>
+              )}
               <Link
                 href={etCompassContent.hero.primaryCta.href}
                 onClick={() => setMobileOpen(false)}
@@ -536,9 +614,6 @@ export default function HomePage() {
                   <div className="mb-5">
                     <EcosystemPreview
                       label={item.accentLabel}
-                      accent={
-                        ecosystemPreviewAccents[index % ecosystemPreviewAccents.length]
-                      }
                       imageSrc={item.imageSrc}
                       imageAlt={item.imageAlt}
                     />
@@ -641,31 +716,38 @@ export default function HomePage() {
               </p>
             </div>
 
-            <div className="grid grid-cols-1 gap-8 lg:grid-cols-4">
-              {etCompassContent.howItWorksSection.steps.map((step, index) => (
-                <div
-                  key={step.step}
-                  className="relative border-4 border-black bg-[#F0F0F0] p-8 shadow-[10px_10px_0px_0px_black]"
-                >
-                  <div className="mb-6 flex items-center gap-4">
-                    <div
-                      className={`flex h-14 w-14 items-center justify-center border-4 border-black text-xl font-black ${
-                        index % 3 === 0
-                          ? "bg-[#D02020]"
-                          : index % 3 === 1
-                            ? "bg-[#1040C0] text-white"
-                            : "bg-[#F0C020]"
-                      }`}
-                    >
-                      {step.step}
+            <div className="relative">
+              <div className="pointer-events-none absolute left-[12.5%] right-[12.5%] top-[82px] hidden lg:block">
+                <div className="how-luna-route-line h-0 border-t-4 border-dashed border-black/50" />
+                <div className="how-luna-route-box absolute top-1/2 h-6 w-10 -translate-y-1/2 border-2 border-black bg-black" />
+              </div>
+
+              <div className="relative grid grid-cols-1 gap-8 lg:grid-cols-4">
+                {etCompassContent.howItWorksSection.steps.map((step, index) => (
+                  <div
+                    key={step.step}
+                    className="relative border-4 border-black bg-[#F0F0F0] p-8 shadow-[10px_10px_0px_0px_black]"
+                  >
+                    <div className="mb-6 flex items-center gap-4">
+                      <div
+                        className={`flex h-14 w-14 items-center justify-center border-4 border-black text-xl font-black ${
+                          index % 3 === 0
+                            ? "bg-[#D02020]"
+                            : index % 3 === 1
+                              ? "bg-[#1040C0] text-white"
+                              : "bg-[#F0C020]"
+                        }`}
+                      >
+                        {step.step}
+                      </div>
+                      <h3 className="font-black uppercase text-2xl">{step.title}</h3>
                     </div>
-                    <h3 className="font-black uppercase text-2xl">{step.title}</h3>
+                    <p className="text-lg font-medium leading-relaxed">
+                      {step.description}
+                    </p>
                   </div>
-                  <p className="text-lg font-medium leading-relaxed">
-                    {step.description}
-                  </p>
-                </div>
-              ))}
+                ))}
+              </div>
             </div>
           </div>
         </section>

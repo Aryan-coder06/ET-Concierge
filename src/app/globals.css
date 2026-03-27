@@ -100,3 +100,26 @@ body {
   stroke-dasharray: 6 4;
   animation: trace-drift 1.8s linear infinite alternate;
 }
+
+@keyframes luna-route-run {
+  0% {
+    transform: translate(0, -50%);
+  }
+  28% {
+    transform: translate(calc(33% - 1rem), -50%);
+  }
+  56% {
+    transform: translate(calc(66% - 2rem), -50%);
+  }
+  100% {
+    transform: translate(calc(100% - 2.5rem), -50%);
+  }
+}
+
+.how-luna-route-line {
+  position: relative;
+}
+
+.how-luna-route-box {
+  animation: luna-route-run 5.2s ease-in-out infinite;
+}

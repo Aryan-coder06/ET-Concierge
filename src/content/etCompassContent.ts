@@ -6,7 +6,7 @@ export const etCompassContent = {
     logoText: "ET Compass",
     headerCta: {
       label: "Update Profile",
-      href: "/search",
+      href: "/profile",
     },
     floatingWidget: {
       topLabel: "ET /",

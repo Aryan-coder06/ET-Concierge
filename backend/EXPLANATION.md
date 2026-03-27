@@ -287,3 +287,26 @@
   - markets questions can surface tool-led UI
 - Why this matters: A strong concierge is not only about producing a paragraph. It is also about choosing the best form of guidance for the user.
 - Practical effect in simple English: This makes Luna feel less like a plain chatbot and more like an ET guide that knows when a visual shortcut will help the user faster.
+
+## 2026-03-27 - Concierge rail and structured market snapshot for the hackathon demo
+
+### 1. I added a structured market snapshot service instead of scraping ET pages for numbers
+- Where: [backend/app/chatbot/market_data.py](/home/aryan-s/Documents/GENAI/ET-Concierge/backend/app/chatbot/market_data.py), [backend/app/main.py](/home/aryan-s/Documents/GENAI/ET-Concierge/backend/app/main.py), [backend/requirements.txt](/home/aryan-s/Documents/GENAI/ET-Concierge/backend/requirements.txt)
+- What I changed: I created a small backend service that fetches a market snapshot for `Nifty 50`, `Sensex`, and `Gold`, adds a short sparkline history, and returns ET destination links like `Market Mood`, `Markets Tracker`, and `ET Portfolio`. I also added a new FastAPI route: `GET /market-snapshot`.
+- Why: For the hackathon, stable demo behavior is more important than brittle scraping. ET surfaces are great as destinations and context, but they do not look like a clean public developer API for live numbers.
+- Practical effect in simple English: Luna can now show live-style market context beside the answer without pretending ET itself is the raw market-data provider.
+
+### 2. I kept the ET story intact around that live data
+- Where: [backend/app/chatbot/market_data.py](/home/aryan-s/Documents/GENAI/ET-Concierge/backend/app/chatbot/market_data.py)
+- What I changed: The live data is paired with ET routes instead of replacing ET. Each market item points toward the right ET surface, and the response also carries ET links for the user to continue the journey.
+- Why: The goal of this product is “AI Concierge for ET,” not “generic stock dashboard.”
+- Practical effect in simple English: Even when live numbers appear, Luna is still guiding the user back into the ET ecosystem.
+
+### 3. Why this is a better hackathon tradeoff than building a fake ET terminal
+- Where: overall product architecture
+- What changed in practical terms:
+  - ET remains the destination and product lane
+  - structured market data provides reliability for the demo
+  - the UI can animate and feel “live” without us building fragile scraping infrastructure
+- Why this matters: Judges are more likely to reward a clean concierge product with working live context than a complicated but unstable finance screen.
+- Practical effect in simple English: The app now demonstrates a believable “ET front door” experience that is easier to demo and easier to explain.

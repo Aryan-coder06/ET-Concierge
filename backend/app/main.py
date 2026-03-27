@@ -5,6 +5,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, Field
 
 from .chatbot.config import get_settings
+from .chatbot.market_data import get_market_snapshot
 from .chatbot.service import concierge_service
 
 
@@ -24,6 +25,30 @@ class SourceCitation(BaseModel):
 class ChatRequest(BaseModel):
     query: str
     thread_id: str
+
+
+class MarketSnapshotItem(BaseModel):
+    symbol: str
+    label: str
+    price: float
+    change: float
+    change_pct: float
+    sparkline: list[float] = Field(default_factory=list)
+    et_route: str
+    href: str
+
+
+class MarketSnapshotLink(BaseModel):
+    label: str
+    href: str
+    note: str
+
+
+class MarketSnapshotResponse(BaseModel):
+    as_of: str
+    source_label: str
+    items: list[MarketSnapshotItem] = Field(default_factory=list)
+    et_links: list[MarketSnapshotLink] = Field(default_factory=list)
 
 
 class ChatResponse(BaseModel):
@@ -102,6 +127,17 @@ def get_session(session_id: str) -> SessionDocumentResponse:
     except ValueError as exc:
         raise HTTPException(status_code=404, detail=str(exc)) from exc
     return SessionDocumentResponse(**session)
+
+
+@app.get("/market-snapshot", response_model=MarketSnapshotResponse)
+def market_snapshot() -> MarketSnapshotResponse:
+    try:
+        return MarketSnapshotResponse(**get_market_snapshot())
+    except Exception as exc:
+        raise HTTPException(
+            status_code=503,
+            detail="The market snapshot service is temporarily unavailable.",
+        ) from exc
 
 
 @app.post("/chat", response_model=ChatResponse)

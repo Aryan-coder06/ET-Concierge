@@ -1,66 +1,24 @@
 "use client";
 
-import Link from "next/link";
 import { useEffect, useMemo, useRef, useState } from "react";
+import { ConciergeRail } from "@/components/search/ConciergeRail";
 import { LunaThinkingPanel } from "@/components/search/LunaThinkingPanel";
 import { ResponseInsightPanel } from "@/components/search/ResponseInsightPanel";
+import { ThreadRail } from "@/components/search/ThreadRail";
+import type {
+  ChatMessage,
+  JourneyEvent,
+  MarketSnapshot,
+  NavigatorSummary,
+  ProfileSnapshot,
+  Roadmap,
+  RoadmapStep,
+  SessionDocument,
+  SourceCitation,
+  SourceItem,
+  ThreadSummary,
+} from "@/components/search/types";
 import { etCompassContent } from "@/content/etCompassContent";
-
-type Role = "user" | "assistant";
-
-type SourceItem = {
-  label: string;
-  href?: string;
-};
-
-type SourceCitation = {
-  label: string;
-  href?: string;
-  sourceId?: string;
-  verificationStatus?: string;
-  pageType?: string;
-};
-
-type RoadmapStep = {
-  step: number;
-  product: string;
-  reason: string;
-  url?: string;
-};
-
-type Roadmap = {
-  title: string;
-  profile_summary?: string[];
-  steps?: RoadmapStep[];
-};
-
-type NavigatorSummary = {
-  title: string;
-  summary: string;
-  why_this_path?: string[];
-  next_move?: string;
-};
-
-type ChatMessage = {
-  id: string;
-  role: Role;
-  content: string;
-  createdAt: string;
-  sources?: SourceItem[];
-  sourceCitations?: SourceCitation[];
-  recommendedProducts?: string[];
-  verificationNotes?: string[];
-  roadmap?: Roadmap;
-  chips?: string[];
-  navigatorSummary?: NavigatorSummary | null;
-  visualHint?: string | null;
-};
-
-type ThreadSummary = {
-  id: string;
-  title: string;
-  updatedAt: string;
-};
 
 type JsonRecord = Record<string, unknown>;
 
@@ -70,7 +28,8 @@ const API_BASE_URL =
 const API_CHAT_PATH = "/chat";
 
 const SHELL_HEADER_H = 68;
-const SIDEBAR_W = 300;
+const THREAD_RAIL_W = 280;
+const CONTROL_RAIL_W = 320;
 
 function uid() {
   if (typeof crypto !== "undefined" && crypto.randomUUID) {
@@ -84,17 +43,6 @@ function formatTime(value: string) {
     return new Date(value).toLocaleTimeString([], {
       hour: "2-digit",
       minute: "2-digit",
-    });
-  } catch {
-    return "";
-  }
-}
-
-function formatDateLabel(value: string) {
-  try {
-    return new Date(value).toLocaleDateString([], {
-      day: "2-digit",
-      month: "short",
     });
   } catch {
     return "";
@@ -271,6 +219,176 @@ function extractNavigatorSummary(data: unknown): NavigatorSummary | null {
   };
 }
 
+function extractProfileSnapshot(value: unknown): ProfileSnapshot {
+  if (!isJsonRecord(value)) return {};
+
+  return {
+    intent: readString(value.intent),
+    sophistication: readString(value.sophistication),
+    goal: readString(value.goal),
+    profession: readString(value.profession),
+    age_range: readString(value.age_range),
+    interests: extractStringArray(value.interests),
+    existing_products: extractStringArray(value.existing_products),
+    onboarding_complete:
+      typeof value.onboarding_complete === "boolean" ? value.onboarding_complete : undefined,
+  };
+}
+
+function extractJourneyEvent(value: unknown): JourneyEvent | null {
+  if (!isJsonRecord(value)) return null;
+
+  const navigatorSummary = isJsonRecord(value.navigator_summary)
+    ? {
+        navigator_summary: value.navigator_summary,
+      }
+    : undefined;
+  const roadmap = isJsonRecord(value.roadmap)
+    ? {
+        roadmap: value.roadmap,
+      }
+    : undefined;
+
+  return {
+    timestamp: readString(value.timestamp),
+    route: readString(value.route),
+    user_message: readString(value.user_message),
+    assistant_message: readString(value.assistant_message),
+    recommendations: extractStringArray(value.recommendations),
+    recommended_products: extractStringArray(
+      value.recommended_products ?? value.recommendations
+    ),
+    source_citations: Array.isArray(value.source_citations)
+      ? extractSourceCitations({ source_citations: value.source_citations })
+      : [],
+    verification_notes: extractStringArray(value.verification_notes),
+    navigator_summary: navigatorSummary ? extractNavigatorSummary(navigatorSummary) : null,
+    roadmap: roadmap ? extractRoadmap(roadmap) : undefined,
+    chips: extractStringArray(value.chips),
+    visual_hint: readString(value.visual_hint),
+    profile_snapshot: extractProfileSnapshot(value.profile_snapshot),
+  };
+}
+
+function extractSessionDocument(data: unknown): SessionDocument | null {
+  if (!isJsonRecord(data)) return null;
+
+  const sessionId = readString(data.session_id);
+  const title = readString(data.title);
+
+  if (!sessionId || !title) return null;
+
+  return {
+    session_id: sessionId,
+    title,
+    profile: extractProfileSnapshot(data.profile),
+    onboarding_complete: Boolean(data.onboarding_complete),
+    questions_asked: extractStringArray(data.questions_asked),
+    messages: Array.isArray(data.messages)
+      ? data.messages
+          .map((item) => {
+            if (!isJsonRecord(item)) return null;
+            const role = readString(item.role);
+            const content = readString(item.content);
+            if (!role || !content) return null;
+            return { role, content };
+          })
+          .filter((item): item is { role: string; content: string } => Boolean(item))
+      : [],
+    journey_history: Array.isArray(data.journey_history)
+      ? data.journey_history
+          .map((item) => extractJourneyEvent(item))
+          .filter((item): item is JourneyEvent => Boolean(item))
+      : [],
+    recommendations: extractStringArray(data.recommendations),
+    recommended_products: extractStringArray(
+      data.recommended_products ?? data.recommendations
+    ),
+    response_type: readString(data.response_type),
+    updated_at: readString(data.updated_at),
+  };
+}
+
+function extractMarketSnapshot(data: unknown): MarketSnapshot | null {
+  if (!isJsonRecord(data)) return null;
+
+  const asOf = readString(data.as_of);
+  const sourceLabel = readString(data.source_label);
+  if (!asOf || !sourceLabel) return null;
+
+  const items = Array.isArray(data.items)
+    ? data.items
+        .map((item) => {
+          if (!isJsonRecord(item)) return null;
+          const symbol = readString(item.symbol);
+          const label = readString(item.label);
+          const href = readString(item.href);
+          const etRoute = readString(item.et_route);
+          const rawPrice = typeof item.price === "number" ? item.price : Number(item.price);
+          const rawChange =
+            typeof item.change === "number" ? item.change : Number(item.change);
+          const rawChangePct =
+            typeof item.change_pct === "number"
+              ? item.change_pct
+              : Number(item.change_pct);
+
+          if (
+            !symbol ||
+            !label ||
+            !href ||
+            !etRoute ||
+            !Number.isFinite(rawPrice) ||
+            !Number.isFinite(rawChange) ||
+            !Number.isFinite(rawChangePct)
+          ) {
+            return null;
+          }
+
+          return {
+            symbol,
+            label,
+            href,
+            etRoute,
+            price: rawPrice,
+            change: rawChange,
+            changePct: rawChangePct,
+            sparkline: Array.isArray(item.sparkline)
+              ? item.sparkline
+                  .map((point) => (typeof point === "number" ? point : Number(point)))
+                  .filter((point) => Number.isFinite(point))
+              : [],
+          };
+        })
+        .filter(
+          (item): item is MarketSnapshot["items"][number] =>
+            Boolean(item)
+        )
+    : [];
+
+  const etLinks = Array.isArray(data.et_links)
+    ? data.et_links
+        .map((item) => {
+          if (!isJsonRecord(item)) return null;
+          const label = readString(item.label);
+          const href = readString(item.href);
+          const note = readString(item.note);
+          if (!label || !href || !note) return null;
+          return { label, href, note };
+        })
+        .filter(
+          (item): item is MarketSnapshot["etLinks"][number] =>
+            Boolean(item)
+        )
+    : [];
+
+  return {
+    asOf,
+    sourceLabel,
+    items,
+    etLinks,
+  };
+}
+
 function MenuIcon() {
   return (
     <svg viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="2">
@@ -290,46 +408,6 @@ function CloseIcon() {
   );
 }
 
-function PlusIcon() {
-  return (
-    <svg viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="2">
-      <path d="M12 5v14" />
-      <path d="M5 12h14" />
-    </svg>
-  );
-}
-
-function TrashIcon() {
-  return (
-    <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="2">
-      <path d="M3 6h18" />
-      <path d="M8 6V4h8v2" />
-      <path d="M19 6l-1 14H6L5 6" />
-      <path d="M10 11v6" />
-      <path d="M14 11v6" />
-    </svg>
-  );
-}
-
-function DotsIcon() {
-  return (
-    <svg viewBox="0 0 24 24" className="h-4 w-4" fill="currentColor">
-      <circle cx="5" cy="12" r="1.8" />
-      <circle cx="12" cy="12" r="1.8" />
-      <circle cx="19" cy="12" r="1.8" />
-    </svg>
-  );
-}
-
-function EditIcon() {
-  return (
-    <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="2">
-      <path d="M4 20h4l10-10-4-4L4 16v4Z" />
-      <path d="m12 6 4 4" />
-    </svg>
-  );
-}
-
 function SendIcon() {
   return (
     <svg viewBox="0 0 24 24" className="h-5 w-5" fill="currentColor">
@@ -342,8 +420,13 @@ export default function SearchPage() {
   const [threads, setThreads] = useState<ThreadSummary[]>([]);
   const [messagesByThread, setMessagesByThread] = useState<Record<string, ChatMessage[]>>({});
   const [activeThreadId, setActiveThreadId] = useState("");
+  const [activeSession, setActiveSession] = useState<SessionDocument | null>(null);
+  const [marketSnapshot, setMarketSnapshot] = useState<MarketSnapshot | null>(null);
+  const [marketSnapshotLoading, setMarketSnapshotLoading] = useState(false);
   const [input, setInput] = useState("");
   const [isHydrated, setIsHydrated] = useState(false);
+  const [isDesktop, setIsDesktop] = useState(false);
+  const [showControlRail, setShowControlRail] = useState(false);
   const [showEntryAnimation, setShowEntryAnimation] = useState(true);
   const [isSending, setIsSending] = useState(false);
   const [sidebarOpen, setSidebarOpen] = useState(true);
@@ -355,9 +438,17 @@ export default function SearchPage() {
   const messagesRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
-    if (typeof window !== "undefined" && window.innerWidth < 1024) {
-      setSidebarOpen(false);
+    function syncViewport() {
+      const desktop = window.innerWidth >= 1024;
+      const controlRailVisible = window.innerWidth >= 1280;
+      setIsDesktop(desktop);
+      setShowControlRail(controlRailVisible);
+      setSidebarOpen((current) => (desktop ? current : false));
     }
+
+    syncViewport();
+    window.addEventListener("resize", syncViewport);
+    return () => window.removeEventListener("resize", syncViewport);
   }, []);
 
   useEffect(() => {
@@ -465,6 +556,96 @@ export default function SearchPage() {
     return messagesByThread[activeThreadId] || [];
   }, [messagesByThread, activeThreadId]);
 
+  const latestAssistantMessage = useMemo(() => {
+    for (let index = activeMessages.length - 1; index >= 0; index -= 1) {
+      const message = activeMessages[index];
+      if (message.role === "assistant") return message;
+    }
+    return null;
+  }, [activeMessages]);
+
+  useEffect(() => {
+    if (!isHydrated || !activeThreadId) {
+      setActiveSession(null);
+      return;
+    }
+
+    const controller = new AbortController();
+
+    async function loadSession() {
+      try {
+        const response = await fetch(`${API_BASE_URL}/sessions/${activeThreadId}`, {
+          signal: controller.signal,
+        });
+
+        if (!response.ok) {
+          if (response.status === 404) {
+            setActiveSession(null);
+            return;
+          }
+          throw new Error(`Session returned ${response.status}`);
+        }
+
+        const data = await response.json();
+        if (!controller.signal.aborted) {
+          setActiveSession(extractSessionDocument(data));
+        }
+      } catch {
+        if (!controller.signal.aborted) {
+          setActiveSession(null);
+        }
+      }
+    }
+
+    void loadSession();
+
+    return () => controller.abort();
+  }, [activeThreadId, isHydrated, activeMessages.length]);
+
+  useEffect(() => {
+    const needsMarketSnapshot = ["markets_tools", "portfolio_view"].includes(
+      latestAssistantMessage?.visualHint || ""
+    );
+
+    if (!needsMarketSnapshot) {
+      setMarketSnapshot(null);
+      setMarketSnapshotLoading(false);
+      return;
+    }
+
+    const controller = new AbortController();
+
+    async function loadMarketSnapshot() {
+      setMarketSnapshotLoading(true);
+      try {
+        const response = await fetch(`${API_BASE_URL}/market-snapshot`, {
+          signal: controller.signal,
+        });
+
+        if (!response.ok) {
+          throw new Error(`Market snapshot returned ${response.status}`);
+        }
+
+        const data = await response.json();
+        if (!controller.signal.aborted) {
+          setMarketSnapshot(extractMarketSnapshot(data));
+        }
+      } catch {
+        if (!controller.signal.aborted) {
+          setMarketSnapshot(null);
+        }
+      } finally {
+        if (!controller.signal.aborted) {
+          setMarketSnapshotLoading(false);
+        }
+      }
+    }
+
+    void loadMarketSnapshot();
+
+    return () => controller.abort();
+  }, [latestAssistantMessage?.visualHint]);
+
   function createNewThread() {
     const id = uid();
     const now = new Date().toISOString();
@@ -484,6 +665,8 @@ export default function SearchPage() {
     }));
 
     setActiveThreadId(id);
+    setActiveSession(null);
+    setMarketSnapshot(null);
     setInput("");
     setError("");
     setThreadMenuOpenId("");
@@ -581,6 +764,7 @@ export default function SearchPage() {
         [nextId]: [getInitialAssistantMessage()],
       });
       setActiveThreadId(nextId);
+      setActiveSession(null);
     } else {
       setThreads(remainingThreads);
       setMessagesByThread(nextMessages);
@@ -750,146 +934,45 @@ export default function SearchPage() {
           />
         )}
 
-        <aside
-          className={`fixed z-40 border-r-4 border-black bg-white transition-all duration-300 ${
-            sidebarOpen
-              ? "left-0 w-[300px]"
-              : "-left-[300px] w-[300px]"
-          }`}
-          style={{
-            top: `${SHELL_HEADER_H}px`,
-            height: `calc(100vh - ${SHELL_HEADER_H}px)`,
+        <ThreadRail
+          activeThreadId={activeThreadId}
+          headerHeight={SHELL_HEADER_H}
+          renameValue={renameValue}
+          renamingThreadId={renamingThreadId}
+          sidebarOpen={sidebarOpen}
+          sidebarWidth={THREAD_RAIL_W}
+          threadMenuOpenId={threadMenuOpenId}
+          threads={threads}
+          onCreateThread={createNewThread}
+          onDeleteThread={deleteThread}
+          onRenameValueChange={setRenameValue}
+          onSaveRenameThread={saveRenameThread}
+          onSelectThread={selectThread}
+          onStartRenameThread={startRenameThread}
+          onToggleThreadMenu={(threadId) =>
+            setThreadMenuOpenId((prev) => (prev === threadId ? "" : threadId))
+          }
+        />
+
+        <ConciergeRail
+          headerHeight={SHELL_HEADER_H}
+          latestAssistantMessage={latestAssistantMessage}
+          marketSnapshot={marketSnapshot}
+          marketSnapshotLoading={marketSnapshotLoading}
+          railWidth={CONTROL_RAIL_W}
+          session={activeSession}
+          visible={showControlRail}
+          onQuickSend={(query) => {
+            void handleSend(query);
           }}
-        >
-          <div className="flex h-full flex-col">
-            <div className="border-b-4 border-black p-4">
-              <h2 className="font-black uppercase text-xl">Previous History</h2>
-              <p className="mt-1.5 text-xs font-medium leading-relaxed text-black/65">
-                Local thread list for now.
-              </p>
-            </div>
-
-            <div className="border-b-4 border-black p-3">
-              <button
-                type="button"
-                onClick={createNewThread}
-                className="flex w-full items-center justify-center gap-2 border-2 border-black bg-[#1040C0] px-3 py-2.5 text-xs font-black uppercase tracking-wide text-white shadow-[4px_4px_0px_0px_black]"
-              >
-                <PlusIcon />
-                Start New Thread
-              </button>
-            </div>
-
-            <div className="flex-1 overflow-y-auto p-3">
-              <div className="space-y-2.5">
-                {threads.map((thread) => {
-                  const isActive = thread.id === activeThreadId;
-                  const isRenaming = renamingThreadId === thread.id;
-
-                  return (
-                    <div
-                      key={thread.id}
-                      data-thread-menu-shell
-                      className={`relative border-2 border-black p-3 pr-12 shadow-[4px_4px_0px_0px_black] transition-all ${
-                        isActive ? "bg-[#F0C020]" : "bg-white hover:bg-[#F7F7F7]"
-                      }`}
-                    >
-                      {isRenaming ? (
-                        <div>
-                          <input
-                            value={renameValue}
-                            onChange={(e) => setRenameValue(e.target.value)}
-                            onBlur={saveRenameThread}
-                            onKeyDown={(e) => {
-                              if (e.key === "Enter") {
-                                e.preventDefault();
-                                saveRenameThread();
-                              }
-
-                              if (e.key === "Escape") {
-                                setRenamingThreadId("");
-                                setRenameValue("");
-                              }
-                            }}
-                            autoFocus
-                            className="w-full border-2 border-black bg-white px-2 py-1.5 text-xs font-black uppercase outline-none"
-                          />
-                          <p className="mt-1.5 text-[10px] font-bold uppercase tracking-wide text-black/55">
-                            Press enter to save
-                          </p>
-                        </div>
-                      ) : (
-                        <button
-                          type="button"
-                          onClick={() => selectThread(thread.id)}
-                          className="w-full text-left"
-                        >
-                          <p className="truncate font-black uppercase text-xs">
-                            {thread.title}
-                          </p>
-                          <p className="mt-1.5 text-[10px] font-bold uppercase tracking-wide text-black/55">
-                            {formatDateLabel(thread.updatedAt)} · {formatTime(thread.updatedAt)}
-                          </p>
-                        </button>
-                      )}
-
-                      <button
-                        type="button"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          setThreadMenuOpenId((prev) => (prev === thread.id ? "" : thread.id));
-                        }}
-                        className="absolute right-2 top-2 inline-flex h-8 w-8 items-center justify-center border-2 border-black bg-white shadow-[2px_2px_0px_0px_black]"
-                        aria-label={`Open menu for ${thread.title}`}
-                      >
-                        <DotsIcon />
-                      </button>
-
-                      {threadMenuOpenId === thread.id ? (
-                        <div className="absolute right-2 top-12 z-10 flex min-w-[132px] flex-col border-2 border-black bg-white shadow-[4px_4px_0px_0px_black]">
-                          <button
-                            type="button"
-                            onClick={() => startRenameThread(thread.id)}
-                            className="inline-flex items-center gap-2 border-b-2 border-black px-3 py-2 text-xs font-black uppercase tracking-wide hover:bg-[#F7F7F7]"
-                          >
-                            <EditIcon />
-                            Rename
-                          </button>
-                          <button
-                            type="button"
-                            onClick={() => deleteThread(thread.id)}
-                            className="inline-flex items-center gap-2 px-3 py-2 text-xs font-black uppercase tracking-wide text-[#D02020] hover:bg-[#FFF0F0]"
-                          >
-                            <TrashIcon />
-                            Delete
-                          </button>
-                        </div>
-                      ) : null}
-                    </div>
-                  );
-                })}
-              </div>
-            </div>
-
-            <div className="border-t-4 border-black p-3">
-              <Link
-                href="/"
-                className="flex w-full items-center justify-center border-2 border-black bg-[#F0C020] px-3 py-2.5 text-xs font-black uppercase tracking-wide shadow-[4px_4px_0px_0px_black]"
-              >
-                {etCompassContent.searchPage.secondaryButton}
-              </Link>
-            </div>
-          </div>
-        </aside>
+        />
 
         <main
           className="transition-all duration-300"
           style={{
             height: `calc(100vh - ${SHELL_HEADER_H}px)`,
-            marginLeft:
-              sidebarOpen && typeof window !== "undefined" && window.innerWidth >= 1024
-                ? `${SIDEBAR_W}px`
-                : "0px",
+            marginLeft: sidebarOpen && isDesktop ? `${THREAD_RAIL_W}px` : "0px",
+            marginRight: showControlRail ? `${CONTROL_RAIL_W}px` : "0px",
           }}
         >
           <div className="flex h-full flex-col">
@@ -1015,6 +1098,9 @@ export default function SearchPage() {
                               visualHint={message.visualHint}
                               sourceCitations={message.sourceCitations}
                               recommendedProducts={message.recommendedProducts}
+                              marketSnapshot={
+                                message.id === latestAssistantMessage?.id ? marketSnapshot : null
+                              }
                             />
                           ) : null}
 

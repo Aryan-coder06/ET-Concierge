@@ -6,11 +6,10 @@ import { animate, stagger, svg } from "animejs";
 export function LunaThinkingPanel() {
   const windowRef = useRef<HTMLDivElement | null>(null);
   const svgRef = useRef<SVGSVGElement | null>(null);
-  const fillRef = useRef<SVGTextElement | null>(null);
   const statusRef = useRef<HTMLParagraphElement | null>(null);
 
   useEffect(() => {
-    if (!windowRef.current || !svgRef.current || !fillRef.current || !statusRef.current) {
+    if (!windowRef.current || !svgRef.current || !statusRef.current) {
       return;
     }
 
@@ -35,13 +34,6 @@ export function LunaThinkingPanel() {
       loop: true,
     });
 
-    const fillAnimation = animate(fillRef.current, {
-      opacity: [0.16, 0.92, 0.22],
-      duration: 1800,
-      ease: "inOutQuad",
-      loop: true,
-    });
-
     const statusAnimation = animate(statusRef.current, {
       opacity: [0.45, 1, 0.45],
       duration: 1500,
@@ -52,7 +44,6 @@ export function LunaThinkingPanel() {
     return () => {
       slideAnimation.cancel();
       drawAnimation.cancel();
-      fillAnimation.cancel();
       statusAnimation.cancel();
     };
   }, []);
@@ -89,20 +80,6 @@ export function LunaThinkingPanel() {
               className="relative z-10 w-full text-white"
               fill="none"
             >
-              <text
-                ref={fillRef}
-                x="16"
-                y="83"
-                fill="currentColor"
-                fontFamily="var(--font-outfit), ui-sans-serif, system-ui, sans-serif"
-                fontSize="72"
-                fontWeight="900"
-                letterSpacing="7"
-                opacity="0.16"
-              >
-                LUNA
-              </text>
-
               <g
                 stroke="currentColor"
                 strokeLinecap="round"

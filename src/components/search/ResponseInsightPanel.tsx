@@ -1,20 +1,10 @@
 'use client';
 
-type SourceCitation = {
-  label: string;
-  href?: string;
-  sourceId?: string;
-  verificationStatus?: string;
-  pageType?: string;
-};
-
-type VisualHint =
-  | "ecosystem_map"
-  | "trust_signal"
-  | "markets_tools"
-  | "portfolio_view"
-  | "learning_lane"
-  | "events_network";
+import type {
+  MarketSnapshot,
+  SourceCitation,
+  VisualHint,
+} from "@/components/search/types";
 
 type InsightLink = {
   label: string;
@@ -34,6 +24,7 @@ type Props = {
   visualHint?: string | null;
   sourceCitations?: SourceCitation[];
   recommendedProducts?: string[];
+  marketSnapshot?: MarketSnapshot | null;
 };
 
 const PANEL_CONFIG: Record<
@@ -233,7 +224,7 @@ function dedupeLinks(links: InsightLink[]) {
   const unique: InsightLink[] = [];
 
   for (const link of links) {
-    const key = `${link.href}|${link.label}`;
+    const key = link.href;
     if (seen.has(key)) continue;
     seen.add(key);
     unique.push(link);
@@ -242,7 +233,25 @@ function dedupeLinks(links: InsightLink[]) {
   return unique;
 }
 
-function buildInsightLinks(visualHint: VisualHint, sourceCitations: SourceCitation[]) {
+function buildInsightLinks(
+  visualHint: VisualHint,
+  sourceCitations: SourceCitation[],
+  marketSnapshot?: MarketSnapshot | null
+) {
+  if (
+    marketSnapshot &&
+    marketSnapshot.etLinks.length > 0 &&
+    (visualHint === "markets_tools" || visualHint === "portfolio_view")
+  ) {
+    return dedupeLinks(
+      marketSnapshot.etLinks.map((link) => ({
+        label: link.label,
+        href: link.href,
+        note: link.note,
+      }))
+    ).slice(0, 4);
+  }
+
   const preferredIds = new Set(PREFERRED_SOURCE_IDS[visualHint]);
   const fromCitations = sourceCitations
     .filter((citation) => citation.href && citation.sourceId && preferredIds.has(citation.sourceId))
@@ -260,8 +269,33 @@ function buildInsightLinks(visualHint: VisualHint, sourceCitations: SourceCitati
   return dedupeLinks([...fromCitations, ...FALLBACK_LINKS[visualHint]]).slice(0, 4);
 }
 
-function buildWidgets(visualHint: VisualHint, recommendedProducts: string[]) {
+function buildWidgets(
+  visualHint: VisualHint,
+  recommendedProducts: string[],
+  marketSnapshot?: MarketSnapshot | null
+) {
   const primary = recommendedProducts[0] || "ET";
+
+  if (
+    marketSnapshot &&
+    marketSnapshot.items.length > 0 &&
+    (visualHint === "markets_tools" || visualHint === "portfolio_view")
+  ) {
+    return marketSnapshot.items.slice(0, 3).map((item) => ({
+      title: item.label,
+      value: `${item.price.toLocaleString("en-IN", {
+        maximumFractionDigits: 2,
+      })}`,
+      detail: `${item.change >= 0 ? "+" : ""}${item.change.toFixed(2)} (${item.changePct >= 0 ? "+" : ""}${item.changePct.toFixed(2)}%) · ${item.etRoute}`,
+      accentClassName:
+        item.change > 0
+          ? "bg-[#1040C0]"
+          : item.change < 0
+            ? "bg-[#D02020]"
+            : "bg-[#121212]",
+      graph: item.sparkline.length > 1 ? item.sparkline : [item.price, item.price, item.price],
+    }));
+  }
 
   const byHint: Record<VisualHint, WidgetSpec[]> = {
     ecosystem_map: [
@@ -592,6 +626,7 @@ export function ResponseInsightPanel({
   visualHint,
   sourceCitations = [],
   recommendedProducts = [],
+  marketSnapshot,
 }: Props) {
   if (!visualHint || !(visualHint in PANEL_CONFIG)) {
     return null;
@@ -599,8 +634,8 @@ export function ResponseInsightPanel({
 
   const safeHint = visualHint as VisualHint;
   const config = PANEL_CONFIG[safeHint];
-  const links = buildInsightLinks(safeHint, sourceCitations);
-  const widgets = buildWidgets(safeHint, recommendedProducts);
+  const links = buildInsightLinks(safeHint, sourceCitations, marketSnapshot);
+  const widgets = buildWidgets(safeHint, recommendedProducts, marketSnapshot);
 
   return (
     <div className={`mt-3 overflow-hidden border-2 border-black ${config.cardClassName}`}>
@@ -665,7 +700,7 @@ export function ResponseInsightPanel({
           <div className="mt-3 grid gap-2 sm:grid-cols-2">
             {links.map((link) => (
               <a
-                key={`${safeHint}-${link.href}`}
+                key={`${safeHint}-${link.href}-${link.label}`}
                 href={link.href}
                 target="_blank"
                 rel="noreferrer"

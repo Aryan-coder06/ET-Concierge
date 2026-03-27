@@ -4,6 +4,7 @@ pydantic
 python-dotenv
 pymongo
 requests
+yfinance
 langchain
 langchain-google-genai
 langchain-mongodb
