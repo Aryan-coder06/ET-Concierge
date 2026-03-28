@@ -1,0 +1,473 @@
+[
+  {
+    "id": "eval_001",
+    "question": "I'm new to ET. Where should I start?",
+    "expected_behavior": "Offer ET Prime as broad entry point, then tailor follow-up based on whether user wants markets, learning, wealth or events.",
+    "must_cite": [
+      "ET Prime FAQ or About Us"
+    ],
+    "flags": [
+      "routing",
+      "beginner"
+    ]
+  },
+  {
+    "id": "eval_002",
+    "question": "What do I get with ET Prime?",
+    "expected_behavior": "Summarize core benefits from FAQ with citations.",
+    "must_cite": [
+      "ET Prime FAQ"
+    ],
+    "flags": [
+      "benefits"
+    ]
+  },
+  {
+    "id": "eval_003",
+    "question": "Does ET Prime include ePaper?",
+    "expected_behavior": "Answer yes and cite FAQ and/or Wealth/Print pages.",
+    "must_cite": [
+      "ET Prime FAQ"
+    ],
+    "flags": [
+      "benefits",
+      "ePaper"
+    ]
+  },
+  {
+    "id": "eval_004",
+    "question": "Can I use my ET Prime membership on mobile and desktop?",
+    "expected_behavior": "Answer cross-platform membership.",
+    "must_cite": [
+      "ET Prime FAQ"
+    ],
+    "flags": [
+      "access"
+    ]
+  },
+  {
+    "id": "eval_005",
+    "question": "Is ET Prime offering a free trial right now?",
+    "expected_behavior": "Detect conflict, explain mixed signals, do not answer with false certainty.",
+    "must_cite": [
+      "ET Prime FAQ",
+      "paywall/terms if available"
+    ],
+    "flags": [
+      "conflict",
+      "trial"
+    ]
+  },
+  {
+    "id": "eval_006",
+    "question": "What ET app should I use for stock tools?",
+    "expected_behavior": "Recommend ET Markets and explain why.",
+    "must_cite": [
+      "ET Markets Google Play listing"
+    ],
+    "flags": [
+      "routing",
+      "markets"
+    ]
+  },
+  {
+    "id": "eval_007",
+    "question": "What is ET Markets?",
+    "expected_behavior": "Explain ET Markets as app + tools + news.",
+    "must_cite": [
+      "ET Markets Google Play listing"
+    ],
+    "flags": [
+      "overview"
+    ]
+  },
+  {
+    "id": "eval_008",
+    "question": "What tools are inside ET Markets?",
+    "expected_behavior": "List key tools like watchlist, stock reports, Market Mood, screeners.",
+    "must_cite": [
+      "ET Markets Google Play listing"
+    ],
+    "flags": [
+      "tools"
+    ]
+  },
+  {
+    "id": "eval_009",
+    "question": "What is Market Mood and how do I read it?",
+    "expected_behavior": "Explain sentiment-style reading at a high level.",
+    "must_cite": [
+      "Market Mood page"
+    ],
+    "flags": [
+      "tool_explanation"
+    ]
+  },
+  {
+    "id": "eval_010",
+    "question": "Does ET have stock screeners?",
+    "expected_behavior": "Answer yes and point to screener.",
+    "must_cite": [
+      "Stock Screener page"
+    ],
+    "flags": [
+      "tool_explanation"
+    ]
+  },
+  {
+    "id": "eval_011",
+    "question": "What is Stock Reports Plus?",
+    "expected_behavior": "Explain as deeper stock-analysis benefit/tool.",
+    "must_cite": [
+      "Stock Reports Plus page"
+    ],
+    "flags": [
+      "tool_explanation"
+    ]
+  },
+  {
+    "id": "eval_012",
+    "question": "Can ET help me track my investments?",
+    "expected_behavior": "Route to ET Portfolio and optionally ET Markets.",
+    "must_cite": [
+      "ET Portfolio home"
+    ],
+    "flags": [
+      "portfolio",
+      "routing"
+    ]
+  },
+  {
+    "id": "eval_013",
+    "question": "What is ET Portfolio?",
+    "expected_behavior": "Explain holdings/goals/watchlists use case.",
+    "must_cite": [
+      "ET Portfolio pages"
+    ],
+    "flags": [
+      "portfolio"
+    ]
+  },
+  {
+    "id": "eval_014",
+    "question": "Does ET support SIP-related tracking or updates?",
+    "expected_behavior": "Mention mobile ET Portfolio phrasing about SIP auto updates.",
+    "must_cite": [
+      "ET Portfolio mobile page"
+    ],
+    "flags": [
+      "portfolio",
+      "SIP"
+    ]
+  },
+  {
+    "id": "eval_015",
+    "question": "What is ET Wealth Edition?",
+    "expected_behavior": "Explain wealth-focused weekly edition.",
+    "must_cite": [
+      "Wealth Edition page"
+    ],
+    "flags": [
+      "wealth"
+    ]
+  },
+  {
+    "id": "eval_016",
+    "question": "How do I access ET Wealth Edition?",
+    "expected_behavior": "Say it is free with ET Prime membership, cite wealth page.",
+    "must_cite": [
+      "Wealth Edition page"
+    ],
+    "flags": [
+      "access",
+      "wealth"
+    ]
+  },
+  {
+    "id": "eval_017",
+    "question": "Do I get the ET newspaper digitally with ET Prime?",
+    "expected_behavior": "Answer around Print Edition access.",
+    "must_cite": [
+      "ET Prime FAQ or Print Edition page"
+    ],
+    "flags": [
+      "print",
+      "prime"
+    ]
+  },
+  {
+    "id": "eval_018",
+    "question": "Does ET have any learning or executive programs?",
+    "expected_behavior": "Route to ETMasterclass.",
+    "must_cite": [
+      "ETMasterclass home"
+    ],
+    "flags": [
+      "routing",
+      "learning"
+    ]
+  },
+  {
+    "id": "eval_019",
+    "question": "What is ETMasterclass?",
+    "expected_behavior": "Explain programs: masterclasses, workshops, certification courses.",
+    "must_cite": [
+      "ETMasterclass home"
+    ],
+    "flags": [
+      "learning"
+    ]
+  },
+  {
+    "id": "eval_020",
+    "question": "Who is ETMasterclass designed for?",
+    "expected_behavior": "Mention working professionals and flexible learning.",
+    "must_cite": [
+      "ETMasterclass home"
+    ],
+    "flags": [
+      "learning",
+      "who_is_it_for"
+    ]
+  },
+  {
+    "id": "eval_021",
+    "question": "Does ET offer enterprise learning programs?",
+    "expected_behavior": "Point to For Enterprise on ETMasterclass.",
+    "must_cite": [
+      "ETMasterclass home"
+    ],
+    "flags": [
+      "learning",
+      "enterprise"
+    ]
+  },
+  {
+    "id": "eval_022",
+    "question": "Can ET help me find industry events or summits?",
+    "expected_behavior": "Explain ET events portals and ask follow-up on vertical interest.",
+    "must_cite": [
+      "ET events portal"
+    ],
+    "flags": [
+      "events",
+      "routing"
+    ]
+  },
+  {
+    "id": "eval_023",
+    "question": "What kind of ET events exist?",
+    "expected_behavior": "Mention B2B, Enterprise AI, CIO, BFSI, Government portals.",
+    "must_cite": [
+      "ET events portals"
+    ],
+    "flags": [
+      "events"
+    ]
+  },
+  {
+    "id": "eval_024",
+    "question": "I work in AI. Which ET event path should I check?",
+    "expected_behavior": "Route to Enterprise AI events.",
+    "must_cite": [
+      "Enterprise AI events portal"
+    ],
+    "flags": [
+      "events",
+      "vertical_routing"
+    ]
+  },
+  {
+    "id": "eval_025",
+    "question": "What extra benefits do I get with ET Prime besides articles?",
+    "expected_behavior": "Mention ET Benefits/partner offers and tools/editions.",
+    "must_cite": [
+      "ET Benefits",
+      "ET Prime FAQ/plans"
+    ],
+    "flags": [
+      "benefits",
+      "partner_offers"
+    ]
+  },
+  {
+    "id": "eval_026",
+    "question": "Does ET Prime include Times Prime?",
+    "expected_behavior": "Answer based on benefits portal/plans, with clear phrasing that offers may change.",
+    "must_cite": [
+      "ET Benefits or Plans"
+    ],
+    "flags": [
+      "partner_offers",
+      "time_sensitive"
+    ]
+  },
+  {
+    "id": "eval_027",
+    "question": "Can anyone activate the Times Prime benefit?",
+    "expected_behavior": "Mention Indian mobile number limitation if relevant.",
+    "must_cite": [
+      "ET Benefits"
+    ],
+    "flags": [
+      "eligibility",
+      "partner_offers"
+    ]
+  },
+  {
+    "id": "eval_028",
+    "question": "I want personal finance guidance, not trading tools. What ET path fits me?",
+    "expected_behavior": "Prioritize ET Wealth Edition, ET Prime, possibly ETMasterclass for learning.",
+    "must_cite": [
+      "Wealth Edition",
+      "ET Prime"
+    ],
+    "flags": [
+      "routing",
+      "wealth"
+    ]
+  },
+  {
+    "id": "eval_029",
+    "question": "I want market tools, not long articles. What ET path fits me?",
+    "expected_behavior": "Prioritize ET Markets and ET Portfolio, with ET Prime as optional premium layer.",
+    "must_cite": [
+      "ET Markets",
+      "ET Portfolio"
+    ],
+    "flags": [
+      "routing",
+      "markets"
+    ]
+  },
+  {
+    "id": "eval_030",
+    "question": "I want to learn AI and leadership. Does ET have something for that?",
+    "expected_behavior": "Route to ETMasterclass and mention topic categories.",
+    "must_cite": [
+      "ETMasterclass"
+    ],
+    "flags": [
+      "routing",
+      "learning"
+    ]
+  },
+  {
+    "id": "eval_031",
+    "question": "What ET product fits a working professional who wants career-oriented learning?",
+    "expected_behavior": "Recommend ETMasterclass first.",
+    "must_cite": [
+      "ETMasterclass"
+    ],
+    "flags": [
+      "routing",
+      "learning"
+    ]
+  },
+  {
+    "id": "eval_032",
+    "question": "Can ET help me beyond articles?",
+    "expected_behavior": "Explain the ecosystem: ET Prime, Markets, Portfolio, Wealth Edition, Masterclass, Events, Benefits.",
+    "must_cite": [
+      "multiple"
+    ],
+    "flags": [
+      "ecosystem"
+    ]
+  },
+  {
+    "id": "eval_033",
+    "question": "What should I say if data is uncertain?",
+    "expected_behavior": "Model should explicitly say based on current public pages and mention need for verification when conflict exists.",
+    "must_cite": [
+      "relevant source"
+    ],
+    "flags": [
+      "style",
+      "trust"
+    ]
+  },
+  {
+    "id": "eval_034",
+    "question": "Do you have a refund policy for ET Prime?",
+    "expected_behavior": "Use FAQ refund/cancellation language.",
+    "must_cite": [
+      "ET Prime FAQ"
+    ],
+    "flags": [
+      "subscription_faq"
+    ]
+  },
+  {
+    "id": "eval_035",
+    "question": "Can I get an ET Prime invoice?",
+    "expected_behavior": "Use FAQ support contact guidance.",
+    "must_cite": [
+      "ET Prime FAQ"
+    ],
+    "flags": [
+      "subscription_faq"
+    ]
+  },
+  {
+    "id": "eval_036",
+    "question": "Can users outside India become ET Prime members?",
+    "expected_behavior": "Use FAQ international-membership info.",
+    "must_cite": [
+      "ET Prime FAQ"
+    ],
+    "flags": [
+      "international"
+    ]
+  },
+  {
+    "id": "eval_037",
+    "question": "Does ET Markets support live streaming ideas?",
+    "expected_behavior": "Use app listing language around Markets Live Stream.",
+    "must_cite": [
+      "ET Markets Google Play listing"
+    ],
+    "flags": [
+      "markets",
+      "live_stream"
+    ]
+  },
+  {
+    "id": "eval_038",
+    "question": "What should a concierge say before recommending partner benefits?",
+    "expected_behavior": "Check eligibility or redemption constraints first.",
+    "must_cite": [
+      "ET Benefits"
+    ],
+    "flags": [
+      "eligibility",
+      "partner_offers"
+    ]
+  },
+  {
+    "id": "eval_039",
+    "question": "What ET path fits a beginner investor?",
+    "expected_behavior": "Prime or Markets depending intent; ask clarifying question if needed.",
+    "must_cite": [
+      "ET Prime FAQ",
+      "ET Markets Google Play listing"
+    ],
+    "flags": [
+      "routing",
+      "beginner"
+    ]
+  },
+  {
+    "id": "eval_040",
+    "question": "What ET path fits someone who wants events and community touchpoints?",
+    "expected_behavior": "Route to ET Events portals and mention Prime virtual invites if relevant.",
+    "must_cite": [
+      "ET events portal",
+      "ET Prime FAQ"
+    ],
+    "flags": [
+      "routing",
+      "events"
+    ]
+  }
+]

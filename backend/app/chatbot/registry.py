@@ -13,7 +13,8 @@ def _first_existing_path(*paths: Path) -> Path:
     for path in paths:
         if path.exists():
             return path
-    return paths[0]
+    path_list = ", ".join(str(path) for path in paths)
+    raise FileNotFoundError(f"None of the expected ET data pack files were found: {path_list}")
 
 
 SOURCE_PACK_PATH = _first_existing_path(
