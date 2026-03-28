@@ -28,9 +28,34 @@ class SarvamSTTProvider:
             "api-subscription-key": self.api_key,
         }
 
+        # Determine extension/content-type based on magic bytes
+        # Some formats like WebM might be passed raw if pydub failed.
+        filename = "audio.wav"
+        content_type = "audio/wav"
+        
+        if len(audio_bytes) > 4:
+            if audio_bytes[:4] == b'\x1a\x45\xdf\xa3':
+                filename = "audio.webm"
+                content_type = "audio/webm"
+            elif audio_bytes[:4] == b'OggS':
+                filename = "audio.ogg"
+                content_type = "audio/ogg"
+            elif b'ftyp' in audio_bytes[4:12]:
+                filename = "audio.mp4"
+                content_type = "audio/mp4"
+            elif audio_bytes[:4] == b'fLaC':
+                filename = "audio.flac"
+                content_type = "audio/flac"
+            elif audio_bytes[:3] == b'ID3' or audio_bytes[:2] == b'\xff\xfb':
+                filename = "audio.mp3"
+                content_type = "audio/mpeg"
+            elif audio_bytes[:4] == b'RIFF':
+                filename = "audio.wav"
+                content_type = "audio/wav"
+
         # Saaras v3 expects multipart/form-data
         files = {
-            "file": ("audio.wav", audio_bytes, "audio/wav")
+            "file": (filename, audio_bytes, content_type)
         }
         data = {
             "model": "saaras:v3",

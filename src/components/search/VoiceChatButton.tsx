@@ -62,7 +62,14 @@ export function VoiceChatButton({ threadId }: { threadId: string }) {
       
       mediaRecorder.onstop = async () => {
         const audioBlob = new Blob(chunksRef.current, { type: supportedMimeType });
-        await sendAudioToBackend(audioBlob);
+        console.log("Recording stopped. Blob size:", audioBlob.size, "type:", audioBlob.type);
+        if (audioBlob.size > 0) {
+          await sendAudioToBackend(audioBlob);
+        } else {
+          console.warn("Empty audio blob, skipping backend call.");
+          setIsProcessing(false);
+          setStatusText("");
+        }
       };
 
       mediaRecorder.start();

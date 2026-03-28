@@ -134,20 +134,34 @@ async def voice_chat_rest(
         audio_bytes = await audio_file.read()
         if not audio_bytes:
             raise HTTPException(status_code=400, detail="Empty audio file")
+            
+        logger.info("Received audio for REST chat: %d bytes, content_type: %s", len(audio_bytes), audio_file.content_type)
 
-        # 1. Normalize/Convert audio for STT if needed
-        # We can use pydub here to ensure it's WAV as Sarvam expects
+        # 1. Normalize/Convert audio for STT
         from pydub import AudioSegment
         import io
+        import tempfile
+        import os
         
+        processed_audio = audio_bytes
         try:
-            audio_segment = AudioSegment.from_file(io.BytesIO(audio_bytes))
-            wav_io = io.BytesIO()
-            audio_segment.export(wav_io, format="wav")
-            processed_audio = wav_io.getvalue()
+            # Use a temporary file because ffmpeg often needs to seek for formats like WebM
+            with tempfile.NamedTemporaryFile(delete=False, suffix=".tmp") as tmp:
+                tmp.write(audio_bytes)
+                tmp_path = tmp.name
+            
+            try:
+                # Let pydub try to load it from the file
+                audio_segment = AudioSegment.from_file(tmp_path)
+                wav_io = io.BytesIO()
+                audio_segment.export(wav_io, format="wav")
+                processed_audio = wav_io.getvalue()
+                logger.info("Successfully converted audio to WAV: %d bytes", len(processed_audio))
+            finally:
+                if os.path.exists(tmp_path):
+                    os.remove(tmp_path)
         except Exception as e:
-            logger.warning(f"Audio conversion failed: {e}. Attempting raw.")
-            processed_audio = audio_bytes
+            logger.warning(f"Audio conversion failed: {e}. Attempting to send raw bytes to Sarvam.")
 
         # 2. STT
         user_text = await stt_provider.transcribe_audio(processed_audio)
