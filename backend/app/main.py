@@ -11,14 +11,20 @@ from .chatbot.market_data import get_market_snapshot
 from .chatbot.service import concierge_service
 
 # Initialize the new voice modules
-from .chatbot.voice_providers import GroqSTTProvider, SarvamTTSProvider
+from .chatbot.voice_providers import SarvamSTTProvider, SarvamTTSProvider
 from .chatbot.voice_agent import VoiceAgent
 
 logger = logging.getLogger(__name__)
 
-stt_provider = GroqSTTProvider()
+stt_provider = SarvamSTTProvider()
 tts_provider = SarvamTTSProvider()
 voice_agent = VoiceAgent()
+
+
+class VoiceChatResponse(BaseModel):
+    user_text: str
+    agent_text: str
+    audio: str | None = None
 
 
 class SourceItem(BaseModel):
@@ -115,6 +121,55 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+
+from fastapi import FastAPI, HTTPException, WebSocket, WebSocketDisconnect, UploadFile, File, Form
+
+@app.post("/chat/voice", response_model=VoiceChatResponse)
+async def voice_chat_rest(
+    thread_id: str = Form("default-voice-thread"),
+    audio_file: UploadFile = File(...)
+):
+    try:
+        audio_bytes = await audio_file.read()
+        if not audio_bytes:
+            raise HTTPException(status_code=400, detail="Empty audio file")
+
+        # 1. Normalize/Convert audio for STT if needed
+        # We can use pydub here to ensure it's WAV as Sarvam expects
+        from pydub import AudioSegment
+        import io
+        
+        try:
+            audio_segment = AudioSegment.from_file(io.BytesIO(audio_bytes))
+            wav_io = io.BytesIO()
+            audio_segment.export(wav_io, format="wav")
+            processed_audio = wav_io.getvalue()
+        except Exception as e:
+            logger.warning(f"Audio conversion failed: {e}. Attempting raw.")
+            processed_audio = audio_bytes
+
+        # 2. STT
+        user_text = await stt_provider.transcribe_audio(processed_audio)
+        if not user_text:
+            return VoiceChatResponse(user_text="", agent_text="I couldn't hear you.", audio=None)
+
+        # 3. Agent
+        agent_text = ""
+        async for token in voice_agent.stream_response(user_text, thread_id):
+            agent_text += token
+        
+        # 4. TTS
+        audio_base64 = await tts_provider.synthesize_speech(agent_text)
+        
+        return VoiceChatResponse(
+            user_text=user_text,
+            agent_text=agent_text,
+            audio=audio_base64
+        )
+    except Exception as e:
+        logger.error(f"Voice chat REST error: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
 
 
 @app.get("/")

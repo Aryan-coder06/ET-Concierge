@@ -2,104 +2,58 @@ import os
 import httpx
 import logging
 from typing import Optional
-from groq import AsyncGroq
 
 logger = logging.getLogger(__name__)
 
-class GroqSTTProvider:
+class SarvamSTTProvider:
     """
-    Handles Speech-to-Text conversion using Groq's whisper endpoints.
+    Handles Speech-to-Text conversion using Sarvam AI's Saaras v3 REST API.
     """
     def __init__(self):
-        # We rely on the GROQ_API_KEY environment variable being set.
-        self.client = AsyncGroq()  # Automatically picks up GROQ_API_KEY
-        self.model = "whisper-large-v3-turbo"
+        self.api_key = os.getenv("SARVAM_API_KEY")
+        self.url = "https://api.sarvam.ai/speech-to-text"
 
     async def transcribe_audio(self, audio_bytes: bytes) -> str:
         """
-        Sends audio bytes to Groq API and returns transcribed text.
-        Converts audio to WAV using pydub for maximum compatibility.
+        Sends audio bytes to Sarvam AI and returns transcribed text.
         """
         if not audio_bytes:
             return ""
 
-        logger.info("Transcribing audio: %d bytes. First 16 bytes: %s", len(audio_bytes), audio_bytes[:16].hex())
-
-        try:
-            from pydub import AudioSegment
-            import io
-            
-            # Load audio from bytes
-            audio_file = io.BytesIO(audio_bytes)
-            
-            # Pydub can usually infer the format if it's common (webm, mp4, ogg)
-            # but sometimes we need to help it if the header is tricky.
-            try:
-                audio = AudioSegment.from_file(audio_file)
-            except Exception as e:
-                logger.warning("Pydub failed to load audio from file: %s. Trying direct format hints.", e)
-                # Try common formats as fallbacks
-                for fmt in ["webm", "mp4", "ogg", "aac"]:
-                    try:
-                        audio_file.seek(0)
-                        audio = AudioSegment.from_file(audio_file, format=fmt)
-                        logger.info("Successfully loaded audio using format hint: %s", fmt)
-                        break
-                    except:
-                        continue
-                else:
-                    # If all failed, let's just try to send the raw bytes to Groq as a last resort
-                    # using our magic bytes detection from before.
-                    return await self._transcribe_raw(audio_bytes)
-
-            # Export to WAV
-            wav_io = io.BytesIO()
-            audio.export(wav_io, format="wav")
-            wav_bytes = wav_io.getvalue()
-            
-            logger.info("Converted audio to WAV: %d bytes", len(wav_bytes))
-
-            transcription = await self.client.audio.transcriptions.create(
-                file=("audio.wav", wav_bytes),
-                model=self.model,
-                response_format="text",
-                language="en",
-                temperature=0.0
-            )
-            # When response_format="text", the API returns the raw text string.
-            return str(transcription).strip()
-        except Exception as exc:
-            logger.error("Groq STT failed: %s", exc)
+        if not self.api_key:
+            logger.warning("SARVAM_API_KEY is not set. Cannot transcribe audio.")
             return ""
 
-    async def _transcribe_raw(self, audio_bytes: bytes) -> str:
-        """Fallback to sending raw bytes with detected extension."""
-        filename = "audio.webm"
-        if len(audio_bytes) > 4:
-            if audio_bytes[:4] == b'\x1a\x45\xdf\xa3':
-                filename = "audio.webm"
-            elif audio_bytes[:4] == b'OggS':
-                filename = "audio.ogg"
-            elif b'ftyp' in audio_bytes[4:12]:
-                filename = "audio.mp4"
-            elif audio_bytes[:4] == b'fLaC':
-                filename = "audio.flac"
-            elif audio_bytes[:3] == b'ID3' or audio_bytes[:2] == b'\xff\xfb':
-                filename = "audio.mp3"
-            elif audio_bytes[:4] == b'RIFF':
-                filename = "audio.wav"
+        headers = {
+            "api-subscription-key": self.api_key,
+        }
+
+        # Saaras v3 expects multipart/form-data
+        files = {
+            "file": ("audio.wav", audio_bytes, "audio/wav")
+        }
+        data = {
+            "model": "saaras:v3",
+            "mode": "transcribe"
+        }
 
         try:
-            transcription = await self.client.audio.transcriptions.create(
-                file=(filename, audio_bytes),
-                model=self.model,
-                response_format="text",
-                language="en",
-                temperature=0.0
-            )
-            return str(transcription).strip()
+            async with httpx.AsyncClient() as client:
+                response = await client.post(
+                    self.url,
+                    headers=headers,
+                    data=data,
+                    files=files,
+                    timeout=30.0
+                )
+                if response.status_code != 200:
+                    logger.error("Sarvam STT failed with status %s: %s", response.status_code, response.text)
+                response.raise_for_status()
+                result = response.json()
+                
+                return result.get("transcript", "").strip()
         except Exception as exc:
-            logger.error("Groq STT fallback failed: %s", exc)
+            logger.error("Sarvam STT failed: %s", exc)
             return ""
 
 
@@ -151,9 +105,10 @@ class SarvamTTSProvider:
                 response.raise_for_status()
                 data = response.json()
                 
-                audio_base64 = data.get("audio")
-                if audio_base64:
-                    return audio_base64
+                # According to docs, response has 'audios' array
+                audios = data.get("audios", [])
+                if audios and len(audios) > 0:
+                    return audios[0]
                     
                 return None
         except Exception as exc:

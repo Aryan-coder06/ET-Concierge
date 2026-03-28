@@ -1,81 +1,30 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useRef, useState } from "react";
 
-const WS_URL =
-  process.env.NEXT_PUBLIC_WS_BASE_URL || "ws://127.0.0.1:8000/ws/voice";
+const REST_URL =
+  process.env.NEXT_PUBLIC_API_BASE_URL 
+    ? `${process.env.NEXT_PUBLIC_API_BASE_URL}/chat/voice` 
+    : "http://127.0.0.1:8000/chat/voice";
 
 export function VoiceChatButton({ threadId }: { threadId: string }) {
   const [isRecording, setIsRecording] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
   const [statusText, setStatusText] = useState("");
   
-  const wsRef = useRef<WebSocket | null>(null);
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
+  const chunksRef = useRef<Blob[]>([]);
   const audioContextRef = useRef<AudioContext | null>(null);
-  const nextTimeRef = useRef<number>(0);
-  
-  // Set up WebSocket connection
-  useEffect(() => {
-    // We only connect when the user wants to use voice
-    return () => {
-      if (wsRef.current) {
-        wsRef.current.close();
-      }
-    };
-  }, []);
 
-  const connectWebSocket = () => {
-    if (wsRef.current && wsRef.current.readyState === WebSocket.OPEN) {
-      return;
-    }
-    
-    wsRef.current = new WebSocket(WS_URL);
-    
-    wsRef.current.onopen = () => {
-      console.log("Voice WebSocket connected");
-    };
-    
-    wsRef.current.onmessage = async (event) => {
-      try {
-        const data = JSON.parse(event.data);
-        
-        if (data.event === "status") {
-          setStatusText(data.message);
-        } else if (data.event === "audio") {
-          // Play the audio chunk immediately
-          playAudioChunk(data.audio);
-        } else if (data.event === "turn_complete") {
-          setIsProcessing(false);
-          setStatusText("");
-        } else if (data.event === "error") {
-          setStatusText("Error: " + data.message);
-          setIsProcessing(false);
-        }
-      } catch (err) {
-        // Not a JSON message, or JSON parse failed
-      }
-    };
-    
-    wsRef.current.onclose = () => {
-      console.log("Voice WebSocket disconnected");
-      setIsProcessing(false);
-    };
-  };
-
-  const playAudioChunk = async (base64Audio: string) => {
+  const playAudio = async (base64Audio: string) => {
     if (!audioContextRef.current) {
       audioContextRef.current = new (window.AudioContext || (window as any).webkitAudioContext)();
-      nextTimeRef.current = audioContextRef.current.currentTime;
     }
     
     const audioCtx = audioContextRef.current;
-    
-    // Decode base64 to array buffer
     const binaryString = window.atob(base64Audio);
-    const len = binaryString.length;
-    const bytes = new Uint8Array(len);
-    for (let i = 0; i < len; i++) {
+    const bytes = new Uint8Array(binaryString.length);
+    for (let i = 0; i < binaryString.length; i++) {
         bytes[i] = binaryString.charCodeAt(i);
     }
     
@@ -84,47 +33,42 @@ export function VoiceChatButton({ threadId }: { threadId: string }) {
       const source = audioCtx.createBufferSource();
       source.buffer = audioBuffer;
       source.connect(audioCtx.destination);
-      
-      // Schedule playback to be contiguous
-      const playTime = Math.max(audioCtx.currentTime, nextTimeRef.current);
-      source.start(playTime);
-      nextTimeRef.current = playTime + audioBuffer.duration;
-      
+      source.start(0);
     } catch (e) {
-      console.error("Error decoding audio chunk", e);
+      console.error("Error decoding audio", e);
     }
   };
 
   const startRecording = async () => {
-    connectWebSocket();
-    
+    chunksRef.current = [];
     try {
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
       
-      // Determine supported MIME type
       const mimeTypes = [
         'audio/webm;codecs=opus',
         'audio/webm',
         'audio/ogg;codecs=opus',
         'audio/mp4',
       ];
-      
       const supportedMimeType = mimeTypes.find(type => MediaRecorder.isTypeSupported(type)) || '';
-      console.log("Using MIME type:", supportedMimeType);
       
       const mediaRecorder = new MediaRecorder(stream, { mimeType: supportedMimeType });
       
       mediaRecorder.ondataavailable = (event) => {
-        if (event.data.size > 0 && wsRef.current?.readyState === WebSocket.OPEN) {
-          wsRef.current.send(event.data);
+        if (event.data.size > 0) {
+          chunksRef.current.push(event.data);
         }
       };
       
-      mediaRecorder.start(250); // send chunks every 250ms
+      mediaRecorder.onstop = async () => {
+        const audioBlob = new Blob(chunksRef.current, { type: supportedMimeType });
+        await sendAudioToBackend(audioBlob);
+      };
+
+      mediaRecorder.start();
       mediaRecorderRef.current = mediaRecorder;
       setIsRecording(true);
       setStatusText("Listening...");
-      
     } catch (err) {
       console.error("Error accessing microphone", err);
       setStatusText("Microphone error");
@@ -138,14 +82,37 @@ export function VoiceChatButton({ threadId }: { threadId: string }) {
       setIsRecording(false);
       setIsProcessing(true);
       setStatusText("Processing...");
-      
-      // Tell the server we are done speaking
-      if (wsRef.current?.readyState === WebSocket.OPEN) {
-        wsRef.current.send(JSON.stringify({
-          event: "stop_speaking",
-          thread_id: threadId
-        }));
+    }
+  };
+
+  const sendAudioToBackend = async (blob: Blob) => {
+    const formData = new FormData();
+    formData.append("audio_file", blob, "recording.wav");
+    formData.append("thread_id", threadId);
+
+    try {
+      const response = await fetch(REST_URL, {
+        method: "POST",
+        body: formData,
+      });
+
+      if (!response.ok) {
+        throw new Error("Backend error: " + response.statusText);
       }
+
+      const data = await response.json();
+      
+      if (data.audio) {
+        setStatusText("Speaking...");
+        await playAudio(data.audio);
+      }
+      
+      setStatusText("");
+    } catch (err: any) {
+      console.error("Error sending audio", err);
+      setStatusText("Error: " + err.message);
+    } finally {
+      setIsProcessing(false);
     }
   };
 
