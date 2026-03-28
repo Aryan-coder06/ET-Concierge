@@ -5,6 +5,7 @@ import { ConciergeRail } from "@/components/search/ConciergeRail";
 import { LunaThinkingPanel } from "@/components/search/LunaThinkingPanel";
 import { ResponseInsightPanel } from "@/components/search/ResponseInsightPanel";
 import { ThreadRail } from "@/components/search/ThreadRail";
+import { VoiceChatButton } from "@/components/search/VoiceChatButton";
 import type {
   AnswerStyle,
   BulletGroup,
@@ -528,6 +529,39 @@ function extractMarketSnapshot(data: unknown): MarketSnapshot | null {
   };
 }
 
+function buildAssistantMessageFromApi(data: unknown): ChatMessage {
+  return {
+    id: uid(),
+    role: "assistant",
+    content: extractTextFromResponse(data),
+    createdAt: new Date().toISOString(),
+    sources: extractSources(data),
+    sourceCitations: extractSourceCitations(data),
+    recommendedProducts: extractStringArray(
+      isJsonRecord(data) ? data.recommended_products : undefined
+    ),
+    verificationNotes: extractStringArray(
+      isJsonRecord(data) ? data.verification_notes : undefined
+    ),
+    roadmap: extractRoadmap(data),
+    chips: extractStringArray(isJsonRecord(data) ? data.chips : undefined),
+    navigatorSummary: extractNavigatorSummary(data),
+    visualHint: readString(isJsonRecord(data) ? data.visual_hint : undefined) || null,
+    answerStyle: readString(isJsonRecord(data) ? data.answer_style : undefined),
+    presentation: extractPresentation(isJsonRecord(data) ? data.presentation : undefined),
+    decision: extractDecision(data),
+    comparisonRows: extractComparisonRows(data),
+    bulletGroups: extractBulletGroups(data),
+    uiModules: extractUiModules(data),
+    htmlSnippets:
+      isJsonRecord(data) && Array.isArray(data.html_snippets)
+        ? data.html_snippets
+            .map((item: unknown) => readString(item))
+            .filter((item: string | undefined): item is string => Boolean(item))
+        : [],
+  };
+}
+
 function MenuIcon() {
   return (
     <svg viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="2">
@@ -568,6 +602,7 @@ export default function SearchPage() {
   const [showControlRail, setShowControlRail] = useState(false);
   const [showEntryAnimation, setShowEntryAnimation] = useState(true);
   const [isSending, setIsSending] = useState(false);
+  const [isVoiceBusy, setIsVoiceBusy] = useState(false);
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [error, setError] = useState("");
   const [threadMenuOpenId, setThreadMenuOpenId] = useState("");
@@ -937,7 +972,7 @@ export default function SearchPage() {
 
   async function handleSend(queryOverride?: string) {
     const query = (queryOverride ?? input).trim();
-    if (!query || isSending) return;
+    if (!query || isSending || isVoiceBusy) return;
 
     setError("");
 
@@ -998,31 +1033,7 @@ export default function SearchPage() {
 
       const data = await response.json();
 
-      const assistantMessage: ChatMessage = {
-        id: uid(),
-        role: "assistant",
-        content: extractTextFromResponse(data),
-        createdAt: new Date().toISOString(),
-        sources: extractSources(data),
-        sourceCitations: extractSourceCitations(data),
-        recommendedProducts: extractStringArray(data.recommended_products),
-        verificationNotes: extractStringArray(data.verification_notes),
-        roadmap: extractRoadmap(data),
-        chips: extractStringArray(data.chips),
-        navigatorSummary: extractNavigatorSummary(data),
-        visualHint: readString(data.visual_hint) || null,
-        answerStyle: readString(data.answer_style),
-        presentation: extractPresentation(data.presentation),
-        decision: extractDecision(data),
-        comparisonRows: extractComparisonRows(data),
-        bulletGroups: extractBulletGroups(data),
-        uiModules: extractUiModules(data),
-        htmlSnippets: Array.isArray(data.html_snippets)
-          ? data.html_snippets
-              .map((item: unknown) => readString(item))
-              .filter((item: string | undefined): item is string => Boolean(item))
-          : [],
-      };
+      const assistantMessage = buildAssistantMessageFromApi(data);
 
       appendMessage(threadId, assistantMessage);
       updateThreadMeta(threadId);
@@ -1044,6 +1055,39 @@ export default function SearchPage() {
     } finally {
       setIsSending(false);
     }
+  }
+
+  function handleVoiceResult(threadId: string, data: unknown) {
+    if (!isJsonRecord(data)) {
+      setError("Voice response did not include readable data.");
+      return;
+    }
+
+    const transcript = readString(data.user_text);
+    if (!transcript) {
+      setError("Voice response did not include a transcription.");
+      return;
+    }
+
+    const currentThreadMessages = messagesByThread[threadId] || [];
+    const shouldRenameThread =
+      currentThreadMessages.length <= 1 ||
+      threads.find((thread) => thread.id === threadId)?.title === "New thread";
+
+    if (shouldRenameThread) {
+      updateThreadMeta(threadId, makeThreadTitle(transcript));
+    } else {
+      updateThreadMeta(threadId);
+    }
+
+    appendMessage(threadId, {
+      id: uid(),
+      role: "user",
+      content: transcript,
+      createdAt: new Date().toISOString(),
+    });
+    appendMessage(threadId, buildAssistantMessageFromApi(data));
+    setError("");
   }
 
   function handleKeyDown(e: React.KeyboardEvent<HTMLTextAreaElement>) {
@@ -1577,15 +1621,25 @@ export default function SearchPage() {
                         Enter to send · Shift + Enter for new line
                       </p>
 
-                      <button
-                        type="button"
-                        onClick={() => void handleSend()}
-                        disabled={isSending || !input.trim()}
-                        className="inline-flex items-center justify-center gap-2 border-2 border-black bg-[#D02020] px-4 py-2.5 text-xs font-black uppercase tracking-wide text-white shadow-[4px_4px_0px_0px_black] disabled:cursor-not-allowed disabled:opacity-50"
-                      >
-                        <SendIcon />
-                        {etCompassContent.searchPage.primaryButton}
-                      </button>
+                      <div className="flex items-end gap-2">
+                        <VoiceChatButton
+                          threadId={activeThreadId}
+                          disabled={!activeThreadId || isSending}
+                          onBusyChange={setIsVoiceBusy}
+                          onError={setError}
+                          onResponse={handleVoiceResult}
+                        />
+
+                        <button
+                          type="button"
+                          onClick={() => void handleSend()}
+                          disabled={isSending || isVoiceBusy || !input.trim()}
+                          className="inline-flex items-center justify-center gap-2 border-2 border-black bg-[#D02020] px-4 py-2.5 text-xs font-black uppercase tracking-wide text-white shadow-[4px_4px_0px_0px_black] disabled:cursor-not-allowed disabled:opacity-50"
+                        >
+                          <SendIcon />
+                          {etCompassContent.searchPage.primaryButton}
+                        </button>
+                      </div>
                     </div>
                   </div>
                 </div>

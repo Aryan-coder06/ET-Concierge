@@ -76,6 +76,12 @@ const architectureSteps = [
     description:
       "The final response and the frontend use the same decision state, so Luna's text, widgets, and concierge rail stay aligned.",
   },
+  {
+    step: "07",
+    title: "Voice AI Layer",
+    description:
+      "Sarvam speech-to-text and text-to-speech sit on top of the same ET concierge answer path, so the voice mode uses the existing grounded RAG answer instead of bypassing it.",
+  },
 ] as const;
 
 const ragConcepts = [
@@ -86,6 +92,7 @@ const ragConcepts = [
   "Product Scoring",
   "Answer/UI Sync",
   "Format-Aware Rendering",
+  "Voice-AI Loop",
 ] as const;
 
 const productHighlights = [
@@ -120,9 +127,9 @@ const productHighlights = [
       "The project includes the landing page, auth flows, profile dashboard, concierge search UI, and deployable backend/frontend split.",
   },
   {
-    title: "Hackathon-Ready Architecture",
+    title: "Voice-AI Concierge",
     description:
-      "The stack is documented, measurable, and built to evolve into voice, deeper profiling, and stronger ET service guidance.",
+      "Users can now speak to Luna through Sarvam voice APIs while still using the same grounded ET answer path, session memory, and concierge logic underneath.",
   },
 ] as const;
 
@@ -232,8 +239,8 @@ export default function DocsPage() {
                 </p>
                 <p className="mt-2 text-sm font-medium leading-relaxed sm:text-base">
                   ET-first concierge guidance, hybrid retrieval, persistent
-                  session memory, structured response planning, and responsive
-                  product UX in one platform.
+                  session memory, structured response planning, voice-AI, and
+                  responsive product UX in one platform.
                 </p>
               </div>
             </div>
@@ -388,6 +395,70 @@ export default function DocsPage() {
                 on real Economic Times discovery instead of turning into a
                 generic assistant with random finance knowledge.
               </p>
+            </div>
+          </div>
+        </section>
+
+        <section className="border-b-4 border-black bg-[#FFF3B8] py-16 sm:py-20">
+          <div className="mx-auto max-w-[1400px] px-4 sm:px-6 lg:px-8">
+            <div className="mb-8 flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
+              <div>
+                <p className="text-sm font-black uppercase tracking-[0.28em] text-[#D02020]">
+                  Voice AI
+                </p>
+                <h2 className="mt-3 font-black uppercase leading-[0.92] tracking-tight text-4xl sm:text-5xl">
+                  Same RAG, Spoken Interface
+                </h2>
+              </div>
+              <p className="max-w-2xl text-base font-medium leading-relaxed sm:text-lg">
+                The voice layer was added without replacing the core ET
+                concierge logic. Speech is only the interface. The actual ET
+                answer still comes from the same retrieval, planning, and
+                product-mapping backend.
+              </p>
+            </div>
+
+            <div className="grid gap-5 lg:grid-cols-3">
+              <article className="border-4 border-black bg-white p-6 shadow-[8px_8px_0px_0px_black]">
+                <p className="text-sm font-black uppercase tracking-[0.28em] text-[#1040C0]">
+                  01 / STT
+                </p>
+                <h3 className="mt-4 font-black uppercase tracking-tight text-2xl">
+                  Sarvam Speech To Text
+                </h3>
+                <p className="mt-4 text-base leading-relaxed text-[#333]">
+                  Voice audio is transcribed first so the user still enters the
+                  same ET concierge flow as a text user.
+                </p>
+              </article>
+
+              <article className="border-4 border-black bg-white p-6 shadow-[8px_8px_0px_0px_black]">
+                <p className="text-sm font-black uppercase tracking-[0.28em] text-[#1040C0]">
+                  02 / RAG
+                </p>
+                <h3 className="mt-4 font-black uppercase tracking-tight text-2xl">
+                  Grounded ET Answer
+                </h3>
+                <p className="mt-4 text-base leading-relaxed text-[#333]">
+                  The transcribed text is passed into the current Stage 2 ET
+                  concierge graph, which keeps the answer grounded in ET
+                  products, source citations, and session memory.
+                </p>
+              </article>
+
+              <article className="border-4 border-black bg-white p-6 shadow-[8px_8px_0px_0px_black]">
+                <p className="text-sm font-black uppercase tracking-[0.28em] text-[#1040C0]">
+                  03 / TTS
+                </p>
+                <h3 className="mt-4 font-black uppercase tracking-tight text-2xl">
+                  Sarvam Text To Speech
+                </h3>
+                <p className="mt-4 text-base leading-relaxed text-[#333]">
+                  The final grounded answer is cleaned for voice playback and
+                  spoken back to the user, while the same turn is still saved
+                  in the thread history and ET journey memory.
+                </p>
+              </article>
             </div>
           </div>
         </section>

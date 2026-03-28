@@ -23,7 +23,6 @@ from .retriever_service import get_persona_chunks, get_product_chunks
 from .state import AgentState, REQUIRED_PROFILE_FIELDS
 from .stage2 import (
     build_stage2_decision,
-    load_stage2_answer_style_policy,
     load_stage2_ui_render_contract,
     to_display_product_name,
 )
@@ -190,6 +189,141 @@ def _field_description(field: str) -> str:
         "profession": "what best describes their current role",
     }
     return descriptions.get(field, field)
+
+
+def _looks_like_heavy_structured_query(
+    message: str,
+    query_analysis: dict[str, Any] | None = None,
+) -> bool:
+    normalized = message.lower()
+    if query_analysis:
+        if query_analysis.get("requires_roadmap") or query_analysis.get("requires_table"):
+            return True
+        if query_analysis.get("depth_mode") == "deep":
+            return True
+
+    heavy_phrases = [
+        "2 month",
+        "2-month",
+        "week by week",
+        "week-by-week",
+        "roadmap",
+        "timeline",
+        "compare",
+        "comparison",
+        "all products",
+        "all et products",
+        "interrelated products",
+        "interrelated",
+        "detailed",
+        "elaborate",
+        "in detail",
+        "full ecosystem",
+    ]
+    return len(message.split()) >= 18 or any(phrase in normalized for phrase in heavy_phrases)
+
+
+def _truncate_for_prompt(text: str, max_chars: int) -> str:
+    flattened = re.sub(r"\s+", " ", text).strip()
+    if len(flattened) <= max_chars:
+        return flattened
+    trimmed = flattened[:max_chars].rsplit(" ", 1)[0].strip()
+    return f"{trimmed}..."
+
+
+def _build_generation_context(retrieved_chunks: list[Any], *, heavy_query: bool) -> str:
+    unique_chunks: list[Any] = []
+    seen_keys: set[str] = set()
+
+    for chunk in retrieved_chunks:
+        metadata = getattr(chunk, "metadata", {}) or {}
+        key = "|".join(
+            [
+                str(metadata.get("source_id") or ""),
+                str(metadata.get("product_name") or ""),
+                str(metadata.get("category") or metadata.get("goal") or ""),
+            ]
+        )
+        if key in seen_keys:
+            continue
+        seen_keys.add(key)
+        unique_chunks.append(chunk)
+
+    max_chunks = 3 if heavy_query else 4
+    max_chars = 360 if heavy_query else 560
+    context_parts: list[str] = []
+
+    for chunk in unique_chunks[:max_chunks]:
+        metadata = getattr(chunk, "metadata", {}) or {}
+        product = metadata.get("product_name") or metadata.get("type", "ET Context")
+        section = metadata.get("category") or metadata.get("goal") or "General"
+        excerpt = _truncate_for_prompt(getattr(chunk, "page_content", ""), max_chars)
+        context_parts.append(f"[{product} | {section}] {excerpt}")
+
+    return "\n".join(context_parts)
+
+
+def _build_compact_decision_summary(stage2_decision: dict[str, Any]) -> str:
+    query_analysis = stage2_decision.get("query_analysis", {})
+    decision = stage2_decision.get("decision", {})
+    primary = decision.get("primary_recommendation", {})
+    secondary = decision.get("secondary_recommendations", [])[:2]
+    next_action = decision.get("next_best_action", {})
+
+    compact_payload = {
+        "query_analysis": {
+            "primary_intent": query_analysis.get("primary_intent"),
+            "depth_mode": query_analysis.get("depth_mode"),
+            "tone_mode": query_analysis.get("tone_mode"),
+            "requires_live_context": query_analysis.get("requires_live_context"),
+            "requires_table": query_analysis.get("requires_table"),
+            "requires_bullets": query_analysis.get("requires_bullets"),
+            "requires_roadmap": query_analysis.get("requires_roadmap"),
+        },
+        "primary_recommendation": {
+            "product": primary.get("product"),
+            "display_product": primary.get("display_product"),
+            "why": primary.get("why", [])[:3],
+            "confidence": primary.get("confidence"),
+        },
+        "secondary_recommendations": [
+            {
+                "product": item.get("product"),
+                "display_product": item.get("display_product"),
+                "why": item.get("why", [])[:2],
+            }
+            for item in secondary
+        ],
+        "current_lane": decision.get("current_lane"),
+        "next_best_action": {
+            "label": next_action.get("label"),
+            "reason": next_action.get("reason"),
+        },
+        "comparison_rows": stage2_decision.get("comparison_rows", [])[:4],
+        "bullet_groups": stage2_decision.get("bullet_groups", [])[:2],
+    }
+
+    return json.dumps(compact_payload, ensure_ascii=True, separators=(",", ":"))
+
+
+def _build_answer_generation_guidance(
+    query_analysis: dict[str, Any],
+    answer_plan: dict[str, Any],
+) -> str:
+    sections = ", ".join(answer_plan.get("sections", []))
+    max_words = answer_plan.get("max_words", 180)
+    return "\n".join(
+        [
+            f"- Primary intent: {query_analysis.get('primary_intent', 'discovery')}.",
+            f"- Tone: {query_analysis.get('tone_mode', 'friendly_professional')}.",
+            f"- Depth: {query_analysis.get('depth_mode', 'standard')}.",
+            f"- Target structure: {sections or 'direct_answer, why_this_fits'}.",
+            f"- Hard target length: about {max_words} words unless the user clearly asked for more depth.",
+            "- Answer the user directly first, then explain the ET fit.",
+            "- If bullet_groups or comparison_rows are already provided, do not repeat them fully in prose.",
+            "- Stay grounded in ET facts. If context is thin, be honest and guide the user cleanly.",
+        ]
+    )
 
 
 def _has_explicit_profile_signal(message: str) -> bool:
@@ -745,6 +879,7 @@ def rag_retriever_node(state: AgentState) -> AgentState:
     profile = state["profile"]
     query = state["current_message"]
     normalized_query = query.lower()
+    heavy_structured_query = _looks_like_heavy_structured_query(query)
     broad_product_query = any(
         phrase in normalized_query
         for phrase in [
@@ -757,8 +892,14 @@ def rag_retriever_node(state: AgentState) -> AgentState:
             "beyond articles",
         ]
     )
-    product_k = 8 if broad_product_query else 4
-    should_fetch_persona = any(profile.get(field) for field in REQUIRED_PROFILE_FIELDS)
+    if broad_product_query:
+        product_k = 5 if heavy_structured_query else 6
+    elif heavy_structured_query:
+        product_k = 3
+    else:
+        product_k = 4
+
+    should_fetch_persona = any(profile.get(field) for field in REQUIRED_PROFILE_FIELDS) and not broad_product_query
 
     product_chunks = get_product_chunks(query=query, profile=profile, k=product_k)
     persona_chunks = (
@@ -945,20 +1086,24 @@ def response_generator_node(state: AgentState) -> AgentState:
     comparison_rows = stage2_decision.get("comparison_rows", [])
     bullet_groups = stage2_decision.get("bullet_groups", [])
     ui_modules = stage2_decision.get("ui_modules", [])
-
-    context_parts: list[str] = []
-    for chunk in state["retrieved_chunks"]:
-        product = chunk.metadata.get("product_name") or chunk.metadata.get("type", "ET Context")
-        section = chunk.metadata.get("category") or chunk.metadata.get("goal") or "General"
-        context_parts.append(f"[{product} | {section}]\n{chunk.page_content}")
-
-    rag_context = "\n\n".join(context_parts)
-    registry_context = product_registry_context(recommended_products)
-    stage2_style_policy = load_stage2_answer_style_policy()
     query_analysis = stage2_decision.get("query_analysis", {})
     decision = stage2_decision.get("decision", {})
+    answer_plan = stage2_decision.get("answer_plan", {})
+    heavy_query = _looks_like_heavy_structured_query(
+        state["current_message"],
+        query_analysis=query_analysis,
+    )
+    rag_context = _build_generation_context(
+        state["retrieved_chunks"],
+        heavy_query=heavy_query,
+    )
+    registry_context = product_registry_context(
+        recommended_products[:2] if heavy_query else recommended_products[:3]
+    )
+    compact_decision = _build_compact_decision_summary(stage2_decision)
+    answer_guidance = _build_answer_generation_guidance(query_analysis, answer_plan)
     history = []
-    for message in state["messages"][-8:]:
+    for message in state["messages"][-(4 if heavy_query else 6) :]:
         if message.get("role") == "assistant":
             history.append(AIMessage(content=message.get("content", "")))
         else:
@@ -983,15 +1128,15 @@ Retrieved ET context:
 Verification notes:
 {json.dumps(verification_notes, indent=2) if verification_notes else "No special verification note for this turn."}
 
-Stage 2 answer style policy:
-{stage2_style_policy}
+Answer guidance:
+{answer_guidance}
 
-Stage 2 decision object:
-{json.dumps(stage2_decision, indent=2)}
+Compact decision object:
+{compact_decision}
 
 Rules:
 - Answer the user's question directly first, then explain why the recommendation fits.
-- Keep the answer within the max words from answer_plan unless the user explicitly asked for more.
+- Keep the answer within the max words from the answer guidance unless the user explicitly asked for more.
 - Use the requested format naturally. If comparison_rows or bullet_groups are present, you may briefly introduce them instead of repeating them in prose.
 - Use the retrieved ET context and structured registry facts when available and do not invent product features.
 - Return markdown-safe text only. No HTML and no code formatting.

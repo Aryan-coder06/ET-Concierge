@@ -1,16 +1,21 @@
 import logging
 from typing import Any
 
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, File, Form, HTTPException, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, Field
+from starlette.concurrency import run_in_threadpool
 
 from .chatbot.config import get_settings
 from .chatbot.market_data import get_market_snapshot
 from .chatbot.service import concierge_service
+from .chatbot.voice_providers import SarvamSTTProvider, SarvamTTSProvider
+from .chatbot.voice_utils import format_text_for_voice, voice_used_rag
 
 
 logger = logging.getLogger(__name__)
+stt_provider = SarvamSTTProvider()
+tts_provider = SarvamTTSProvider()
 
 
 class SourceItem(BaseModel):
@@ -76,6 +81,14 @@ class ChatResponse(BaseModel):
     bullet_groups: list[dict[str, Any]] = Field(default_factory=list)
     ui_modules: list[dict[str, Any]] = Field(default_factory=list)
     html_snippets: list[str] = Field(default_factory=list)
+
+
+class VoiceChatResponse(ChatResponse):
+    user_text: str
+    agent_text: str
+    spoken_answer: str
+    audio: str | None = None
+    used_rag: bool = False
 
 
 class SessionSummary(BaseModel):
@@ -177,3 +190,57 @@ def chat(payload: ChatRequest) -> ChatResponse:
         ) from exc
 
     return ChatResponse(**result)
+
+
+@app.post("/chat/voice", response_model=VoiceChatResponse)
+async def voice_chat(
+    audio_file: UploadFile = File(...),
+    thread_id: str = Form(...),
+) -> VoiceChatResponse:
+    if not thread_id.strip():
+        raise HTTPException(status_code=400, detail="thread_id must not be empty.")
+    if not settings.sarvam_api_key:
+        raise HTTPException(
+            status_code=503,
+            detail="SARVAM_API_KEY is not configured for voice requests.",
+        )
+
+    try:
+        audio_bytes = await audio_file.read()
+        transcript = await stt_provider.transcribe_audio(
+            audio_bytes,
+            filename=audio_file.filename,
+            content_type=audio_file.content_type,
+        )
+        if not transcript:
+            raise HTTPException(
+                status_code=422,
+                detail="Voice transcription did not return a readable query.",
+            )
+
+        chat_result = await run_in_threadpool(
+            lambda: concierge_service.chat(session_id=thread_id, query=transcript)
+        )
+        spoken_answer = format_text_for_voice(chat_result["answer"])
+        audio = await tts_provider.synthesize_speech(spoken_answer)
+
+        return VoiceChatResponse(
+            **chat_result,
+            user_text=transcript,
+            agent_text=chat_result["answer"],
+            spoken_answer=spoken_answer,
+            audio=audio,
+            used_rag=voice_used_rag(chat_result),
+        )
+    except HTTPException:
+        raise
+    except ValueError as exc:
+        raise HTTPException(status_code=400, detail=str(exc)) from exc
+    except RuntimeError as exc:
+        raise HTTPException(status_code=503, detail=str(exc)) from exc
+    except Exception as exc:
+        logger.exception("Voice chat pipeline failed for session '%s'", thread_id)
+        raise HTTPException(
+            status_code=500,
+            detail="The ET concierge voice pipeline failed to process this request.",
+        ) from exc

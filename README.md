@@ -32,6 +32,7 @@
 - [End-to-End Architecture](#end-to-end-architecture)
 - [Complete Tech Stack](#complete-tech-stack)
 - [Frontend Experience](#frontend-experience)
+- [Voice AI Layer](#voice-ai-layer)
 - [Backend API Surface](#backend-api-surface)
 - [Data, Ingestion, And Evaluation](#data-ingestion-and-evaluation)
 - [Deployment](#deployment)
@@ -61,10 +62,11 @@ In product terms:
 | Layer | Role |
 | --- | --- |
 | **Next.js frontend** | Landing page, login/signup, profile dashboard, ET concierge interface, selective widgets |
-| **FastAPI backend** | API layer, RAG orchestration, market snapshot endpoint, session/history APIs |
+| **FastAPI backend** | API layer, RAG orchestration, market snapshot endpoint, voice endpoint, session/history APIs |
 | **LangGraph concierge graph** | Profile extraction, routing, retrieval, answer generation, response shaping |
 | **Mongo-backed knowledge layer** | Vector retrieval, ET source grounding, session persistence |
 | **Firebase auth layer** | Persistent user identity on the frontend |
+| **Sarvam voice layer** | Speech-to-text and text-to-speech on top of the same grounded ET answer path |
 
 ---
 
@@ -103,6 +105,7 @@ That distinction shaped almost every design decision in this repo.
 - **Threaded conversation history**
 - **Concierge side rails**
 - **Selective live-context widgets**
+- **Voice-AI chat controls**
 - **Intro and product-branding UI**
 
 ### Backend concierge capabilities
@@ -364,8 +367,10 @@ flowchart TD
     F --> I[Mongo Sessions]
     F --> J[ET Product Registry]
     E --> K[Market Snapshot Service]
+    E --> L[Sarvam Voice APIs]
     K --> D
-    I --> L[Profile Dashboard / Thread History]
+    L --> D
+    I --> M[Profile Dashboard / Thread History]
 ```
 
 ---
@@ -382,6 +387,7 @@ flowchart TD
 | **Tailwind CSS** | Styling system |
 | **anime.js** | SVG and motion effects |
 | **Firebase Web SDK** | User auth and persisted session state |
+| **MediaRecorder API** | Browser microphone capture for voice input |
 
 ### Backend
 
@@ -395,6 +401,8 @@ flowchart TD
 | **langchain-mongodb** | Mongo vector search integration |
 | **Pydantic** | Request/response validation |
 | **yfinance** | Structured market snapshot data for live-context widgets |
+| **Sarvam AI APIs** | Speech-to-text and text-to-speech for Voice-AI |
+| **httpx** | Async Sarvam API calls |
 
 ### Product and data layer
 
@@ -424,6 +432,7 @@ flowchart TD
 - right concierge rail
 - selective widgets based on backend presentation hints
 - real-time style loader and LUNA animation
+- microphone button for Voice-AI turns using the same thread and ET session memory
 
 ### Authentication
 
@@ -438,6 +447,28 @@ flowchart TD
 - goal and sophistication
 - recent journey view
 - ET lane recommendations
+
+---
+
+## Voice AI Layer
+
+Voice mode is implemented as an extension of the current ET concierge, not a separate assistant.
+
+The flow is:
+
+1. browser records audio through the microphone
+2. backend sends the audio to **Sarvam STT**
+3. the returned transcript is passed into the same `concierge_service.chat()` RAG flow
+4. the grounded ET answer is cleaned for speech playback
+5. backend sends that final spoken script to **Sarvam TTS**
+6. frontend plays the returned audio while still saving the turn in the normal thread history
+
+### Why this design matters
+
+- voice does **not** bypass the current ET retrieval stack
+- voice does **not** invent a second answer path
+- the same profile memory, citations, and recommendation logic still apply
+- text and voice remain aligned inside the same thread
 
 ---
 
@@ -456,6 +487,16 @@ Sends a single user message into the ET concierge graph and returns:
 - presentation hints
 - visual hint
 - roadmap when appropriate
+
+### `POST /chat/voice`
+
+Accepts a recorded audio file and a `thread_id`, then returns:
+
+- `user_text` from Sarvam speech-to-text
+- the normal grounded ET answer payload
+- `spoken_answer` cleaned for voice playback
+- `audio` from Sarvam text-to-speech
+- `used_rag` flag so the voice turn can still be inspected as part of the ET answer path
 
 ### `GET /sessions`
 
@@ -608,6 +649,7 @@ Use [backend/.env.example](./backend/.env.example) as the base.
 | --- | --- | --- |
 | `GOOGLE_API_KEY` | Yes | Gemini / Google model access |
 | `MONGODB_URI` | Yes | MongoDB Atlas connection |
+| `SARVAM_API_KEY` | Recommended for Voice-AI | Sarvam speech-to-text and text-to-speech |
 | `EMBEDDING_MODEL` | Yes | Embedding model name |
 | `GOOGLE_CHAT_MODEL` | Recommended | Primary chat model |
 | `MONGODB_DB_NAME` | Yes | Database name |
@@ -736,7 +778,7 @@ ET-Concierge/
 - general current-affairs retrieval is still guarded rather than fully supported
 - backend session history is richer than backend user binding; full Firebase `uid` linkage can go deeper
 - some widget layers are still hackathon-MVP grade
-- voice concierge is not added yet
+- voice concierge is REST-based today, not a full duplex streaming voice agent yet
 - financial-life navigator depth is still earlier than the final vision
 
 ---
@@ -757,6 +799,7 @@ ET-Concierge/
 - evaluation packs
 - selective widgets
 - cleaner answer shaping
+- voice-ai on top of the same ET answer path
 
 ### Stage 3
 

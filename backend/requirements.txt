@@ -9,3 +9,5 @@ langchain
 langchain-google-genai
 langchain-mongodb
 langgraph
+httpx
+python-multipart

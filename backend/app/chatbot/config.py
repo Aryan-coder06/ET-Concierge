@@ -27,6 +27,7 @@ def _env_list(name: str, default: list[str]) -> list[str]:
 class Settings(BaseModel):
     google_api_key: str = Field(default_factory=lambda: _env("GOOGLE_API_KEY"))
     mongodb_uri: str = Field(default_factory=lambda: _env("MONGODB_URI"))
+    sarvam_api_key: str = Field(default_factory=lambda: _env("SARVAM_API_KEY"))
     embedding_model: str = Field(
         default_factory=lambda: _env("EMBEDDING_MODEL", "gemini-embedding-001")
     )

@@ -595,3 +595,54 @@
   - eval prompts
 - Why: Without this, the old registry-backed RAG path could silently break after the folder reorganization.
 - Practical effect in simple English: The earlier ET research base is still usable even after the new Stage 2 pack was added.
+
+## 2026-03-28 - Selective Voice-AI merge and Stage 2 latency optimization
+
+### 1. I merged the useful Voice-AI path without downgrading the main RAG stack
+- Where: [backend/app/main.py](/home/aryan-s/Documents/GENAI/ET-Concierge/backend/app/main.py), [backend/app/chatbot/voice_providers.py](/home/aryan-s/Documents/GENAI/ET-Concierge/backend/app/chatbot/voice_providers.py), [backend/app/chatbot/voice_utils.py](/home/aryan-s/Documents/GENAI/ET-Concierge/backend/app/chatbot/voice_utils.py)
+- What I changed: I did not merge the whole `voiceAgent` branch because it would have overwritten the newer Stage 2 planner, docs, and deployment work. Instead, I pulled only the Sarvam speech-to-text and text-to-speech path into the current backend and kept the current concierge graph as the answer source of truth.
+- Why: The goal was not to create a separate voice bot. The goal was to make voice another interface for the same ET concierge.
+- Practical effect in simple English: When someone speaks to Luna, the voice turn still goes through the same ET product routing, retrieval, recommendations, and session history as a text turn.
+
+### 2. I made the voice answer stay grounded in the same RAG response
+- Where: [backend/app/main.py](/home/aryan-s/Documents/GENAI/ET-Concierge/backend/app/main.py), [backend/app/chatbot/service.py](/home/aryan-s/Documents/GENAI/ET-Concierge/backend/app/chatbot/service.py)
+- What I changed: The `/chat/voice` endpoint now does this sequence:
+  - transcribe audio with Sarvam STT
+  - call `concierge_service.chat()` with the transcript
+  - convert the final ET answer into a shorter voice-safe script
+  - synthesize it with Sarvam TTS
+- Why: This proves the voice answer is not “just a raw LLM API call.” It is the same grounded ET answer, only spoken.
+- Practical effect in simple English: Voice mode now inherits the same vector-backed ET knowledge, product scoring, and response planning that text mode already had.
+
+### 3. I optimized heavy roadmap and comparison queries so they respond faster
+- Where: [backend/app/chatbot/agents.py](/home/aryan-s/Documents/GENAI/ET-Concierge/backend/app/chatbot/agents.py)
+- What I changed:
+  - reduced retrieval breadth for broad, long-form ecosystem questions
+  - skipped persona retrieval for broad product-overview asks where it was adding latency without much value
+  - trimmed chunk text before sending it to the final model
+  - replaced the huge full Stage 2 JSON dump with a compact decision summary
+  - replaced the long answer-style policy text with a shorter generation guide
+  - shortened the amount of chat history injected for heavy queries
+- Why: The backend was still doing too much work for long prompts like roadmap, comparison, and “explain all ET products” asks. The issue was not failure. The issue was oversized prompt payload.
+- Practical effect in simple English: Long, structured ET asks should now come back faster without losing the main ET recommendation logic.
+
+### 4. I wired the frontend voice button into the existing thread and session model
+- Where: [src/components/search/VoiceChatButton.tsx](/home/aryan-s/Documents/GENAI/ET-Concierge/src/components/search/VoiceChatButton.tsx), [src/app/search/page.tsx](/home/aryan-s/Documents/GENAI/ET-Concierge/src/app/search/page.tsx)
+- What I changed: The search page now has a microphone button that:
+  - records audio in the browser
+  - sends it to `/chat/voice`
+  - appends the transcribed user message into the current thread
+  - appends the ET concierge answer into the same thread
+  - plays the returned spoken audio
+- Why: Voice should not create a second hidden conversation model. It should behave like another input method on the same ET thread.
+- Practical effect in simple English: A user can now speak to Luna and still keep a normal readable conversation history, citations, and ET recommendations in the same place.
+
+### 5. I updated the docs so the project now explains the real Voice-AI architecture
+- Where: [README.md](/home/aryan-s/Documents/GENAI/ET-Concierge/README.md), [src/components/docs/DocsPage.tsx](/home/aryan-s/Documents/GENAI/ET-Concierge/src/components/docs/DocsPage.tsx), [backend/.env.example](/home/aryan-s/Documents/GENAI/ET-Concierge/backend/.env.example)
+- What I changed:
+  - added the Sarvam voice layer to the README architecture and API docs
+  - documented `/chat/voice`
+  - added `SARVAM_API_KEY` to the backend env example
+  - updated the frontend docs page to explain how voice works on top of the main ET RAG path
+- Why: The documentation should match the demo. If voice is now part of the product, it should be represented in both developer docs and user-facing docs.
+- Practical effect in simple English: The repo and frontend docs now describe the real current system, including the new voice capability.
