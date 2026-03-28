@@ -49,13 +49,10 @@
 **ET Compass** is a full-stack prototype for the **AI Concierge for ET** problem statement.
 
 The system is designed to:
-
-- greet a user conversationally
 - understand their intent, sophistication, and goals
 - map them to the right **Economic Times** products and pathways
 - answer with grounded ET context instead of vague LLM fluency
-- show richer UI only when it truly improves understanding
-- preserve journey history so the experience can become more personalized over time
+
 
 In product terms:
 
@@ -69,11 +66,6 @@ In product terms:
 | **Sarvam voice layer** | Speech-to-text and text-to-speech on top of the same grounded ET answer path |
 
 ---
-
-## Hackathon Fit
-
-The core ET problem statement says users only discover a small fraction of the ET ecosystem.
-
 This project directly addresses that by making LUNA:
 
 1. **A conversational ET welcome concierge**
@@ -82,69 +74,32 @@ This project directly addresses that by making LUNA:
 4. **A source-grounded explainer**
 5. **A future-ready foundation for cross-sell, financial-life navigation, and voice**
 
-### The strongest product claim we are making
 
-> **We built the AI front door to ET.**
-
-Not:
-
-> “We built a finance chatbot.”
-
-That distinction shaped almost every design decision in this repo.
-
----
 
 ## What We Built
 
 ### User-facing product surfaces
 
-- **ET Compass landing page**
 - **LUNA search / chat experience**
-- **Firebase login and signup**
 - **User profile dashboard**
 - **Threaded conversation history**
-- **Concierge side rails**
-- **Selective live-context widgets**
 - **Voice-AI chat controls**
-- **Intro and product-branding UI**
 
 ### Backend concierge capabilities
 
 - profile extraction from natural conversation
 - conservative onboarding questions only when necessary
-- registry-aware ET product routing
 - hybrid ET retrieval from MongoDB
 - verification-aware source citations
 - structured journey-history storage
 - answer-style control by query type
-- presentation hints so the UI does not over-render clutter
-- evaluation support for ET-specific prompt packs
 
 ---
 
 ## Why The RAG Matters
 
 This system works because the answer is not coming from “LLM memory alone.”
-
 The RAG layer is what keeps the product aligned with ET.
-
-Without RAG, the assistant would:
-
-- drift into generic finance advice
-- hallucinate ET products or features
-- fail to distinguish ET product lanes properly
-- over-answer with fluent but weak guidance
-- lose the difference between “what ET offers” and “what the internet offers”
-
-With the current RAG stack, LUNA can:
-
-- retrieve ET-grounded context
-- combine ET chunks with product-registry facts
-- add verification notes for sensitive claims
-- decide when to answer directly and when to ask a follow-up
-- suppress unnecessary widgets and UI noise
-
----
 
 ## How The RAG Works
 
@@ -260,96 +215,6 @@ That means the system can produce:
 - a structured roadmap
 - a compact comparison
 - a fuller explanation when explicitly requested
-
----
-
-## Dynamic Behaviors We Maintain
-
-The RAG is not static. It preserves and reacts to conversation dynamics.
-
-### Profile dynamics
-
-The system tracks user signals like:
-
-- profession
-- goals
-- sophistication
-- current lane
-- interests
-- ET products already mentioned
-
-It also avoids overfilling the profile from weak evidence.
-
-### Route dynamics
-
-Each turn may go through:
-
-- profiling
-- product query
-- chitchat
-- news guardrail
-
-### Presentation dynamics
-
-The backend decides if the frontend should show:
-
-- recommended product badges
-- navigator summary
-- roadmap card
-- quick follow-up chips
-- visual panel
-
-### Journey dynamics
-
-Each assistant turn can preserve:
-
-- route taken
-- answer text
-- answer style
-- presentation hints
-- recommended products
-- citations
-- verification notes
-- visual hint
-- profile snapshot
-
-That makes later stages possible:
-
-- continuity across sessions
-- better onboarding memory
-- smarter ET cross-sell timing
-- richer personalization
-- future voice continuity
-
----
-
-## Selective Visual Philosophy
-
-One of the important UX lessons from the build is this:
-
-> A concierge should not act like a dashboard all the time.
-
-So the rule in this repo is:
-
-```text
-If a visual genuinely helps understanding, show it.
-If the text answer is enough, do not force extra UI.
-```
-
-### Good cases for visual assist
-
-- market tools
-- portfolio tracking
-- trust / verification flows
-
-### Bad cases for visual assist
-
-- simple product overviews
-- short factual ET questions
-- unsupported live-news requests
-- roadmap responses that are already clear in text
-
-This is why the backend now emits a **presentation contract** instead of leaving all widget decisions to the frontend.
 
 ---
 
@@ -772,55 +637,6 @@ ET-Concierge/
 
 ---
 
-## Current Limitations
-
-- LUNA is **not yet** a true live-news bot
-- general current-affairs retrieval is still guarded rather than fully supported
-- backend session history is richer than backend user binding; full Firebase `uid` linkage can go deeper
-- some widget layers are still hackathon-MVP grade
-- voice concierge is REST-based today, not a full duplex streaming voice agent yet
-- financial-life navigator depth is still earlier than the final vision
-
----
-
-## Stage-Wise Roadmap
-
-### Stage 1
-
-- working ET concierge chat
-- profile-aware routing
-- ET product discovery
-- verified citations
-
-### Stage 2
-
-- stronger corpus
-- registry-aware retrieval
-- evaluation packs
-- selective widgets
-- cleaner answer shaping
-- voice-ai on top of the same ET answer path
-
-### Stage 3
-
-- deeper financial-life navigation
-- better session intelligence
-- improved ET cross-sell logic
-- stronger journey prediction
-
-### Stage 4
-
-- real user-linked backend identity
-- richer profile memory
-- higher-fidelity ET service workflows
-
-### Stage 5
-
-- voice concierge
-- multimodal interactions
-- stronger real-time ET path continuity
-
----
 
 ## Documentation Trail
 
