@@ -11,6 +11,7 @@ langchain-mongodb
 langgraph
 
 websockets
+groq
 httpx
 pydub
 python-multipart
