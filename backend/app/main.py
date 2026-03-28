@@ -1,12 +1,24 @@
+import json
 from typing import Any
 
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, WebSocket, WebSocketDisconnect
 from fastapi.middleware.cors import CORSMiddleware
+import logging
 from pydantic import BaseModel, Field
 
 from .chatbot.config import get_settings
 from .chatbot.market_data import get_market_snapshot
 from .chatbot.service import concierge_service
+
+# Initialize the new voice modules
+from .chatbot.voice_providers import GroqSTTProvider, SarvamTTSProvider
+from .chatbot.voice_agent import VoiceAgent
+
+logger = logging.getLogger(__name__)
+
+stt_provider = GroqSTTProvider()
+tts_provider = SarvamTTSProvider()
+voice_agent = VoiceAgent()
 
 
 class SourceItem(BaseModel):
@@ -158,3 +170,99 @@ def chat(payload: ChatRequest) -> ChatResponse:
         ) from exc
 
     return ChatResponse(**result)
+
+
+@app.websocket("/ws/voice")
+async def voice_websocket_endpoint(websocket: WebSocket):
+    await websocket.accept()
+    audio_buffer = bytearray()
+    
+    # Simple function to split text into sentences
+    def split_into_sentences(text: str) -> tuple[list[str], str]:
+        import re
+        # Split on sentence boundaries
+        parts = re.split(r'([.?!])', text)
+        sentences = []
+        for i in range(0, len(parts)-1, 2):
+            sentences.append(parts[i] + parts[i+1])
+        
+        remainder = parts[-1] if len(parts) % 2 != 0 else ""
+        return sentences, remainder
+
+    try:
+        while True:
+            # We explicitly await a frame, which can be text or bytes
+            message = await websocket.receive()
+            
+            if message.get("type") == "websocket.disconnect":
+                logger.info("Voice WebSocket disconnect received")
+                break
+                
+            if "bytes" in message:
+                audio_buffer.extend(message["bytes"])
+            elif "text" in message:
+                data = json.loads(message["text"])
+                if data.get("event") == "stop_speaking":
+                    if not audio_buffer:
+                        logger.warning("Stop speaking received but audio buffer is empty")
+                        await websocket.send_json({"event": "turn_complete"})
+                        continue
+                        
+                    thread_id = data.get("thread_id", "default-voice-thread")
+                    
+                    try:
+                        # 1. STT
+                        audio_bytes = bytes(audio_buffer)
+                        logger.info("Processing audio turn: %d bytes", len(audio_bytes))
+                        audio_buffer.clear()
+                        
+                        await websocket.send_json({"event": "status", "message": "transcribing"})
+                        user_text = await stt_provider.transcribe_audio(audio_bytes)
+                        
+                        if not user_text:
+                            await websocket.send_json({"event": "error", "message": "Could not hear you clearly."})
+                            await websocket.send_json({"event": "turn_complete"})
+                            continue
+                            
+                        await websocket.send_json({"event": "user_text", "text": user_text})
+                        await websocket.send_json({"event": "status", "message": "thinking"})
+                        
+                        # 2. Agent & 3. TTS
+                        text_buffer = ""
+                        async for token in voice_agent.stream_response(user_text, thread_id):
+                            text_buffer += token
+                            sentences, remainder = split_into_sentences(text_buffer)
+                            
+                            for sentence in sentences:
+                                sentence = sentence.strip()
+                                if sentence:
+                                    await websocket.send_json({"event": "agent_text", "text": sentence})
+                                    audio_base64 = await tts_provider.synthesize_speech(sentence)
+                                    if audio_base64:
+                                        await websocket.send_json({"event": "audio", "audio": audio_base64})
+                                        
+                            text_buffer = remainder
+                        
+                        # Flush remainder
+                        if text_buffer.strip():
+                            sentence = text_buffer.strip()
+                            await websocket.send_json({"event": "agent_text", "text": sentence})
+                            audio_base64 = await tts_provider.synthesize_speech(sentence)
+                            if audio_base64:
+                                await websocket.send_json({"event": "audio", "audio": audio_base64})
+                                
+                        await websocket.send_json({"event": "status", "message": "listening"})
+                    except Exception as e:
+                        logger.error(f"Error during voice processing: {e}")
+                        await websocket.send_json({"event": "error", "message": "Something went wrong."})
+                    finally:
+                        await websocket.send_json({"event": "turn_complete"})
+                    
+    except WebSocketDisconnect:
+        logger.info("Voice WebSocket disconnected")
+    except Exception as e:
+        logger.error(f"Voice WebSocket error: {e}")
+        try:
+            await websocket.close()
+        except Exception:
+            pass

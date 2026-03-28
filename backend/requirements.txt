@@ -9,3 +9,8 @@ langchain
 langchain-google-genai
 langchain-mongodb
 langgraph
+
+websockets
+groq
+httpx
+pydub
