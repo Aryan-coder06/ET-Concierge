@@ -1,3 +1,4 @@
+import logging
 from typing import Any
 
 from fastapi import FastAPI, HTTPException
@@ -7,6 +8,9 @@ from pydantic import BaseModel, Field
 from .chatbot.config import get_settings
 from .chatbot.market_data import get_market_snapshot
 from .chatbot.service import concierge_service
+
+
+logger = logging.getLogger(__name__)
 
 
 class SourceItem(BaseModel):
@@ -133,6 +137,12 @@ def get_session(session_id: str) -> SessionDocumentResponse:
         session = concierge_service.get_session(session_id)
     except ValueError as exc:
         raise HTTPException(status_code=404, detail=str(exc)) from exc
+    except Exception as exc:
+        logger.exception("Failed to load session '%s'", session_id)
+        raise HTTPException(
+            status_code=500,
+            detail="The ET concierge session loader failed to process this request.",
+        ) from exc
     return SessionDocumentResponse(**session)
 
 
@@ -141,6 +151,7 @@ def market_snapshot() -> MarketSnapshotResponse:
     try:
         return MarketSnapshotResponse(**get_market_snapshot())
     except Exception as exc:
+        logger.exception("Market snapshot request failed")
         raise HTTPException(
             status_code=503,
             detail="The market snapshot service is temporarily unavailable.",
@@ -159,6 +170,7 @@ def chat(payload: ChatRequest) -> ChatResponse:
     except RuntimeError as exc:
         raise HTTPException(status_code=503, detail=str(exc)) from exc
     except Exception as exc:
+        logger.exception("Chat pipeline failed for session '%s'", payload.thread_id)
         raise HTTPException(
             status_code=500,
             detail="The ET concierge pipeline failed to process this request.",
