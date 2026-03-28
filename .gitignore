@@ -37,6 +37,7 @@ yarn-error.log*
 venv
 .venv/
 backend/.venv/
+backend/STAGE_1/
 
 # python caches / compiled files
 __pycache__/

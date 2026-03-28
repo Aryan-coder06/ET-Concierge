@@ -33,6 +33,58 @@ export type NavigatorSummary = {
   next_move?: string;
 };
 
+export type ComparisonRow = {
+  item: string;
+  best_for: string;
+  why: string;
+};
+
+export type BulletGroup = {
+  title: string;
+  items: string[];
+};
+
+export type DecisionSummary = {
+  primary_recommendation?: {
+    product?: string;
+    display_product?: string;
+    why?: string[];
+    confidence?: "low" | "medium" | "high" | string;
+  };
+  secondary_recommendations?: Array<{
+    product?: string;
+    display_product?: string;
+    why?: string[];
+  }>;
+  current_lane?: string;
+  next_best_action?: {
+    label?: string;
+    href?: string;
+    reason?: string;
+  };
+  scored_products?: Array<{
+    product?: string;
+    display_product?: string;
+    score?: number;
+    reasons?: string[];
+  }>;
+  signals?: string[];
+};
+
+export type UiModule = {
+  module_type:
+    | "profile_card"
+    | "recommendation_card"
+    | "comparison_table"
+    | "live_context"
+    | "next_action"
+    | "verification_box"
+    | string;
+  visible?: boolean;
+  priority?: number;
+  payload?: Record<string, unknown>;
+};
+
 export type AnswerStyle =
   | "brief"
   | "standard"
@@ -48,6 +100,9 @@ export type ResponsePresentation = {
   show_navigator_summary?: boolean;
   show_roadmap?: boolean;
   show_chips?: boolean;
+  show_bullet_groups?: boolean;
+  show_comparison_table?: boolean;
+  module_policy?: string[];
 };
 
 export type VisualHint =
@@ -73,6 +128,11 @@ export type ChatMessage = {
   visualHint?: string | null;
   answerStyle?: AnswerStyle | string | null;
   presentation?: ResponsePresentation | null;
+  decision?: DecisionSummary | null;
+  comparisonRows?: ComparisonRow[];
+  bulletGroups?: BulletGroup[];
+  uiModules?: UiModule[];
+  htmlSnippets?: string[];
 };
 
 export type ThreadSummary = {
@@ -82,6 +142,7 @@ export type ThreadSummary = {
 };
 
 export type ProfileSnapshot = {
+  name?: string;
   intent?: string;
   sophistication?: string;
   goal?: string;
@@ -107,6 +168,10 @@ export type JourneyEvent = {
   visual_hint?: string | null;
   answer_style?: string | null;
   presentation?: ResponsePresentation | null;
+  decision?: DecisionSummary | null;
+  comparison_rows?: ComparisonRow[];
+  bullet_groups?: BulletGroup[];
+  ui_modules?: UiModule[];
   profile_snapshot?: ProfileSnapshot;
 };
 

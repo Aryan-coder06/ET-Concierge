@@ -76,6 +76,10 @@ const useCaseAccents = [
   "bg-[#D02020]",
 ] as const;
 
+const INTRO_DURATION_MS = 7200;
+const INTRO_RESHOW_AFTER_MS = 6 * 60 * 60 * 1000;
+const INTRO_STORAGE_KEY = "et-compass-intro-last-shown";
+
 function LogoMark() {
   return (
     <div className="flex items-center gap-1.5 sm:gap-2">
@@ -131,6 +135,19 @@ function PlayIcon({ className = "h-5 w-5" }: { className?: string }) {
       aria-hidden="true"
     >
       <path d="M8 5.5v13l10-6.5-10-6.5Z" />
+    </svg>
+  );
+}
+
+function GitHubIcon({ className = "h-5 w-5" }: { className?: string }) {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      fill="currentColor"
+      className={className}
+      aria-hidden="true"
+    >
+      <path d="M12 .5C5.65.5.5 5.8.5 12.33c0 5.23 3.3 9.67 7.88 11.24.58.11.79-.26.79-.58 0-.28-.01-1.22-.02-2.22-3.2.71-3.88-1.4-3.88-1.4-.52-1.37-1.28-1.73-1.28-1.73-1.05-.73.08-.72.08-.72 1.16.08 1.77 1.23 1.77 1.23 1.03 1.82 2.7 1.3 3.36.99.1-.77.4-1.3.72-1.6-2.55-.3-5.23-1.32-5.23-5.87 0-1.3.45-2.36 1.2-3.2-.12-.3-.52-1.5.12-3.12 0 0 .98-.32 3.2 1.22a10.83 10.83 0 0 1 5.84 0c2.22-1.54 3.2-1.22 3.2-1.22.64 1.62.24 2.82.12 3.12.75.84 1.2 1.9 1.2 3.2 0 4.56-2.68 5.57-5.24 5.87.41.36.78 1.07.78 2.17 0 1.56-.01 2.82-.01 3.2 0 .31.21.69.8.57 4.57-1.57 7.86-6.01 7.86-11.24C23.5 5.8 18.35.5 12 .5Z" />
     </svg>
   );
 }
@@ -240,12 +257,16 @@ function PosterArt({ accent }: { accent: string }) {
 
 export default function HomePage() {
   const [mobileOpen, setMobileOpen] = useState(false);
-  const [showIntro, setShowIntro] = useState(false);
+  const [introState, setIntroState] = useState<"checking" | "showing" | "hidden">(
+    "checking"
+  );
   const ecosystemScrollRef = useRef<HTMLDivElement | null>(null);
   const { authLoading, user } = useFirebaseAuth();
   const heroDemoIsExternal = /^https?:\/\//.test(
     etCompassContent.hero.secondaryCta.href
   );
+  const repoHref = etCompassContent.brand.repoCta.href;
+  const repoIsExternal = /^https?:\/\//.test(repoHref);
   const brandParts = etCompassContent.brand.logoText.split(" ");
   const brandTop = brandParts[0] ?? etCompassContent.brand.logoText;
   const brandBottom = brandParts.slice(1).join(" ") || brandTop;
@@ -257,62 +278,68 @@ export default function HomePage() {
     });
   }
 
-  useEffect(() => {
+  function dismissIntro() {
+    setIntroState("hidden");
     try {
-      if (window.sessionStorage.getItem("et-compass-intro-seen") === "1") {
-        return;
+      window.localStorage.setItem(INTRO_STORAGE_KEY, String(Date.now()));
+    } catch {}
+  }
+
+  useEffect(() => {
+    let nextState: "showing" | "hidden" = "showing";
+
+    try {
+      const lastShownRaw = window.localStorage.getItem(INTRO_STORAGE_KEY);
+      const lastShown = lastShownRaw ? Number(lastShownRaw) : NaN;
+
+      if (Number.isFinite(lastShown) && Date.now() - lastShown < INTRO_RESHOW_AFTER_MS) {
+        nextState = "hidden";
       }
     } catch {}
 
     const timeout = window.setTimeout(() => {
-      setShowIntro(true);
+      setIntroState(nextState);
     }, 0);
 
     return () => window.clearTimeout(timeout);
   }, []);
 
   useEffect(() => {
-    if (!showIntro) return;
+    if (introState !== "showing") return;
 
     const timeout = window.setTimeout(() => {
-      setShowIntro(false);
-      try {
-        window.sessionStorage.setItem("et-compass-intro-seen", "1");
-      } catch {}
-    }, 7200);
+      dismissIntro();
+    }, INTRO_DURATION_MS);
 
     return () => window.clearTimeout(timeout);
-  }, [showIntro]);
-
-  function dismissIntro() {
-    setShowIntro(false);
-    try {
-      window.sessionStorage.setItem("et-compass-intro-seen", "1");
-    } catch {}
-  }
+  }, [introState]);
 
   return (
     <div className="min-h-screen overflow-x-hidden bg-[#F0F0F0] text-[#121212] selection:bg-[#F0C020] selection:text-black">
-      {showIntro ? (
+      {introState !== "hidden" ? (
         <div className="fixed inset-0 z-[120] bg-black">
-          <video
-            autoPlay
-            muted
-            playsInline
-            preload="auto"
-            onEnded={dismissIntro}
-            className="h-full w-full object-cover"
-          >
-            <source src="/INTRO.mp4" type="video/mp4" />
-          </video>
+          {introState === "showing" ? (
+            <>
+              <video
+                autoPlay
+                muted
+                playsInline
+                preload="auto"
+                onEnded={dismissIntro}
+                className="h-full w-full object-cover"
+              >
+                <source src="/INTRO.mp4" type="video/mp4" />
+              </video>
 
-          <button
-            type="button"
-            onClick={dismissIntro}
-            className="absolute right-5 top-5 border-2 border-white bg-black/65 px-4 py-2 text-[11px] font-black uppercase tracking-[0.2em] text-white shadow-[4px_4px_0px_0px_black]"
-          >
-            Skip Intro
-          </button>
+              <button
+                type="button"
+                onClick={dismissIntro}
+                className="absolute right-5 top-5 border-2 border-white bg-black/65 px-4 py-2 text-[11px] font-black uppercase tracking-[0.2em] text-white shadow-[4px_4px_0px_0px_black]"
+              >
+                Skip Intro
+              </button>
+            </>
+          ) : null}
         </div>
       ) : null}
 
@@ -368,10 +395,13 @@ export default function HomePage() {
               </Link>
             )}
             <Link
-              href={etCompassContent.hero.primaryCta.href}
-              className={`${btnPrimary} h-12 rounded-none px-6 text-sm`}
+              href={repoHref}
+              target={repoIsExternal ? "_blank" : undefined}
+              rel={repoIsExternal ? "noreferrer" : undefined}
+              className={`${btnPrimary} h-12 gap-2 rounded-full px-5 text-sm`}
             >
-              {etCompassContent.hero.primaryCta.label}
+              <GitHubIcon className="h-4 w-4" />
+              {etCompassContent.brand.repoCta.label}
             </Link>
           </div>
 
@@ -434,11 +464,14 @@ export default function HomePage() {
                 </Link>
               )}
               <Link
-                href={etCompassContent.hero.primaryCta.href}
+                href={repoHref}
+                target={repoIsExternal ? "_blank" : undefined}
+                rel={repoIsExternal ? "noreferrer" : undefined}
                 onClick={() => setMobileOpen(false)}
-                className={`${btnPrimary} justify-center px-4 py-3`}
+                className={`${btnPrimary} justify-center gap-2 rounded-full px-4 py-3`}
               >
-                {etCompassContent.hero.primaryCta.label}
+                <GitHubIcon className="h-4 w-4" />
+                {etCompassContent.brand.repoCta.label}
               </Link>
             </div>
           </div>

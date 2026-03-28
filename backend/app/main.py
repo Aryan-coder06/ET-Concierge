@@ -65,6 +65,13 @@ class ChatResponse(BaseModel):
     verification_notes: list[str] = Field(default_factory=list)
     visual_hint: str | None = None
     response_type: str = "product_query"
+    answer_style: str | None = None
+    presentation: dict[str, Any] | None = None
+    decision: dict[str, Any] | None = None
+    comparison_rows: list[dict[str, Any]] = Field(default_factory=list)
+    bullet_groups: list[dict[str, Any]] = Field(default_factory=list)
+    ui_modules: list[dict[str, Any]] = Field(default_factory=list)
+    html_snippets: list[str] = Field(default_factory=list)
 
 
 class SessionSummary(BaseModel):

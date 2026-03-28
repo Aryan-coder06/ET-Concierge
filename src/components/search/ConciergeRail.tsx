@@ -96,12 +96,16 @@ function buildLiveContextSummary(
 }
 
 function buildNextActions(latestAssistantMessage: ChatMessage | null) {
+  const nextActionModule = latestAssistantMessage?.uiModules?.find(
+    (module) => module.module_type === "next_action" && module.visible !== false
+  );
   const chips = latestAssistantMessage?.chips || [];
   const roadmapSteps = latestAssistantMessage?.roadmap?.steps || [];
 
   return {
     chips: chips.slice(0, 3),
     roadmapSteps: roadmapSteps.slice(0, 3),
+    nextActionModule,
   };
 }
 
@@ -112,6 +116,7 @@ function buildProfileSnapshot(
   const profile: ProfileSnapshot =
     session?.profile || session?.journey_history?.at(-1)?.profile_snapshot || {};
   const currentLane =
+    latestAssistantMessage?.decision?.primary_recommendation?.display_product ||
     latestAssistantMessage?.recommendedProducts?.[0] ||
     session?.recommended_products?.[0] ||
     "ET Compass";
@@ -380,6 +385,24 @@ export function ConciergeRail({
                       </span>
                     </button>
                   ))}
+                </div>
+              </section>
+            ) : null}
+
+            {!nextActions.roadmapSteps.length &&
+            nextActions.nextActionModule?.payload &&
+            typeof nextActions.nextActionModule.payload === "object" ? (
+              <section className="border-2 border-black bg-[#E7F7EA] p-3 shadow-[4px_4px_0px_0px_black]">
+                <p className="text-[10px] font-black uppercase tracking-[0.24em] text-[#163A21]">
+                  Next Best Action
+                </p>
+                <div className="mt-3 border-2 border-black bg-white p-3 shadow-[3px_3px_0px_0px_black]">
+                  <p className="text-[10px] font-black uppercase">
+                    {String(nextActions.nextActionModule.payload.label || "Explore the next ET step")}
+                  </p>
+                  <p className="mt-2 text-[10px] font-medium leading-4 text-black/75">
+                    {String(nextActions.nextActionModule.payload.reason || "Luna has picked the next ET move for this query.")}
+                  </p>
                 </div>
               </section>
             ) : null}

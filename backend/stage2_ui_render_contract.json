@@ -1,0 +1,125 @@
+{
+  "version": "stage2.v1",
+  "goal": "Choose the best presentation mode while keeping the answer natural.",
+  "modes": {
+    "plain_text": {
+      "use_when": [
+        "simple product explanation",
+        "user asks casually",
+        "single direct question"
+      ]
+    },
+    "bullets": {
+      "use_when": [
+        "user explicitly asks for bullet points",
+        "the answer contains 3+ benefits or steps",
+        "scanability matters"
+      ]
+    },
+    "table": {
+      "use_when": [
+        "comparison questions",
+        "best-for matrix",
+        "product choice prompts"
+      ]
+    },
+    "roadmap": {
+      "use_when": [
+        "user asks for a journey or plan",
+        "next best actions over time are useful"
+      ]
+    },
+    "rich_html": {
+      "use_when": [
+        "the frontend supports sanitized HTML rendering",
+        "a compact card/table/timeline improves usability"
+      ],
+      "allowed_components": [
+        "comparison-card-grid",
+        "profile-summary-card",
+        "verification-box",
+        "next-action-card",
+        "timeline-list"
+      ]
+    }
+  },
+  "default_policy": [
+    "Always produce a natural language answer first.",
+    "Then optionally attach structured modules.",
+    "Do not show live market widgets unless the current_lane or query intent is markets.",
+    "Do not show learning widgets on a pure markets query and vice versa.",
+    "Do not use decorative widgets when the user asked a narrow factual question."
+  ],
+  "html_policy": {
+    "recommendation": "Prefer structured JSON rendered by frontend components. Use HTML only for controlled snippets.",
+    "sanitization_required": true,
+    "safe_tags": [
+      "div",
+      "section",
+      "p",
+      "ul",
+      "ol",
+      "li",
+      "table",
+      "thead",
+      "tbody",
+      "tr",
+      "th",
+      "td",
+      "strong",
+      "em",
+      "span"
+    ],
+    "blocked": [
+      "script",
+      "style",
+      "iframe",
+      "img",
+      "svg",
+      "video",
+      "audio"
+    ]
+  },
+  "ui_sync_rules": [
+    "All visible UI modules must derive from the same decision object used for prose.",
+    "If the primary recommendation is ET Masterclass, the sidebar best lane cannot say ET Markets.",
+    "If the answer confidence is low, show a verification box instead of a strong recommendation card.",
+    "If the user asks for concise output, reduce UI module count."
+  ],
+  "sample_modules": [
+    {
+      "module_type": "profile_card",
+      "payload": {
+        "title": "Your ET Profile",
+        "fields": {
+          "user_type": "Student",
+          "goal": "Learn investing",
+          "current_lane": "Learning",
+          "preference": "Guided learning"
+        }
+      }
+    },
+    {
+      "module_type": "comparison_table",
+      "payload": {
+        "columns": [
+          "Product",
+          "Best For",
+          "Why"
+        ],
+        "rows": [
+          [
+            "ET Prime",
+            "Broad entry",
+            "Best starting point for general ET discovery"
+          ],
+          [
+            "ET Masterclass",
+            "Guided learning",
+            "Structured learning for beginners"
+          ]
+        ]
+      }
+    }
+  ]
+}

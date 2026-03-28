@@ -6,10 +6,32 @@ from typing import Any
 
 
 BACKEND_ROOT = Path(__file__).resolve().parents[2]
-SOURCE_PACK_PATH = BACKEND_ROOT / "backend_data_et_sources.json"
-PRODUCT_PACK_PATH = BACKEND_ROOT / "backend_data_et_product_registry.json"
-EVAL_PACK_PATH = BACKEND_ROOT / "backend_data_et_eval_prompts.json"
-BOOTSTRAP_CHUNKS_PATH = BACKEND_ROOT / "backend_data_et_chunks.jsonl"
+STAGE1_ROOT = BACKEND_ROOT / "STAGE_1"
+
+
+def _first_existing_path(*paths: Path) -> Path:
+    for path in paths:
+        if path.exists():
+            return path
+    return paths[0]
+
+
+SOURCE_PACK_PATH = _first_existing_path(
+    BACKEND_ROOT / "backend_data_et_sources.json",
+    STAGE1_ROOT / "backend_data_et_sources.json",
+)
+PRODUCT_PACK_PATH = _first_existing_path(
+    BACKEND_ROOT / "backend_data_et_product_registry.json",
+    STAGE1_ROOT / "backend_data_et_product_registry.json",
+)
+EVAL_PACK_PATH = _first_existing_path(
+    BACKEND_ROOT / "backend_data_et_eval_prompts.json",
+    STAGE1_ROOT / "backend_data_et_eval_prompts.json",
+)
+BOOTSTRAP_CHUNKS_PATH = _first_existing_path(
+    BACKEND_ROOT / "backend_data_et_chunks.jsonl",
+    STAGE1_ROOT / "backend_data_et_chunks.jsonl",
+)
 
 PRODUCT_NAME_OVERRIDES = {
     "et masterclass": "ETMasterclass",

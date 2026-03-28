@@ -1,0 +1,125 @@
+{
+  "version": "stage2.v1",
+  "description": "Unified response object for ET Concierge. One source of truth for prose + UI.",
+  "fields": {
+    "query_analysis": {
+      "primary_intent": "discovery | comparison | product_explanation | markets | learning | events | benefits | profile_update | roadmap | support",
+      "secondary_intents": [
+        "string"
+      ],
+      "requires_live_context": true,
+      "requires_table": false,
+      "requires_bullets": true,
+      "requires_roadmap": false,
+      "depth_mode": "brief | standard | deep",
+      "tone_mode": "friendly_professional | executive | beginner_guide | concierge"
+    },
+    "profile_state": {
+      "user_type": "student | working_professional | active_market_user | beginner_investor | explorer | unknown",
+      "experience_level": "beginner | intermediate | advanced | unknown",
+      "goal": "string",
+      "preferences": [
+        "guided_learning",
+        "markets_tools",
+        "premium_insights",
+        "events",
+        "low_noise",
+        "short_time"
+      ],
+      "constraints": [
+        "time_limited",
+        "low_confidence",
+        "beginner_friendly"
+      ]
+    },
+    "retrieval_state": {
+      "top_sources": [
+        {
+          "title": "string",
+          "url": "string",
+          "source_type": "faq | about | plans | app_listing | event_portal | benefits | other",
+          "confidence": 0.0
+        }
+      ],
+      "conflicts_detected": [
+        "string"
+      ],
+      "missing_information": [
+        "string"
+      ]
+    },
+    "decision": {
+      "primary_recommendation": {
+        "product": "ET Prime | ET Markets | ET Portfolio | ET Masterclass | ET Events | ET Benefits | Mixed Path",
+        "why": [
+          "string"
+        ],
+        "confidence": "low | medium | high"
+      },
+      "secondary_recommendations": [
+        {
+          "product": "string",
+          "why": [
+            "string"
+          ]
+        }
+      ],
+      "current_lane": "learning | markets | discovery | premium_insights | benefits | events",
+      "next_best_action": {
+        "label": "string",
+        "href": "/search or ET link",
+        "reason": "string"
+      }
+    },
+    "answer_plan": {
+      "sections": [
+        "direct_answer",
+        "why_this_fits",
+        "comparison_table",
+        "next_steps",
+        "assumptions_and_limits"
+      ],
+      "must_answer_all_parts": true,
+      "max_words": 220
+    },
+    "final_render": {
+      "plain_answer_markdown": "string",
+      "comparison_rows": [
+        {
+          "item": "string",
+          "best_for": "string",
+          "why": "string"
+        }
+      ],
+      "bullet_groups": [
+        {
+          "title": "string",
+          "items": [
+            "string"
+          ]
+        }
+      ],
+      "roadmap_steps": [
+        {
+          "step": "string",
+          "action": "string",
+          "reason": "string"
+        }
+      ],
+      "ui_modules": [
+        {
+          "module_type": "profile_card | recommendation_card | comparison_table | live_context | next_action | verification_box",
+          "visible": true,
+          "priority": 1,
+          "payload": {}
+        }
+      ]
+    }
+  },
+  "hard_rules": [
+    "The primary recommendation in prose must match the primary recommendation in UI.",
+    "If the user asks multiple questions, answer every question before showing UI modules.",
+    "If the user explicitly requests bullets or tables, honor that format.",
+    "If confidence is low or sources conflict, show a verification box."
+  ]
+}

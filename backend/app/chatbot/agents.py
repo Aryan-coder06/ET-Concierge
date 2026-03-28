@@ -3,6 +3,7 @@ import logging
 import re
 from datetime import datetime, timezone
 from functools import lru_cache
+from typing import Any
 
 from langchain_core.messages import AIMessage, HumanMessage, SystemMessage
 from langchain_google_genai import ChatGoogleGenerativeAI
@@ -20,6 +21,12 @@ from .registry import (
 )
 from .retriever_service import get_persona_chunks, get_product_chunks
 from .state import AgentState, REQUIRED_PROFILE_FIELDS
+from .stage2 import (
+    build_stage2_decision,
+    load_stage2_answer_style_policy,
+    load_stage2_ui_render_contract,
+    to_display_product_name,
+)
 
 
 logger = logging.getLogger(__name__)
@@ -779,15 +786,135 @@ def chitchat_node(state: AgentState) -> AgentState:
     }
 
 
-def response_generator_node(state: AgentState) -> AgentState:
+def planner_node(state: AgentState) -> AgentState:
     if state.get("response", {}).get("type") == "profiling":
-        return state
+        return {**state, "stage2_decision": None}
 
     recommended_products = route_user_intent_to_products(
         state["current_message"],
         state["profile"],
         state.get("journey_history", []),
     )
+    verification_notes = build_verification_notes(
+        state["current_message"],
+        recommended_products,
+    )
+    source_citations = _build_source_citations(
+        state["retrieved_chunks"],
+        recommended_products,
+        query=state["current_message"],
+    )
+    decision = build_stage2_decision(
+        query=state["current_message"],
+        profile=state["profile"],
+        journey_history=state.get("journey_history", []),
+        source_citations=source_citations,
+        verification_notes=verification_notes,
+        retrieved_chunks=state["retrieved_chunks"],
+    )
+    return {**state, "stage2_decision": decision}
+
+
+def _stage2_primary_and_secondary_products(stage2_decision: dict[str, Any]) -> list[str]:
+    decision = stage2_decision.get("decision", {})
+    primary = decision.get("primary_recommendation", {}).get("product")
+    products: list[str] = []
+
+    if primary == "Mixed Path":
+        for item in decision.get("secondary_recommendations", [])[:2]:
+            product_name = canonical_product_name(item.get("product"))
+            if product_name and product_name not in products:
+                products.append(product_name)
+    else:
+        primary_name = canonical_product_name(primary)
+        if primary_name:
+            products.append(primary_name)
+
+    for item in decision.get("secondary_recommendations", [])[:2]:
+        product_name = canonical_product_name(item.get("product"))
+        if product_name and product_name not in products:
+            products.append(product_name)
+
+    return products
+
+
+def _stage2_visual_hint(stage2_decision: dict[str, Any]) -> str | None:
+    query_analysis = stage2_decision.get("query_analysis", {})
+    current_lane = stage2_decision.get("decision", {}).get("current_lane")
+    requires_live_context = query_analysis.get("requires_live_context", False)
+
+    if query_analysis.get("primary_intent") == "markets":
+        return "markets_tools" if requires_live_context else None
+    if current_lane == "markets" and requires_live_context:
+        return "portfolio_view"
+    if query_analysis.get("primary_intent") == "learning":
+        return "learning_lane"
+    if query_analysis.get("primary_intent") == "events":
+        return "events_network"
+    if query_analysis.get("primary_intent") == "benefits":
+        return "trust_signal"
+    if query_analysis.get("primary_intent") in {"discovery", "comparison", "product_explanation"}:
+        return "ecosystem_map"
+    return None
+
+
+def _stage2_presentation(stage2_decision: dict[str, Any]) -> dict[str, Any]:
+    query_analysis = stage2_decision.get("query_analysis", {})
+    ui_policy = load_stage2_ui_render_contract()
+    concise = query_analysis.get("depth_mode") == "brief"
+    has_comparison = bool(stage2_decision.get("comparison_rows"))
+    has_bullets = bool(stage2_decision.get("bullet_groups"))
+    visual_hint = _stage2_visual_hint(stage2_decision)
+
+    module_count = 0
+    if visual_hint:
+        module_count += 1
+    if has_comparison:
+        module_count += 1
+    if has_bullets:
+        module_count += 1
+    if stage2_decision.get("decision", {}).get("next_best_action"):
+        module_count += 1
+
+    if concise and module_count > 2:
+        visual_hint = None
+
+    return {
+        "answer_style": query_analysis.get("depth_mode", "standard"),
+        "show_visual_panel": bool(visual_hint),
+        "show_recommended_products": True,
+        "show_navigator_summary": not concise,
+        "show_roadmap": bool(query_analysis.get("requires_roadmap")),
+        "show_chips": not concise,
+        "show_bullet_groups": has_bullets,
+        "show_comparison_table": has_comparison,
+        "module_policy": ui_policy.get("default_policy", []),
+    }
+
+
+def _build_markdown_table(rows: list[dict[str, str]]) -> str:
+    if not rows:
+        return ""
+    header = "| Product | Best For | Why |\n|---|---|---|"
+    body = "\n".join(
+        f"| {row['item']} | {row['best_for']} | {row['why']} |" for row in rows
+    )
+    return f"{header}\n{body}"
+
+
+def response_generator_node(state: AgentState) -> AgentState:
+    if state.get("response", {}).get("type") == "profiling":
+        return state
+
+    stage2_decision = state.get("stage2_decision") or build_stage2_decision(
+        query=state["current_message"],
+        profile=state["profile"],
+        journey_history=state.get("journey_history", []),
+        source_citations=[],
+        verification_notes=[],
+        retrieved_chunks=state["retrieved_chunks"],
+    )
+    recommended_products = _stage2_primary_and_secondary_products(stage2_decision)
     verification_notes = build_verification_notes(
         state["current_message"],
         recommended_products,
@@ -809,11 +936,15 @@ def response_generator_node(state: AgentState) -> AgentState:
         verification_notes,
         onboarding_complete=state["onboarding_complete"],
     )
-    visual_hint = build_visual_hint(
+    visual_hint = _stage2_visual_hint(stage2_decision) or build_visual_hint(
         state["current_message"],
         recommended_products,
         verification_notes,
     )
+    presentation = _stage2_presentation(stage2_decision)
+    comparison_rows = stage2_decision.get("comparison_rows", [])
+    bullet_groups = stage2_decision.get("bullet_groups", [])
+    ui_modules = stage2_decision.get("ui_modules", [])
 
     context_parts: list[str] = []
     for chunk in state["retrieved_chunks"]:
@@ -823,6 +954,9 @@ def response_generator_node(state: AgentState) -> AgentState:
 
     rag_context = "\n\n".join(context_parts)
     registry_context = product_registry_context(recommended_products)
+    stage2_style_policy = load_stage2_answer_style_policy()
+    query_analysis = stage2_decision.get("query_analysis", {})
+    decision = stage2_decision.get("decision", {})
     history = []
     for message in state["messages"][-8:]:
         if message.get("role") == "assistant":
@@ -849,12 +983,20 @@ Retrieved ET context:
 Verification notes:
 {json.dumps(verification_notes, indent=2) if verification_notes else "No special verification note for this turn."}
 
+Stage 2 answer style policy:
+{stage2_style_policy}
+
+Stage 2 decision object:
+{json.dumps(stage2_decision, indent=2)}
+
 Rules:
-- Be concise and useful. Keep the answer within 3 to 5 sentences.
-- If you recommend a product, explain why it fits this user.
+- Answer the user's question directly first, then explain why the recommendation fits.
+- Keep the answer within the max words from answer_plan unless the user explicitly asked for more.
+- Use the requested format naturally. If comparison_rows or bullet_groups are present, you may briefly introduce them instead of repeating them in prose.
 - Use the retrieved ET context and structured registry facts when available and do not invent product features.
-- Return plain text only. Do not use markdown, asterisks, bold markers, or code formatting.
+- Return markdown-safe text only. No HTML and no code formatting.
 - Do not mention discounts, prices, offers, or claims unless they are explicitly present in the ET context or verification notes.
+- Make sure the primary recommendation in prose matches the primary recommendation in the decision object.
 - If the user asks for an overview of ET products, give a clean working list from the retrieved context and make it clear you are summarizing the main options you found.
 - If the message is chitchat, answer naturally and mention that you can guide users across ET products and journeys.
 - If context is weak, be honest and give the best available direction.
@@ -875,6 +1017,25 @@ Rules:
             )
         )
 
+    if comparison_rows and query_analysis.get("requires_table"):
+        table_intro = (
+            "Here is the simplest ET comparison for your question:\n\n"
+            if query_analysis.get("depth_mode") != "brief"
+            else ""
+        )
+        table_markdown = _build_markdown_table(comparison_rows)
+        recommendation_tail = ""
+        primary_display = decision.get("primary_recommendation", {}).get("display_product") or to_display_product_name(
+            recommended_products[0] if recommended_products else None
+        )
+        why_items = decision.get("primary_recommendation", {}).get("why", [])
+        if primary_display:
+            recommendation_tail = (
+                f"\n\nRecommendation: {primary_display} is the best first step here"
+                + (f" because {why_items[0]}." if why_items else ".")
+            )
+        reply = f"{reply}\n\n{table_intro}{table_markdown}{recommendation_tail}".strip()
+
     return {
         **state,
         "response": {
@@ -888,6 +1049,13 @@ Rules:
             "source_citations": source_citations,
             "navigator_summary": navigator_summary,
             "visual_hint": visual_hint,
+            "answer_style": query_analysis.get("depth_mode", "standard"),
+            "presentation": presentation,
+            "decision": decision,
+            "comparison_rows": comparison_rows,
+            "bullet_groups": bullet_groups,
+            "ui_modules": ui_modules,
+            "html_snippets": stage2_decision.get("html_snippets", []),
             "show_roadmap": False,
         },
     }
@@ -1358,16 +1526,22 @@ def get_chips(state: AgentState) -> list[str]:
 def output_formatter_node(state: AgentState) -> AgentState:
     profile = state["profile"]
     response = state["response"]
+    presentation = response.get("presentation") or {}
     show_roadmap = (
-        state["onboarding_complete"]
-        and response.get("type") in {"product_query", "profiling"}
-        and len(state["messages"]) < 12
+        presentation.get("show_roadmap")
+        if "show_roadmap" in presentation
+        else (
+            state["onboarding_complete"]
+            and response.get("type") in {"product_query", "profiling"}
+            and len(state["messages"]) < 12
+        )
     )
 
     structured_response = {
         "session_id": state["session_id"],
         "message": response["message"],
         "profile_update": {
+            "name": profile.get("name"),
             "intent": profile.get("intent"),
             "sophistication": profile.get("sophistication"),
             "goal": profile.get("goal"),
@@ -1391,6 +1565,13 @@ def output_formatter_node(state: AgentState) -> AgentState:
         "source_citations": response.get("source_citations", []),
         "verification_notes": response.get("verification_notes", []),
         "visual_hint": response.get("visual_hint"),
+        "answer_style": response.get("answer_style"),
+        "presentation": presentation,
+        "decision": response.get("decision"),
+        "comparison_rows": response.get("comparison_rows", []),
+        "bullet_groups": response.get("bullet_groups", []),
+        "ui_modules": response.get("ui_modules", []),
+        "html_snippets": response.get("html_snippets", []),
     }
 
     return {**state, "response": structured_response}
@@ -1425,7 +1606,14 @@ def state_updater_node(state: AgentState) -> AgentState:
         "roadmap": state["response"].get("roadmap"),
         "chips": list(state["response"].get("chips", [])),
         "visual_hint": state["response"].get("visual_hint"),
+        "answer_style": state["response"].get("answer_style"),
+        "presentation": state["response"].get("presentation"),
+        "decision": state["response"].get("decision"),
+        "comparison_rows": list(state["response"].get("comparison_rows", [])),
+        "bullet_groups": list(state["response"].get("bullet_groups", [])),
+        "ui_modules": list(state["response"].get("ui_modules", [])),
         "profile_snapshot": {
+            "name": state["profile"].get("name"),
             "intent": state["profile"].get("intent"),
             "sophistication": state["profile"].get("sophistication"),
             "goal": state["profile"].get("goal"),

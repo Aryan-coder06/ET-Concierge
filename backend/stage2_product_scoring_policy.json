@@ -1,0 +1,172 @@
+{
+  "version": "stage2.v1",
+  "products": {
+    "ET Prime": {
+      "strengths": [
+        "premium_insights",
+        "broad_discovery",
+        "low_noise",
+        "beginner_friendly",
+        "time_efficient"
+      ],
+      "weaknesses": [
+        "not_primary_learning_program",
+        "not_live_markets_terminal"
+      ],
+      "good_for": [
+        "working_professional",
+        "beginner_investor",
+        "business_news_reader",
+        "broad_explorer"
+      ]
+    },
+    "ET Markets": {
+      "strengths": [
+        "market_tracking",
+        "live_context",
+        "screeners",
+        "alerts",
+        "discovery_for_active_users"
+      ],
+      "weaknesses": [
+        "can_be_noisy_for_beginners",
+        "not_best_first_step_for_guided_learning"
+      ],
+      "good_for": [
+        "active_market_user",
+        "trader",
+        "market_focused_user"
+      ]
+    },
+    "ET Portfolio": {
+      "strengths": [
+        "tracking",
+        "goals",
+        "watchlists",
+        "portfolio_context"
+      ],
+      "weaknesses": [
+        "not_primary_learning_entry_point",
+        "not_broker_execution"
+      ],
+      "good_for": [
+        "existing_investor",
+        "tracking_oriented_user",
+        "goal_based_user"
+      ]
+    },
+    "ET Masterclass": {
+      "strengths": [
+        "guided_learning",
+        "structured_learning",
+        "beginner_friendly",
+        "skills_growth"
+      ],
+      "weaknesses": [
+        "not_live_market_surface",
+        "not_broad_news_entry_point"
+      ],
+      "good_for": [
+        "student",
+        "beginner_investor",
+        "guided_learner",
+        "upskilling_user"
+      ]
+    },
+    "ET Events": {
+      "strengths": [
+        "community",
+        "summits",
+        "live_experiences",
+        "industry_exposure"
+      ],
+      "weaknesses": [
+        "not_primary_everyday_entry_point"
+      ],
+      "good_for": [
+        "networking_user",
+        "event_seeker",
+        "industry_explorer"
+      ]
+    },
+    "ET Benefits": {
+      "strengths": [
+        "member_value",
+        "partner_offers",
+        "subscription_perks"
+      ],
+      "weaknesses": [
+        "not_primary_knowledge_entry_point"
+      ],
+      "good_for": [
+        "value_maximizer",
+        "existing_member"
+      ]
+    }
+  },
+  "signal_weights": {
+    "guided_learning": {
+      "ET Masterclass": 5,
+      "ET Prime": 2,
+      "ET Markets": -2,
+      "ET Portfolio": 0,
+      "ET Events": 1,
+      "ET Benefits": 0
+    },
+    "premium_insights": {
+      "ET Prime": 5,
+      "ET Markets": 2,
+      "ET Masterclass": 1
+    },
+    "live_market_tools": {
+      "ET Markets": 5,
+      "ET Portfolio": 3,
+      "ET Prime": 1,
+      "ET Masterclass": -2
+    },
+    "beginner": {
+      "ET Prime": 3,
+      "ET Masterclass": 4,
+      "ET Markets": -1,
+      "ET Portfolio": 0
+    },
+    "time_limited": {
+      "ET Prime": 4,
+      "ET Masterclass": 2,
+      "ET Markets": -1
+    },
+    "low_noise": {
+      "ET Prime": 4,
+      "ET Masterclass": 3,
+      "ET Markets": -2
+    },
+    "active_market_user": {
+      "ET Markets": 5,
+      "ET Portfolio": 3,
+      "ET Prime": 2
+    },
+    "events_interest": {
+      "ET Events": 5,
+      "ET Prime": 1
+    },
+    "member_value": {
+      "ET Benefits": 5,
+      "ET Prime": 2
+    }
+  },
+  "routing_rules": [
+    "Compute scores from profile preferences, explicit prompt hints, and conversation memory.",
+    "Pick the highest score as primary recommendation unless confidence is low.",
+    "If two products are close and naturally complementary, return Mixed Path.",
+    "Do not default to ET Markets unless the user is clearly asking for markets, live context, or active tracking.",
+    "If guided_learning is present, ET Masterclass or ET Prime should outrank ET Markets unless strong markets signals are also present.",
+    "If the user is brand-new and asks generally where to start, ET Prime is the safe default broad lane unless a stronger learning or market signal exists."
+  ],
+  "output_requirements": [
+    "Return scored_products list.",
+    "Return primary_recommendation.",
+    "Return secondary_recommendations.",
+    "Return current_lane.",
+    "Return reason traces for each top recommendation."
+  ]
+}

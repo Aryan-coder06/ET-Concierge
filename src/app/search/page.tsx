@@ -7,7 +7,10 @@ import { ResponseInsightPanel } from "@/components/search/ResponseInsightPanel";
 import { ThreadRail } from "@/components/search/ThreadRail";
 import type {
   AnswerStyle,
+  BulletGroup,
   ChatMessage,
+  ComparisonRow,
+  DecisionSummary,
   JourneyEvent,
   MarketSnapshot,
   NavigatorSummary,
@@ -19,6 +22,7 @@ import type {
   SourceCitation,
   SourceItem,
   ThreadSummary,
+  UiModule,
 } from "@/components/search/types";
 import { etCompassContent } from "@/content/etCompassContent";
 import { getApiBaseUrl, getApiConfigurationError } from "@/lib/api-base-url";
@@ -224,6 +228,7 @@ function extractProfileSnapshot(value: unknown): ProfileSnapshot {
   if (!isJsonRecord(value)) return {};
 
   return {
+    name: readString(value.name),
     intent: readString(value.intent),
     sophistication: readString(value.sophistication),
     goal: readString(value.goal),
@@ -234,6 +239,111 @@ function extractProfileSnapshot(value: unknown): ProfileSnapshot {
     onboarding_complete:
       typeof value.onboarding_complete === "boolean" ? value.onboarding_complete : undefined,
   };
+}
+
+function extractComparisonRows(value: unknown): ComparisonRow[] {
+  if (!isJsonRecord(value) || !Array.isArray(value.comparison_rows)) return [];
+
+  return value.comparison_rows
+    .map((item) => {
+      if (!isJsonRecord(item)) return null;
+      const row: ComparisonRow = {
+        item: readString(item.item) || "",
+        best_for: readString(item.best_for) || "",
+        why: readString(item.why) || "",
+      };
+      if (!row.item || !row.best_for || !row.why) return null;
+      return row;
+    })
+    .filter((item): item is ComparisonRow => Boolean(item));
+}
+
+function extractBulletGroups(value: unknown): BulletGroup[] {
+  if (!isJsonRecord(value) || !Array.isArray(value.bullet_groups)) return [];
+
+  return value.bullet_groups
+    .map((item) => {
+      if (!isJsonRecord(item)) return null;
+      const title = readString(item.title);
+      const items = extractStringArray(item.items);
+      if (!title || items.length === 0) return null;
+      return { title, items };
+    })
+    .filter((item): item is BulletGroup => Boolean(item));
+}
+
+function extractDecision(value: unknown): DecisionSummary | null {
+  if (!isJsonRecord(value) || !isJsonRecord(value.decision)) return null;
+  const raw = value.decision;
+
+  const primary = isJsonRecord(raw.primary_recommendation)
+    ? {
+        product: readString(raw.primary_recommendation.product),
+        display_product: readString(raw.primary_recommendation.display_product),
+        why: extractStringArray(raw.primary_recommendation.why),
+        confidence: readString(raw.primary_recommendation.confidence),
+      }
+    : undefined;
+
+  const secondary = Array.isArray(raw.secondary_recommendations)
+    ? raw.secondary_recommendations
+        .map((item) => {
+          if (!isJsonRecord(item)) return null;
+          return {
+            product: readString(item.product),
+            display_product: readString(item.display_product),
+            why: extractStringArray(item.why),
+          };
+        })
+        .filter(Boolean) as NonNullable<DecisionSummary["secondary_recommendations"]>
+    : [];
+
+  const nextBestAction = isJsonRecord(raw.next_best_action)
+    ? {
+        label: readString(raw.next_best_action.label),
+        href: readString(raw.next_best_action.href),
+        reason: readString(raw.next_best_action.reason),
+      }
+    : undefined;
+
+  const scoredProducts = Array.isArray(raw.scored_products)
+    ? raw.scored_products
+        .map((item) => {
+          if (!isJsonRecord(item)) return null;
+          return {
+            product: readString(item.product),
+            display_product: readString(item.display_product),
+            score: typeof item.score === "number" ? item.score : Number(item.score),
+            reasons: extractStringArray(item.reasons),
+          };
+        })
+        .filter((item) => Boolean(item?.product)) as NonNullable<DecisionSummary["scored_products"]>
+    : [];
+
+  return {
+    primary_recommendation: primary,
+    secondary_recommendations: secondary,
+    current_lane: readString(raw.current_lane),
+    next_best_action: nextBestAction,
+    scored_products: scoredProducts,
+    signals: extractStringArray(raw.signals),
+  };
+}
+
+function extractUiModules(value: unknown): UiModule[] {
+  if (!isJsonRecord(value) || !Array.isArray(value.ui_modules)) return [];
+
+  return value.ui_modules
+    .map((item) => {
+      if (!isJsonRecord(item)) return null;
+      return {
+        module_type: readString(item.module_type) || "recommendation_card",
+        visible: typeof item.visible === "boolean" ? item.visible : undefined,
+        priority: typeof item.priority === "number" ? item.priority : Number(item.priority),
+        payload: isJsonRecord(item.payload) ? item.payload : undefined,
+      };
+    })
+    .filter(Boolean) as UiModule[];
 }
 
 function extractPresentation(value: unknown): ResponsePresentation | null {
@@ -291,6 +401,10 @@ function extractJourneyEvent(value: unknown): JourneyEvent | null {
     visual_hint: readString(value.visual_hint),
     answer_style: readString(value.answer_style),
     presentation: extractPresentation(value.presentation),
+    decision: extractDecision(value),
+    comparison_rows: extractComparisonRows(value),
+    bullet_groups: extractBulletGroups(value),
+    ui_modules: extractUiModules(value),
     profile_snapshot: extractProfileSnapshot(value.profile_snapshot),
   };
 }
@@ -899,6 +1013,15 @@ export default function SearchPage() {
         visualHint: readString(data.visual_hint) || null,
         answerStyle: readString(data.answer_style),
         presentation: extractPresentation(data.presentation),
+        decision: extractDecision(data),
+        comparisonRows: extractComparisonRows(data),
+        bulletGroups: extractBulletGroups(data),
+        uiModules: extractUiModules(data),
+        htmlSnippets: Array.isArray(data.html_snippets)
+          ? data.html_snippets
+              .map((item: unknown) => readString(item))
+              .filter((item: string | undefined): item is string => Boolean(item))
+          : [],
       };
 
       appendMessage(threadId, assistantMessage);
@@ -1072,9 +1195,18 @@ export default function SearchPage() {
                     const showRoadmap =
                       message.presentation?.show_roadmap ??
                       Boolean(message.roadmap && message.roadmap.steps && message.roadmap.steps.length > 0);
+                    const showBulletGroups =
+                      message.presentation?.show_bullet_groups ??
+                      Boolean(message.bulletGroups && message.bulletGroups.length > 0);
+                    const showComparisonTable =
+                      message.presentation?.show_comparison_table ??
+                      Boolean(message.comparisonRows && message.comparisonRows.length > 0);
                     const showChips =
                       message.presentation?.show_chips ??
                       Boolean(message.chips && message.chips.length > 0);
+                    const nextActionModule = message.uiModules?.find(
+                      (module) => module.module_type === "next_action" && module.visible !== false
+                    );
 
                     return (
                       <div
@@ -1103,6 +1235,56 @@ export default function SearchPage() {
                           <p className="whitespace-pre-wrap text-[13px] leading-6 sm:text-sm">
                             {message.content}
                           </p>
+
+                          {!isUser && showBulletGroups && message.bulletGroups && message.bulletGroups.length > 0 ? (
+                            <div className="mt-3 space-y-2">
+                              {message.bulletGroups.map((group) => (
+                                <div key={group.title} className="border-2 border-black bg-white p-3">
+                                  <p className="text-[10px] font-black uppercase tracking-[0.18em] text-[#D02020]">
+                                    {group.title}
+                                  </p>
+                                  <ul className="mt-2 space-y-1.5 text-[12px] font-medium leading-5 sm:text-[13px]">
+                                    {group.items.map((item) => (
+                                      <li key={item} className="flex gap-2">
+                                        <span className="mt-1 h-1.5 w-1.5 shrink-0 rounded-full bg-black" />
+                                        <span>{item}</span>
+                                      </li>
+                                    ))}
+                                  </ul>
+                                </div>
+                              ))}
+                            </div>
+                          ) : null}
+
+                          {!isUser && showComparisonTable && message.comparisonRows && message.comparisonRows.length > 0 ? (
+                            <div className="mt-3 overflow-hidden border-2 border-black bg-white">
+                              <div className="border-b-2 border-black bg-[#F7F7F7] px-3 py-2">
+                                <p className="text-[10px] font-black uppercase tracking-[0.18em] text-[#D02020]">
+                                  ET Comparison
+                                </p>
+                              </div>
+                              <div className="overflow-x-auto">
+                                <table className="min-w-full text-left">
+                                  <thead>
+                                    <tr className="border-b-2 border-black bg-[#FFF6CC]">
+                                      <th className="px-3 py-2 text-[10px] font-black uppercase tracking-[0.16em]">Product</th>
+                                      <th className="px-3 py-2 text-[10px] font-black uppercase tracking-[0.16em]">Best For</th>
+                                      <th className="px-3 py-2 text-[10px] font-black uppercase tracking-[0.16em]">Why</th>
+                                    </tr>
+                                  </thead>
+                                  <tbody>
+                                    {message.comparisonRows.map((row) => (
+                                      <tr key={`${row.item}-${row.best_for}`} className="border-b border-black/20 align-top">
+                                        <td className="px-3 py-2 text-[11px] font-black uppercase">{row.item}</td>
+                                        <td className="px-3 py-2 text-[12px] font-medium">{row.best_for}</td>
+                                        <td className="px-3 py-2 text-[12px] font-medium">{row.why}</td>
+                                      </tr>
+                                    ))}
+                                  </tbody>
+                                </table>
+                              </div>
+                            </div>
+                          ) : null}
 
                           {!isUser && showRecommendedProducts && message.recommendedProducts && message.recommendedProducts.length > 0 ? (
                             <div className="mt-3 border-t-2 border-black/80 pt-2.5">
@@ -1176,6 +1358,34 @@ export default function SearchPage() {
                                   </p>
                                 ))}
                               </div>
+                            </div>
+                          ) : null}
+
+                          {!isUser &&
+                          nextActionModule &&
+                          nextActionModule.payload &&
+                          typeof nextActionModule.payload === "object" ? (
+                            <div className="mt-3 border-2 border-black bg-[#DDE7FF] p-3 shadow-[3px_3px_0px_0px_black]">
+                              <p className="text-[10px] font-black uppercase tracking-[0.18em] text-[#1040C0]">
+                                Next Best Action
+                              </p>
+                              <p className="mt-2 text-[12px] font-black uppercase leading-5 sm:text-[13px]">
+                                {readString(nextActionModule.payload.label) || "Explore the next ET lane"}
+                              </p>
+                              {readString(nextActionModule.payload.reason) ? (
+                                <p className="mt-2 text-[12px] font-medium leading-5 text-black/75 sm:text-[13px]">
+                                  {readString(nextActionModule.payload.reason)}
+                                </p>
+                              ) : null}
+                              {readString(nextActionModule.payload.href) ? (
+                                <a
+                                  href={readString(nextActionModule.payload.href)}
+                                  className="mt-3 inline-flex items-center gap-2 border-2 border-black bg-white px-3 py-2 text-[10px] font-black uppercase tracking-[0.16em] shadow-[3px_3px_0px_0px_black]"
+                                >
+                                  Open next step
+                                  <span aria-hidden="true">→</span>
+                                </a>
+                              ) : null}
                             </div>
                           ) : null}
 

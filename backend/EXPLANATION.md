@@ -477,3 +477,121 @@
 - What I changed: I added follow-up detection for short user turns like `then tell`, `go on`, `continue`, and `retry` when they come right after Luna says it has enough context.
 - Why: Real users often reply with very short follow-ups after setup. The backend should understand that as `okay, now answer me`.
 - Practical effect in simple English: Luna is less likely to stall after profiling and more likely to continue into actual ET guidance.
+
+## 2026-03-28 - Stage 2 RAG upgrade: smarter planning, product scoring, and answer/UI sync
+
+### 1. I added a Stage 2 planning layer before answer generation
+- Where: [backend/app/chatbot/stage2.py](/home/aryan-s/Documents/GENAI/ET-Concierge/backend/app/chatbot/stage2.py), [backend/app/chatbot/graph.py](/home/aryan-s/Documents/GENAI/ET-Concierge/backend/app/chatbot/graph.py), [backend/app/chatbot/agents.py](/home/aryan-s/Documents/GENAI/ET-Concierge/backend/app/chatbot/agents.py)
+- What I changed: I created a new planner layer that runs after retrieval and before the final answer is written. It reads the Stage 2 backend pack you added:
+  - `stage2_response_contract.json`
+  - `stage2_product_scoring_policy.json`
+  - `stage2_ui_render_contract.json`
+  - `stage2_answer_style_policy.md`
+  - `stage2_eval_suite.json`
+- Why: Earlier, Luna mostly went from retrieval straight into answer generation. That worked, but it made the system less disciplined about format, product choice, and UI coordination.
+- Practical effect in simple English: Luna now thinks one step more like a product concierge before it replies. It first decides what kind of question this is, which ET products fit, how deep the answer should be, and whether the UI should help.
+
+### 2. I created a unified Stage 2 decision object
+- Where: [backend/app/chatbot/stage2.py](/home/aryan-s/Documents/GENAI/ET-Concierge/backend/app/chatbot/stage2.py), [backend/app/chatbot/state.py](/home/aryan-s/Documents/GENAI/ET-Concierge/backend/app/chatbot/state.py)
+- What I changed: I added one central decision object that bundles:
+  - query analysis
+  - profile state
+  - retrieval state
+  - product recommendation decision
+  - answer plan
+  - comparison rows
+  - bullet groups
+  - UI modules
+- Why: Without one shared object, the backend answer, sidebar, and widgets can drift apart. One part says one product is best, another part shows something else, and the answer style becomes inconsistent.
+- Practical effect in simple English: The backend now has one source of truth for “what Luna believes right now.” That makes the answer, recommendations, and UI feel more coordinated.
+
+### 3. I added rule-based product scoring instead of relying only on whatever the model feels like saying
+- Where: [backend/app/chatbot/stage2.py](/home/aryan-s/Documents/GENAI/ET-Concierge/backend/app/chatbot/stage2.py)
+- What I changed: I implemented product scoring that combines:
+  - the user’s query intent
+  - the user’s current profile state
+  - conversation memory
+  - explicit product mentions
+  - the Stage 2 scoring policy you provided
+- Why: Previously, product recommendations depended too much on loose model generation and general retrieval context. That is flexible, but it can also drift or over-recommend the same ET lane.
+- Practical effect in simple English: Luna now has a more defendable reason for why it recommends ET Markets, ET Prime, ET Masterclass, ET Events, ET Benefits, ET Wealth Edition, or ET Print Edition.
+
+### 4. I connected the answer and the UI so they follow the same backend plan
+- Where: [backend/app/chatbot/agents.py](/home/aryan-s/Documents/GENAI/ET-Concierge/backend/app/chatbot/service.py), [backend/app/main.py](/home/aryan-s/Documents/GENAI/ET-Concierge/backend/app/main.py)
+- What I changed: The backend now returns structured Stage 2 fields alongside the text answer:
+  - `answer_style`
+  - `presentation`
+  - `decision`
+  - `comparison_rows`
+  - `bullet_groups`
+  - `ui_modules`
+  - `html_snippets`
+- Why: Earlier, the frontend mostly had to infer how to render the reply from a smaller set of fields. That makes it harder to show a comparison table only when it is truly needed, or to surface next-best-action cards cleanly.
+- Practical effect in simple English: Luna can now say not only “what to answer,” but also “how this answer should be shown.”
+
+### 5. I made the final LLM answer follow the Stage 2 plan instead of ignoring it
+- Where: [backend/app/chatbot/agents.py](/home/aryan-s/Documents/GENAI/ET-Concierge/backend/app/chatbot/agents.py)
+- What I changed: I updated the answer generator so the model now sees:
+  - the Stage 2 answer style policy
+  - the Stage 2 decision object
+  - the planned sections and depth
+  - optional comparison data
+- Why: If the model only sees retrieval context, it can still answer well, but it is more likely to be inconsistent in tone, too long or too short, or poorly aligned with the UI.
+- Practical effect in simple English: The final answer is now more likely to match the actual question type. For example:
+  - roadmap query -> more structured guidance
+  - comparison query -> better candidate table
+  - brief ask -> shorter answer
+  - deeper ask -> fuller explanation
+
+### 6. I upgraded the frontend so it can render structured Stage 2 answers instead of only paragraphs
+- Where: [src/components/search/types.ts](/home/aryan-s/Documents/GENAI/ET-Concierge/src/components/search/types.ts), [src/app/search/page.tsx](/home/aryan-s/Documents/GENAI/ET-Concierge/src/app/search/page.tsx), [src/components/search/ConciergeRail.tsx](/home/aryan-s/Documents/GENAI/ET-Concierge/src/components/search/ConciergeRail.tsx)
+- What I changed: The frontend can now parse and display:
+  - bullet groups
+  - comparison tables
+  - next-best-action cards
+  - decision summaries
+  - UI modules from the backend
+- Why: The Stage 2 pack is not only about a smarter backend. It is also about letting the interface show the answer in a form that matches the user’s actual intent.
+- Practical effect in simple English: When useful, Luna can now explain with richer structure instead of forcing everything into one plain paragraph.
+
+### 7. I kept the system more open to natural ET questions while still keeping it ET-focused
+- Where: overall Stage 2 planner and generator flow
+- What I changed: The planner now distinguishes more clearly between:
+  - discovery questions
+  - roadmap questions
+  - comparison questions
+  - markets questions
+  - benefits questions
+  - events questions
+  - profile-driven questions
+- Why: The user goal for this stage was clear: Luna should feel more advanced and more open to natural ET questions, but still remain a personal guide to the ET ecosystem.
+- Practical effect in simple English: The system is moving from “chatbot that answers ET questions” toward “concierge that understands the type of help the user actually wants.”
+
+### 8. I added Stage 2 evaluation support so this can be tested systematically
+- Where: [backend/scripts/run_et_eval.py](/home/aryan-s/Documents/GENAI/ET-Concierge/backend/scripts/run_et_eval.py)
+- What I changed: I extended the eval runner so it can now run the new Stage 2 suite from `stage2_eval_suite.json` and score answers on:
+  - accuracy
+  - groundedness
+  - format obedience
+  - tone quality
+  - recommendation consistency
+  - realism of reasoning
+  - concierge feel
+- Why: A better RAG system should not be judged only by a few manual chats. We need a repeatable way to test whether the new stage is actually helping.
+- Practical effect in simple English: Stage 2 is now measurable, not just “it feels smarter.”
+
+### 9. I hit a real environment limit while running the full Stage 2 eval here
+- Where: [backend/eval_results/latest_et_eval_results.json](/home/aryan-s/Documents/GENAI/ET-Concierge/backend/eval_results/latest_et_eval_results.json)
+- What I changed: I ran the Stage 2 eval pass, but the current coding environment cannot reach MongoDB Atlas because DNS/network access is restricted here.
+- Why: The eval runner itself is wired correctly, but the environment blocks the Mongo connection before real retrieval can happen.
+- Practical effect in simple English: The `0.0` Stage 2 eval result currently in the local file is not telling us the planner is bad. It is telling us this sandbox could not reach the live database. On your real machine or deployed backend, the Stage 2 eval should be run again for a meaningful score.
+
+### 10. I also fixed the Stage 1 research-pack path issue caused by your new file layout
+- Where: [backend/app/chatbot/registry.py](/home/aryan-s/Documents/GENAI/ET-Concierge/backend/app/chatbot/registry.py)
+- What I changed: Your Stage 1 research files are now under `backend/STAGE_1/`, but the old registry loader still expected them at the backend root. I added path fallback logic so the app can still find:
+  - source allow-list
+  - product registry
+  - bootstrap chunks
+  - eval prompts
+- Why: Without this, the old registry-backed RAG path could silently break after the folder reorganization.
+- Practical effect in simple English: The earlier ET research base is still usable even after the new Stage 2 pack was added.

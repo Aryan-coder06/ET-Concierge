@@ -1,2122 +1,459 @@
 {
-  "generated_at": "2026-03-27T09:10:11.083900+00:00",
-  "session_prefix": "eval::20260327090542",
-  "prompt_count": 40,
-  "average_score": 1.0,
+  "generated_at": "2026-03-28T03:53:41.021985+00:00",
+  "suite": "stage2",
+  "session_prefix": "stage2-eval::20260328035340",
+  "prompt_count": 25,
+  "average_score": 0.0,
   "results": [
     {
-      "id": "eval_001",
-      "question": "I'm new to ET. Where should I start?",
-      "expected_behavior": "Offer ET Prime as broad entry point, then tailor follow-up based on whether user wants markets, learning, wealth or events.",
-      "answer": "ET Prime is the broadest ET starting point if you want overall ET access. To guide you properly from there, what brings you to ET today: investing, staying sharp on business news, or growing a business?",
-      "recommended_products": [
-        "ET Prime"
-      ],
-      "source_citations": [
-        {
-          "label": "ET Prime FAQ",
-          "href": "https://economictimes.indiatimes.com/prime/faq",
-          "source_id": "et_prime_faq",
-          "verification_status": "official_public",
-          "page_type": "faq"
-        },
-        {
-          "label": "ET Prime About Us",
-          "href": "https://economictimes.indiatimes.com/prime/about-us",
-          "source_id": "et_prime_about",
-          "verification_status": "official_public",
-          "page_type": "about"
-        }
-      ],
+      "id": "natural_questions_1",
+      "question": "What should I use first in ET if I am totally new?",
+      "answer": "EVAL ERROR: ConfigurationError: All nameservers failed to answer the query _mongodb._tcp.cluster0.9bapwqy.mongodb.net. IN SRV: Server Do53:127.0.0.53@53 answered [Errno 1] Operation not permitted",
+      "recommended_products": [],
+      "source_citations": [],
       "verification_notes": [],
-      "citation_checks": {
-        "ET Prime FAQ or About Us": true
-      },
-      "routing_ok": true,
-      "conflict_ok": true,
-      "hallucination_ok": true,
-      "score": 1.0
+      "score": 0.0,
+      "rubric_scores": {
+        "accuracy": 1,
+        "groundedness": 1,
+        "format_obedience": 1,
+        "tone_quality": 1,
+        "recommendation_consistency": 1,
+        "realism_of_reasoning": 1,
+        "concierge_feel": 1
+      }
     },
     {
-      "id": "eval_002",
-      "question": "What do I get with ET Prime?",
-      "expected_behavior": "Summarize core benefits from FAQ with citations.",
-      "answer": "With an ET Prime membership, you get unlimited access to exclusive, in-depth business and financial insights across 20+ sectors, along with expert stock reports to empower your decision-making. You'll also enjoy a clean, minimal-ad reading experience, complete access to the digital ET Print Edition, and member-only newsletters like PrimeShots and the Morning Newsletter. The membership provides cross-platform access and includes references to ET market tools such as Stock Report Plus.",
-      "recommended_products": [
-        "ET Prime"
-      ],
-      "source_citations": [
-        {
-          "label": "ET Prime Plans / Membership Page",
-          "href": "https://economictimes.indiatimes.com/plans.cms?dc=offpricerisewb10&noredirect=1&offerType=Sale&optz=1&planGroup=NonLoggedIn_2",
-          "source_id": "et_prime_plans",
-          "verification_status": "official_public",
-          "page_type": "plans"
-        },
-        {
-          "label": "ET Prime FAQ",
-          "href": "https://economictimes.indiatimes.com/prime/faq",
-          "source_id": "et_prime_faq",
-          "verification_status": "official_public",
-          "page_type": "faq"
-        },
-        {
-          "label": "ET Prime About Us",
-          "href": "https://economictimes.indiatimes.com/prime/about-us",
-          "source_id": "et_prime_about",
-          "verification_status": "official_public",
-          "page_type": "about"
-        }
-      ],
+      "id": "natural_questions_2",
+      "question": "I want ET to feel less overwhelming. Where do I begin?",
+      "answer": "EVAL ERROR: ConfigurationError: All nameservers failed to answer the query _mongodb._tcp.cluster0.9bapwqy.mongodb.net. IN SRV: Server Do53:127.0.0.53@53 answered [Errno 1] Operation not permitted",
+      "recommended_products": [],
+      "source_citations": [],
       "verification_notes": [],
-      "citation_checks": {
-        "ET Prime FAQ": true
-      },
-      "routing_ok": true,
-      "conflict_ok": true,
-      "hallucination_ok": true,
-      "score": 1.0
+      "score": 0.0,
+      "rubric_scores": {
+        "accuracy": 1,
+        "groundedness": 1,
+        "format_obedience": 1,
+        "tone_quality": 1,
+        "recommendation_consistency": 1,
+        "realism_of_reasoning": 1,
+        "concierge_feel": 1
+      }
     },
     {
-      "id": "eval_003",
-      "question": "Does ET Prime include ePaper?",
-      "expected_behavior": "Answer yes and cite FAQ and/or Wealth/Print pages.",
-      "answer": "ET Prime membership includes complete access to the ET Print Edition, which is the digital copy of our daily newspaper. While some public ET pages show mixed signals regarding \"ePaper\" as a separate subscription, ET Prime members consistently receive the digital newspaper delivered to their email inbox daily. For the latest details, please verify on the live ET page or during checkout.",
-      "recommended_products": [
-        "ET Prime",
-        "ET Print Edition"
-      ],
-      "source_citations": [
-        {
-          "label": "ET Prime Plans / Membership Page",
-          "href": "https://economictimes.indiatimes.com/plans.cms?dc=offpricerisewb10&noredirect=1&offerType=Sale&optz=1&planGroup=NonLoggedIn_2",
-          "source_id": "et_prime_plans",
-          "verification_status": "official_public",
-          "page_type": "plans"
-        },
-        {
-          "label": "ET Prime FAQ",
-          "href": "https://economictimes.indiatimes.com/prime/faq",
-          "source_id": "et_prime_faq",
-          "verification_status": "official_public",
-          "page_type": "faq"
-        },
-        {
-          "label": "ET Print Edition",
-          "href": "https://epaper.indiatimes.com/print_edition",
-          "source_id": "et_print_edition",
-          "verification_status": "official_public",
-          "page_type": "edition_page"
-        },
-        {
-          "label": "ET Prime About Us",
-          "href": "https://economictimes.indiatimes.com/prime/about-us",
-          "source_id": "et_prime_about",
-          "verification_status": "official_public",
-          "page_type": "about"
-        }
-      ],
+      "id": "natural_questions_3",
+      "question": "I have 15 minutes a day. What ET path fits me?",
+      "answer": "EVAL ERROR: ConfigurationError: All nameservers failed to answer the query _mongodb._tcp.cluster0.9bapwqy.mongodb.net. IN SRV: Server Do53:127.0.0.53@53 answered [Errno 1] Operation not permitted",
+      "recommended_products": [],
+      "source_citations": [],
       "verification_notes": [],
-      "citation_checks": {
-        "ET Prime FAQ": true
-      },
-      "routing_ok": true,
-      "conflict_ok": true,
-      "hallucination_ok": true,
-      "score": 1.0
+      "score": 0.0,
+      "rubric_scores": {
+        "accuracy": 1,
+        "groundedness": 1,
+        "format_obedience": 1,
+        "tone_quality": 1,
+        "recommendation_consistency": 1,
+        "realism_of_reasoning": 1,
+        "concierge_feel": 1
+      }
     },
     {
-      "id": "eval_004",
-      "question": "Can I use my ET Prime membership on mobile and desktop?",
-      "expected_behavior": "Answer cross-platform membership.",
-      "answer": "Yes, your ET Prime membership allows you to access all benefits across multiple devices. You can use your membership on the desktop site, as well as on the Android and iOS mobile apps. This ensures you have a consistent experience whether you're on your computer, phone, or tablet.",
-      "recommended_products": [
-        "ET Prime"
-      ],
-      "source_citations": [
-        {
-          "label": "ET Prime Plans / Membership Page",
-          "href": "https://economictimes.indiatimes.com/plans.cms?dc=offpricerisewb10&noredirect=1&offerType=Sale&optz=1&planGroup=NonLoggedIn_2",
-          "source_id": "et_prime_plans",
-          "verification_status": "official_public",
-          "page_type": "plans"
-        },
-        {
-          "label": "ET Prime FAQ",
-          "href": "https://economictimes.indiatimes.com/prime/faq",
-          "source_id": "et_prime_faq",
-          "verification_status": "official_public",
-          "page_type": "faq"
-        },
-        {
-          "label": "ET Prime About Us",
-          "href": "https://economictimes.indiatimes.com/prime/about-us",
-          "source_id": "et_prime_about",
-          "verification_status": "official_public",
-          "page_type": "about"
-        }
-      ],
+      "id": "natural_questions_4",
+      "question": "I want to learn before I start tracking markets. What should I use?",
+      "answer": "EVAL ERROR: ConfigurationError: All nameservers failed to answer the query _mongodb._tcp.cluster0.9bapwqy.mongodb.net. IN SRV: Server Do53:127.0.0.53@53 answered [Errno 1] Operation not permitted",
+      "recommended_products": [],
+      "source_citations": [],
       "verification_notes": [],
-      "citation_checks": {
-        "ET Prime FAQ": true
-      },
-      "routing_ok": true,
-      "conflict_ok": true,
-      "hallucination_ok": true,
-      "score": 1.0
+      "score": 0.0,
+      "rubric_scores": {
+        "accuracy": 1,
+        "groundedness": 1,
+        "format_obedience": 1,
+        "tone_quality": 1,
+        "recommendation_consistency": 1,
+        "realism_of_reasoning": 1,
+        "concierge_feel": 1
+      }
     },
     {
-      "id": "eval_005",
-      "question": "Is ET Prime offering a free trial right now?",
-      "expected_behavior": "Detect conflict, explain mixed signals, do not answer with false certainty.",
-      "answer": "Public ET pages show mixed signals on ET Prime trials right now. The FAQ says there is no trial, while other public ET surfaces have shown free-trial language. Use the latest live ET checkout screen as the final confirmation before treating a trial as available.",
-      "recommended_products": [
-        "ET Prime"
-      ],
-      "source_citations": [
-        {
-          "label": "ET Prime Plans / Membership Page",
-          "href": "https://economictimes.indiatimes.com/plans.cms?dc=offpricerisewb10&noredirect=1&offerType=Sale&optz=1&planGroup=NonLoggedIn_2",
-          "source_id": "et_prime_plans",
-          "verification_status": "official_public",
-          "page_type": "plans"
-        },
-        {
-          "label": "ET Prime FAQ",
-          "href": "https://economictimes.indiatimes.com/prime/faq",
-          "source_id": "et_prime_faq",
-          "verification_status": "official_public",
-          "page_type": "faq"
-        },
-        {
-          "label": "ET Prime About Us",
-          "href": "https://economictimes.indiatimes.com/prime/about-us",
-          "source_id": "et_prime_about",
-          "verification_status": "official_public",
-          "page_type": "about"
-        },
-        {
-          "label": "ET Prime Paywall Screen with Trial Messaging",
-          "href": "https://economictimes.indiatimes.com/prime/collections/in-five-stories-how-india-inc-is-warming-up-to-esg/primearticleshow/96550987.cms?ocid=budgethub",
-          "source_id": "et_prime_trial_paywall",
-          "verification_status": "conflicting_public_signals",
-          "page_type": "paywall"
-        },
-        {
-          "label": "ET Terms & Conditions",
-          "href": "https://economictimes.indiatimes.com/terms-conditions",
-          "source_id": "et_terms",
-          "verification_status": "official_public",
-          "page_type": "terms"
-        }
-      ],
-      "verification_notes": [
-        "ET Prime trial information has mixed public signals right now. Use the official checkout or latest live ET page to confirm the current offer."
-      ],
-      "citation_checks": {
-        "ET Prime FAQ": true,
-        "paywall/terms if available": true
-      },
-      "routing_ok": true,
-      "conflict_ok": true,
-      "hallucination_ok": true,
-      "score": 1.0
-    },
-    {
-      "id": "eval_006",
-      "question": "What ET app should I use for stock tools?",
-      "expected_behavior": "Recommend ET Markets and explain why.",
-      "answer": "You should use the ET Markets app for stock tools. It's designed for active market followers and beginner investors like you, offering a comprehensive market-tools surface. You'll find features such as screeners, stock reports, real-time updates, watchlists, and smart alerts to help with your trading and investing interests. It also provides market news, sentiment tools like Market Mood, and stock recommendations, making it a great single app for market discovery and research.",
-      "recommended_products": [
-        "ET Markets",
-        "ET Portfolio"
-      ],
-      "source_citations": [
-        {
-          "label": "ET Portfolio Home",
-          "href": "https://etportfolio.economictimes.indiatimes.com/",
-          "source_id": "et_portfolio_home",
-          "verification_status": "official_public",
-          "page_type": "product_home"
-        },
-        {
-          "label": "ET Mobile Applications",
-          "href": "https://m.economictimes.com/etmobileapps.cms",
-          "source_id": "et_mobile_apps",
-          "verification_status": "official_public",
-          "page_type": "mobile_apps_portal"
-        },
-        {
-          "label": "ET Markets: Stock Tools & News \u2013 Google Play",
-          "href": "https://play.google.com/store/apps/details?hl=en_IN&id=com.et.market",
-          "source_id": "et_markets_google_play",
-          "verification_status": "official_public",
-          "page_type": "app_store_listing"
-        },
-        {
-          "label": "ET Markets \u2013 Apple App Store",
-          "href": "https://apps.apple.com/kw/app/et-markets/id895812527",
-          "source_id": "et_markets_ios",
-          "verification_status": "official_public",
-          "page_type": "app_store_listing"
-        },
-        {
-          "label": "ET Portfolio Home (mobile)",
-          "href": "https://m.economictimes.com/pf_portfoliohome.cms",
-          "source_id": "et_portfolio_mobile",
-          "verification_status": "official_public",
-          "page_type": "mobile_product_page"
-        }
-      ],
+      "id": "natural_questions_5",
+      "question": "I already follow markets. What ET tools are most relevant?",
+      "answer": "EVAL ERROR: ConfigurationError: All nameservers failed to answer the query _mongodb._tcp.cluster0.9bapwqy.mongodb.net. IN SRV: Server Do53:127.0.0.53@53 answered [Errno 1] Operation not permitted",
+      "recommended_products": [],
+      "source_citations": [],
       "verification_notes": [],
-      "citation_checks": {
-        "ET Markets Google Play listing": true
-      },
-      "routing_ok": true,
-      "conflict_ok": true,
-      "hallucination_ok": true,
-      "score": 1.0
+      "score": 0.0,
+      "rubric_scores": {
+        "accuracy": 1,
+        "groundedness": 1,
+        "format_obedience": 1,
+        "tone_quality": 1,
+        "recommendation_consistency": 1,
+        "realism_of_reasoning": 1,
+        "concierge_feel": 1
+      }
     },
     {
-      "id": "eval_007",
-      "question": "What is ET Markets?",
-      "expected_behavior": "Explain ET Markets as app + tools + news.",
-      "answer": "ET Markets is The Economic Times' stock-market app and market-tools platform. It combines real-time market news, watchlists, screeners, stock reports, and sentiment tools to help users make informed investment decisions. It is designed for both beginner investors and active market followers who want market tools and research in one place. You can track live indices, stock prices, and get expert recommendations, with ET Prime unlocking additional research stories and advanced tools.",
-      "recommended_products": [
-        "ET Markets"
-      ],
-      "source_citations": [
-        {
-          "label": "ET Mobile Applications",
-          "href": "https://m.economictimes.com/etmobileapps.cms",
-          "source_id": "et_mobile_apps",
-          "verification_status": "official_public",
-          "page_type": "mobile_apps_portal"
-        },
-        {
-          "label": "ET Markets: Stock Tools & News \u2013 Google Play",
-          "href": "https://play.google.com/store/apps/details?hl=en_IN&id=com.et.market",
-          "source_id": "et_markets_google_play",
-          "verification_status": "official_public",
-          "page_type": "app_store_listing"
-        },
-        {
-          "label": "ET Markets \u2013 Apple App Store",
-          "href": "https://apps.apple.com/kw/app/et-markets/id895812527",
-          "source_id": "et_markets_ios",
-          "verification_status": "official_public",
-          "page_type": "app_store_listing"
-        },
-        {
-          "label": "Market Mood",
-          "href": "https://economictimes.indiatimes.com/markets/stock-market-mood",
-          "source_id": "market_mood",
-          "verification_status": "official_public",
-          "page_type": "tool_page"
-        },
-        {
-          "label": "Stock Screener",
-          "href": "https://m.economictimes.com/markets/stock-screener",
-          "source_id": "stock_screener",
-          "verification_status": "official_public",
-          "page_type": "tool_page"
-        },
-        {
-          "label": "Stock Reports Plus",
-          "href": "https://economictimes.indiatimes.com/markets/benefits/stockreportsplus",
-          "source_id": "stock_reports_plus",
-          "verification_status": "official_public",
-          "page_type": "tool_page"
-        }
-      ],
+      "id": "format_control_1",
+      "question": "Explain ET Prime in bullet points.",
+      "answer": "EVAL ERROR: ConfigurationError: All nameservers failed to answer the query _mongodb._tcp.cluster0.9bapwqy.mongodb.net. IN SRV: Server Do53:127.0.0.53@53 answered [Errno 1] Operation not permitted",
+      "recommended_products": [],
+      "source_citations": [],
       "verification_notes": [],
-      "citation_checks": {
-        "ET Markets Google Play listing": true
-      },
-      "routing_ok": true,
-      "conflict_ok": true,
-      "hallucination_ok": true,
-      "score": 1.0
+      "score": 0.0,
+      "rubric_scores": {
+        "accuracy": 1,
+        "groundedness": 1,
+        "format_obedience": 1,
+        "tone_quality": 1,
+        "recommendation_consistency": 1,
+        "realism_of_reasoning": 1,
+        "concierge_feel": 1
+      }
     },
     {
-      "id": "eval_008",
-      "question": "What tools are inside ET Markets?",
-      "expected_behavior": "List key tools like watchlist, stock reports, Market Mood, screeners.",
-      "answer": "ET Markets provides a comprehensive suite of tools for investors. These include watchlists, advanced stock screeners with 700+ data points and Guru Screeners, and smart alerts for technical indicators like SMA, EMA, RSI, and Bollinger Bands. You can also find the proprietary Market Mood indicator for sentiment analysis, Price and Volume Shockers to identify unusual activity, and specialized tracking for IPOs, Mutual Funds, and global markets. Additionally, the app offers access to 4000+ stock reports and the Big Bull Portfolio.",
-      "recommended_products": [
-        "ET Markets"
-      ],
-      "source_citations": [
-        {
-          "label": "ET Markets: Stock Tools & News \u2013 Google Play",
-          "href": "https://play.google.com/store/apps/details?hl=en_IN&id=com.et.market",
-          "source_id": "et_markets_google_play",
-          "verification_status": "official_public",
-          "page_type": "app_store_listing"
-        },
-        {
-          "label": "ET Markets \u2013 Apple App Store",
-          "href": "https://apps.apple.com/kw/app/et-markets/id895812527",
-          "source_id": "et_markets_ios",
-          "verification_status": "official_public",
-          "page_type": "app_store_listing"
-        },
-        {
-          "label": "ET Mobile Applications",
-          "href": "https://m.economictimes.com/etmobileapps.cms",
-          "source_id": "et_mobile_apps",
-          "verification_status": "official_public",
-          "page_type": "mobile_apps_portal"
-        },
-        {
-          "label": "Market Mood",
-          "href": "https://economictimes.indiatimes.com/markets/stock-market-mood",
-          "source_id": "market_mood",
-          "verification_status": "official_public",
-          "page_type": "tool_page"
-        },
-        {
-          "label": "Stock Screener",
-          "href": "https://m.economictimes.com/markets/stock-screener",
-          "source_id": "stock_screener",
-          "verification_status": "official_public",
-          "page_type": "tool_page"
-        },
-        {
-          "label": "Stock Reports Plus",
-          "href": "https://economictimes.indiatimes.com/markets/benefits/stockreportsplus",
-          "source_id": "stock_reports_plus",
-          "verification_status": "official_public",
-          "page_type": "tool_page"
-        }
-      ],
+      "id": "format_control_2",
+      "question": "Compare ET Prime and ET Markets in a table.",
+      "answer": "EVAL ERROR: ConfigurationError: All nameservers failed to answer the query _mongodb._tcp.cluster0.9bapwqy.mongodb.net. IN SRV: Server Do53:127.0.0.53@53 answered [Errno 1] Operation not permitted",
+      "recommended_products": [],
+      "source_citations": [],
       "verification_notes": [],
-      "citation_checks": {
-        "ET Markets Google Play listing": true
-      },
-      "routing_ok": true,
-      "conflict_ok": true,
-      "hallucination_ok": true,
-      "score": 1.0
+      "score": 0.0,
+      "rubric_scores": {
+        "accuracy": 1,
+        "groundedness": 1,
+        "format_obedience": 1,
+        "tone_quality": 1,
+        "recommendation_consistency": 1,
+        "realism_of_reasoning": 1,
+        "concierge_feel": 1
+      }
     },
     {
-      "id": "eval_009",
-      "question": "What is Market Mood and how do I read it?",
-      "expected_behavior": "Explain sentiment-style reading at a high level.",
-      "answer": "Market Mood is a premium feature within ET Markets that provides an overall performance overview of stocks across different indices and time periods. It's segmented into Overview, Periodic High/Low, and Advance/Decline. In the Overview tab, green shades indicate an uptrend, yellow a neutral outlook, and red a downtrend, based on the count or percentage. The Advance/Decline tab shows stocks closing above (advance) or below (decline) their previous close, with consistent advances indicating an uptrend and consistent declines indicating a downtrend.",
-      "recommended_products": [
-        "ET Markets"
-      ],
-      "source_citations": [
-        {
-          "label": "Market Mood",
-          "href": "https://economictimes.indiatimes.com/markets/stock-market-mood",
-          "source_id": "market_mood",
-          "verification_status": "official_public",
-          "page_type": "tool_page"
-        },
-        {
-          "label": "ET Markets: Stock Tools & News \u2013 Google Play",
-          "href": "https://play.google.com/store/apps/details?hl=en_IN&id=com.et.market",
-          "source_id": "et_markets_google_play",
-          "verification_status": "official_public",
-          "page_type": "app_store_listing"
-        },
-        {
-          "label": "ET Markets \u2013 Apple App Store",
-          "href": "https://apps.apple.com/kw/app/et-markets/id895812527",
-          "source_id": "et_markets_ios",
-          "verification_status": "official_public",
-          "page_type": "app_store_listing"
-        }
-      ],
+      "id": "format_control_3",
+      "question": "Give me a short answer first, then a recommendation.",
+      "answer": "EVAL ERROR: ConfigurationError: All nameservers failed to answer the query _mongodb._tcp.cluster0.9bapwqy.mongodb.net. IN SRV: Server Do53:127.0.0.53@53 answered [Errno 1] Operation not permitted",
+      "recommended_products": [],
+      "source_citations": [],
       "verification_notes": [],
-      "citation_checks": {
-        "Market Mood page": true
-      },
-      "routing_ok": true,
-      "conflict_ok": true,
-      "hallucination_ok": true,
-      "score": 1.0
+      "score": 0.0,
+      "rubric_scores": {
+        "accuracy": 1,
+        "groundedness": 1,
+        "format_obedience": 1,
+        "tone_quality": 1,
+        "recommendation_consistency": 1,
+        "realism_of_reasoning": 1,
+        "concierge_feel": 1
+      }
     },
     {
-      "id": "eval_010",
-      "question": "Does ET have stock screeners?",
-      "expected_behavior": "Answer yes and point to screener.",
-      "answer": "Yes, ET offers stock screeners as a key feature within ET Markets. These screeners are powerful discovery tools that allow you to filter stocks using over 700 data points, helping you uncover hidden gems. You can use pre-built screeners, such as those for Fundamental, Large-Cap, or Undervalued Stocks, or create your own custom screens. This feature helps you find companies with strong financial health and growth potential, making it ideal for investors looking for specific criteria.",
-      "recommended_products": [
-        "ET Markets"
-      ],
-      "source_citations": [
-        {
-          "label": "Stock Screener",
-          "href": "https://m.economictimes.com/markets/stock-screener",
-          "source_id": "stock_screener",
-          "verification_status": "official_public",
-          "page_type": "tool_page"
-        },
-        {
-          "label": "ET Markets: Stock Tools & News \u2013 Google Play",
-          "href": "https://play.google.com/store/apps/details?hl=en_IN&id=com.et.market",
-          "source_id": "et_markets_google_play",
-          "verification_status": "official_public",
-          "page_type": "app_store_listing"
-        },
-        {
-          "label": "ET Markets \u2013 Apple App Store",
-          "href": "https://apps.apple.com/kw/app/et-markets/id895812527",
-          "source_id": "et_markets_ios",
-          "verification_status": "official_public",
-          "page_type": "app_store_listing"
-        },
-        {
-          "label": "ET Mobile Applications",
-          "href": "https://m.economictimes.com/etmobileapps.cms",
-          "source_id": "et_mobile_apps",
-          "verification_status": "official_public",
-          "page_type": "mobile_apps_portal"
-        },
-        {
-          "label": "Market Mood",
-          "href": "https://economictimes.indiatimes.com/markets/stock-market-mood",
-          "source_id": "market_mood",
-          "verification_status": "official_public",
-          "page_type": "tool_page"
-        },
-        {
-          "label": "Stock Reports Plus",
-          "href": "https://economictimes.indiatimes.com/markets/benefits/stockreportsplus",
-          "source_id": "stock_reports_plus",
-          "verification_status": "official_public",
-          "page_type": "tool_page"
-        },
-        {
-          "label": "Sample Stock Report Page",
-          "href": "https://economictimes.indiatimes.com/prime-securities-ltd/stockreports/reportid-9152.cms",
-          "source_id": "stock_report_sample",
-          "verification_status": "official_public",
-          "page_type": "sample_report"
-        }
-      ],
+      "id": "format_control_4",
+      "question": "Summarize my ET options in three bullets.",
+      "answer": "EVAL ERROR: ConfigurationError: All nameservers failed to answer the query _mongodb._tcp.cluster0.9bapwqy.mongodb.net. IN SRV: Server Do53:127.0.0.53@53 answered [Errno 1] Operation not permitted",
+      "recommended_products": [],
+      "source_citations": [],
       "verification_notes": [],
-      "citation_checks": {
-        "Stock Screener page": true
-      },
-      "routing_ok": true,
-      "conflict_ok": true,
-      "hallucination_ok": true,
-      "score": 1.0
+      "score": 0.0,
+      "rubric_scores": {
+        "accuracy": 1,
+        "groundedness": 1,
+        "format_obedience": 1,
+        "tone_quality": 1,
+        "recommendation_consistency": 1,
+        "realism_of_reasoning": 1,
+        "concierge_feel": 1
+      }
     },
     {
-      "id": "eval_011",
-      "question": "What is Stock Reports Plus?",
-      "expected_behavior": "Explain as deeper stock-analysis benefit/tool.",
-      "answer": "Stock Reports Plus is a premium stock analysis tool available within the ET Markets ecosystem and a key benefit of ET Prime. It provides deeper insights into over 4,000 stocks, offering proprietary 1-10 scores across key parameters like Earnings, Fundamentals, Valuation, Risk, and Momentum. This tool helps users with ratings, forecasts, peer comparisons, and structured explanations of company performance. It is designed to assist both active traders and long-term equity investors in making informed decisions.",
-      "recommended_products": [
-        "ET Markets",
-        "ET Prime"
-      ],
-      "source_citations": [
-        {
-          "label": "Stock Reports Plus",
-          "href": "https://economictimes.indiatimes.com/markets/benefits/stockreportsplus",
-          "source_id": "stock_reports_plus",
-          "verification_status": "official_public",
-          "page_type": "tool_page"
-        },
-        {
-          "label": "Sample Stock Report Page",
-          "href": "https://economictimes.indiatimes.com/prime-securities-ltd/stockreports/reportid-9152.cms",
-          "source_id": "stock_report_sample",
-          "verification_status": "official_public",
-          "page_type": "sample_report"
-        },
-        {
-          "label": "ET Markets: Stock Tools & News \u2013 Google Play",
-          "href": "https://play.google.com/store/apps/details?hl=en_IN&id=com.et.market",
-          "source_id": "et_markets_google_play",
-          "verification_status": "official_public",
-          "page_type": "app_store_listing"
-        },
-        {
-          "label": "ET Markets \u2013 Apple App Store",
-          "href": "https://apps.apple.com/kw/app/et-markets/id895812527",
-          "source_id": "et_markets_ios",
-          "verification_status": "official_public",
-          "page_type": "app_store_listing"
-        },
-        {
-          "label": "ET Prime FAQ",
-          "href": "https://economictimes.indiatimes.com/prime/faq",
-          "source_id": "et_prime_faq",
-          "verification_status": "official_public",
-          "page_type": "faq"
-        },
-        {
-          "label": "ET Prime About Us",
-          "href": "https://economictimes.indiatimes.com/prime/about-us",
-          "source_id": "et_prime_about",
-          "verification_status": "official_public",
-          "page_type": "about"
-        }
-      ],
+      "id": "format_control_5",
+      "question": "Build a 7-day ET discovery roadmap.",
+      "answer": "EVAL ERROR: ConfigurationError: All nameservers failed to answer the query _mongodb._tcp.cluster0.9bapwqy.mongodb.net. IN SRV: Server Do53:127.0.0.53@53 answered [Errno 1] Operation not permitted",
+      "recommended_products": [],
+      "source_citations": [],
       "verification_notes": [],
-      "citation_checks": {
-        "Stock Reports Plus page": true
-      },
-      "routing_ok": true,
-      "conflict_ok": true,
-      "hallucination_ok": true,
-      "score": 1.0
+      "score": 0.0,
+      "rubric_scores": {
+        "accuracy": 1,
+        "groundedness": 1,
+        "format_obedience": 1,
+        "tone_quality": 1,
+        "recommendation_consistency": 1,
+        "realism_of_reasoning": 1,
+        "concierge_feel": 1
+      }
     },
     {
-      "id": "eval_012",
-      "question": "Can ET help me track my investments?",
-      "expected_behavior": "Route to ET Portfolio and optionally ET Markets.",
-      "answer": "Yes, ET Portfolio can help you track your investments. It offers a single window to monitor your holdings, including stocks, mutual funds, and ETFs, with real-time price updates. You can also create watchlists, set custom alerts for critical price movements, and track your financial goals like retirement or a child's future. Additionally, it helps manage SIP transactions and corporate actions like dividends and splits.",
-      "recommended_products": [
-        "ET Portfolio",
-        "ET Markets"
-      ],
-      "source_citations": [
-        {
-          "label": "ET Portfolio Home",
-          "href": "https://etportfolio.economictimes.indiatimes.com/",
-          "source_id": "et_portfolio_home",
-          "verification_status": "official_public",
-          "page_type": "product_home"
-        },
-        {
-          "label": "ET Portfolio Home (mobile)",
-          "href": "https://m.economictimes.com/pf_portfoliohome.cms",
-          "source_id": "et_portfolio_mobile",
-          "verification_status": "official_public",
-          "page_type": "mobile_product_page"
-        },
-        {
-          "label": "ET Markets: Stock Tools & News \u2013 Google Play",
-          "href": "https://play.google.com/store/apps/details?hl=en_IN&id=com.et.market",
-          "source_id": "et_markets_google_play",
-          "verification_status": "official_public",
-          "page_type": "app_store_listing"
-        },
-        {
-          "label": "ET Markets \u2013 Apple App Store",
-          "href": "https://apps.apple.com/kw/app/et-markets/id895812527",
-          "source_id": "et_markets_ios",
-          "verification_status": "official_public",
-          "page_type": "app_store_listing"
-        }
-      ],
+      "id": "ui_sync_1",
+      "question": "I prefer guided learning over live market tools. What should I start with?",
+      "answer": "EVAL ERROR: ConfigurationError: All nameservers failed to answer the query _mongodb._tcp.cluster0.9bapwqy.mongodb.net. IN SRV: Server Do53:127.0.0.53@53 answered [Errno 1] Operation not permitted",
+      "recommended_products": [],
+      "source_citations": [],
       "verification_notes": [],
-      "citation_checks": {
-        "ET Portfolio home": true
-      },
-      "routing_ok": true,
-      "conflict_ok": true,
-      "hallucination_ok": true,
-      "score": 1.0
+      "score": 0.0,
+      "rubric_scores": {
+        "accuracy": 1,
+        "groundedness": 1,
+        "format_obedience": 1,
+        "tone_quality": 1,
+        "recommendation_consistency": 1,
+        "realism_of_reasoning": 1,
+        "concierge_feel": 1
+      }
     },
     {
-      "id": "eval_013",
-      "question": "What is ET Portfolio?",
-      "expected_behavior": "Explain holdings/goals/watchlists use case.",
-      "answer": "ET Portfolio is a portfolio-tracking product designed for investors to monitor their holdings, financial goals, and watchlists in one place. It offers real-time stock updates, automatic SIP transaction generation, and alerts for critical price movements. You can add stocks, mutual funds, and ETFs to get real-time price updates and plan for financial goals like retirement or a child's future. It's ideal for users who want a single view of their investments and goal-oriented tracking.",
-      "recommended_products": [
-        "ET Portfolio",
-        "ET Markets"
-      ],
-      "source_citations": [
-        {
-          "label": "ET Portfolio Home",
-          "href": "https://etportfolio.economictimes.indiatimes.com/",
-          "source_id": "et_portfolio_home",
-          "verification_status": "official_public",
-          "page_type": "product_home"
-        },
-        {
-          "label": "ET Portfolio Home (mobile)",
-          "href": "https://m.economictimes.com/pf_portfoliohome.cms",
-          "source_id": "et_portfolio_mobile",
-          "verification_status": "official_public",
-          "page_type": "mobile_product_page"
-        },
-        {
-          "label": "ET Markets: Stock Tools & News \u2013 Google Play",
-          "href": "https://play.google.com/store/apps/details?hl=en_IN&id=com.et.market",
-          "source_id": "et_markets_google_play",
-          "verification_status": "official_public",
-          "page_type": "app_store_listing"
-        },
-        {
-          "label": "ET Markets \u2013 Apple App Store",
-          "href": "https://apps.apple.com/kw/app/et-markets/id895812527",
-          "source_id": "et_markets_ios",
-          "verification_status": "official_public",
-          "page_type": "app_store_listing"
-        }
-      ],
+      "id": "ui_sync_2",
+      "question": "Now show my ET profile.",
+      "answer": "EVAL ERROR: ConfigurationError: All nameservers failed to answer the query _mongodb._tcp.cluster0.9bapwqy.mongodb.net. IN SRV: Server Do53:127.0.0.53@53 answered [Errno 1] Operation not permitted",
+      "recommended_products": [],
+      "source_citations": [],
       "verification_notes": [],
-      "citation_checks": {
-        "ET Portfolio pages": true
-      },
-      "routing_ok": true,
-      "conflict_ok": true,
-      "hallucination_ok": true,
-      "score": 1.0
+      "score": 0.0,
+      "rubric_scores": {
+        "accuracy": 1,
+        "groundedness": 1,
+        "format_obedience": 1,
+        "tone_quality": 1,
+        "recommendation_consistency": 1,
+        "realism_of_reasoning": 1,
+        "concierge_feel": 1
+      }
     },
     {
-      "id": "eval_014",
-      "question": "Does ET support SIP-related tracking or updates?",
-      "expected_behavior": "Mention mobile ET Portfolio phrasing about SIP auto updates.",
-      "answer": "Yes, ET Portfolio supports SIP-related tracking and updates. It automatically generates your Systematic Investment Plan transactions as per schedule with an easy setup. This feature helps you monitor your mutual fund SIPs within a single view alongside your other investments.",
-      "recommended_products": [
-        "ET Portfolio",
-        "ET Markets"
-      ],
-      "source_citations": [
-        {
-          "label": "ET Portfolio Home",
-          "href": "https://etportfolio.economictimes.indiatimes.com/",
-          "source_id": "et_portfolio_home",
-          "verification_status": "official_public",
-          "page_type": "product_home"
-        },
-        {
-          "label": "ET Portfolio Home (mobile)",
-          "href": "https://m.economictimes.com/pf_portfoliohome.cms",
-          "source_id": "et_portfolio_mobile",
-          "verification_status": "official_public",
-          "page_type": "mobile_product_page"
-        },
-        {
-          "label": "ET Markets: Stock Tools & News \u2013 Google Play",
-          "href": "https://play.google.com/store/apps/details?hl=en_IN&id=com.et.market",
-          "source_id": "et_markets_google_play",
-          "verification_status": "official_public",
-          "page_type": "app_store_listing"
-        },
-        {
-          "label": "ET Markets \u2013 Apple App Store",
-          "href": "https://apps.apple.com/kw/app/et-markets/id895812527",
-          "source_id": "et_markets_ios",
-          "verification_status": "official_public",
-          "page_type": "app_store_listing"
-        }
-      ],
+      "id": "ui_sync_3",
+      "question": "Update my path based on my preference for low-noise discovery.",
+      "answer": "EVAL ERROR: ConfigurationError: All nameservers failed to answer the query _mongodb._tcp.cluster0.9bapwqy.mongodb.net. IN SRV: Server Do53:127.0.0.53@53 answered [Errno 1] Operation not permitted",
+      "recommended_products": [],
+      "source_citations": [],
       "verification_notes": [],
-      "citation_checks": {
-        "ET Portfolio mobile page": true
-      },
-      "routing_ok": true,
-      "conflict_ok": true,
-      "hallucination_ok": true,
-      "score": 1.0
+      "score": 0.0,
+      "rubric_scores": {
+        "accuracy": 1,
+        "groundedness": 1,
+        "format_obedience": 1,
+        "tone_quality": 1,
+        "recommendation_consistency": 1,
+        "realism_of_reasoning": 1,
+        "concierge_feel": 1
+      }
     },
     {
-      "id": "eval_015",
-      "question": "What is ET Wealth Edition?",
-      "expected_behavior": "Explain wealth-focused weekly edition.",
-      "answer": "ET Wealth Edition is a weekly money-management guide from The Economic Times, focused on investment planning ideas, mutual fund and stock research, and wealth guidance. It helps users make their money work for them through expert strategies and simplified investment concepts. This edition provides analysis on top mutual funds and stocks, and it is available free with an ET Prime membership.",
-      "recommended_products": [
-        "ET Wealth Edition",
-        "ET Prime"
-      ],
-      "source_citations": [
-        {
-          "label": "Wealth Edition ePaper",
-          "href": "https://epaper.indiatimes.com/wealth_edition.cms",
-          "source_id": "et_wealth_edition",
-          "verification_status": "official_public",
-          "page_type": "edition_page"
-        },
-        {
-          "label": "ET Prime FAQ",
-          "href": "https://economictimes.indiatimes.com/prime/faq",
-          "source_id": "et_prime_faq",
-          "verification_status": "official_public",
-          "page_type": "faq"
-        },
-        {
-          "label": "ET Prime About Us",
-          "href": "https://economictimes.indiatimes.com/prime/about-us",
-          "source_id": "et_prime_about",
-          "verification_status": "official_public",
-          "page_type": "about"
-        }
-      ],
+      "id": "ui_sync_4",
+      "question": "What should the sidebar show for me right now?",
+      "answer": "EVAL ERROR: ConfigurationError: All nameservers failed to answer the query _mongodb._tcp.cluster0.9bapwqy.mongodb.net. IN SRV: Server Do53:127.0.0.53@53 answered [Errno 1] Operation not permitted",
+      "recommended_products": [],
+      "source_citations": [],
       "verification_notes": [],
-      "citation_checks": {
-        "Wealth Edition page": true
-      },
-      "routing_ok": true,
-      "conflict_ok": true,
-      "hallucination_ok": true,
-      "score": 1.0
+      "score": 0.0,
+      "rubric_scores": {
+        "accuracy": 1,
+        "groundedness": 1,
+        "format_obedience": 1,
+        "tone_quality": 1,
+        "recommendation_consistency": 1,
+        "realism_of_reasoning": 1,
+        "concierge_feel": 1
+      }
     },
     {
-      "id": "eval_016",
-      "question": "How do I access ET Wealth Edition?",
-      "expected_behavior": "Say it is free with ET Prime membership, cite wealth page.",
-      "answer": "The ET Wealth Edition is a weekly money-management guide that provides investment planning ideas, mutual fund, and stock research. You can access it for free as a benefit with an ET Prime membership. This membership offers deeper business analysis and curated insights, along with access to the Wealth Edition.",
-      "recommended_products": [
-        "ET Wealth Edition",
-        "ET Prime"
-      ],
-      "source_citations": [
-        {
-          "label": "Wealth Edition ePaper",
-          "href": "https://epaper.indiatimes.com/wealth_edition.cms",
-          "source_id": "et_wealth_edition",
-          "verification_status": "official_public",
-          "page_type": "edition_page"
-        },
-        {
-          "label": "ET Prime FAQ",
-          "href": "https://economictimes.indiatimes.com/prime/faq",
-          "source_id": "et_prime_faq",
-          "verification_status": "official_public",
-          "page_type": "faq"
-        },
-        {
-          "label": "ET Prime About Us",
-          "href": "https://economictimes.indiatimes.com/prime/about-us",
-          "source_id": "et_prime_about",
-          "verification_status": "official_public",
-          "page_type": "about"
-        }
-      ],
+      "id": "ui_sync_5",
+      "question": "Give me one best ET starting point and one optional next step.",
+      "answer": "EVAL ERROR: ConfigurationError: All nameservers failed to answer the query _mongodb._tcp.cluster0.9bapwqy.mongodb.net. IN SRV: Server Do53:127.0.0.53@53 answered [Errno 1] Operation not permitted",
+      "recommended_products": [],
+      "source_citations": [],
       "verification_notes": [],
-      "citation_checks": {
-        "Wealth Edition page": true
-      },
-      "routing_ok": true,
-      "conflict_ok": true,
-      "hallucination_ok": true,
-      "score": 1.0
+      "score": 0.0,
+      "rubric_scores": {
+        "accuracy": 1,
+        "groundedness": 1,
+        "format_obedience": 1,
+        "tone_quality": 1,
+        "recommendation_consistency": 1,
+        "realism_of_reasoning": 1,
+        "concierge_feel": 1
+      }
     },
     {
-      "id": "eval_017",
-      "question": "Do I get the ET newspaper digitally with ET Prime?",
-      "expected_behavior": "Answer around Print Edition access.",
-      "answer": "Yes, an ET Prime membership includes complete access to the ET Print Edition, which is the digital copy of our daily newspaper. This digital newspaper is delivered to your email address every day before 8 AM. While a standalone e-paper subscription might be separate, ET Prime ensures you receive the digital newspaper as part of its benefits.",
-      "recommended_products": [
-        "ET Prime",
-        "ET Print Edition"
-      ],
-      "source_citations": [
-        {
-          "label": "ET Prime Plans / Membership Page",
-          "href": "https://economictimes.indiatimes.com/plans.cms?dc=offpricerisewb10&noredirect=1&offerType=Sale&optz=1&planGroup=NonLoggedIn_2",
-          "source_id": "et_prime_plans",
-          "verification_status": "official_public",
-          "page_type": "plans"
-        },
-        {
-          "label": "ET Prime FAQ",
-          "href": "https://economictimes.indiatimes.com/prime/faq",
-          "source_id": "et_prime_faq",
-          "verification_status": "official_public",
-          "page_type": "faq"
-        },
-        {
-          "label": "ET Prime About Us",
-          "href": "https://economictimes.indiatimes.com/prime/about-us",
-          "source_id": "et_prime_about",
-          "verification_status": "official_public",
-          "page_type": "about"
-        },
-        {
-          "label": "ET Print Edition",
-          "href": "https://epaper.indiatimes.com/print_edition",
-          "source_id": "et_print_edition",
-          "verification_status": "official_public",
-          "page_type": "edition_page"
-        }
-      ],
+      "id": "trust_conflict_1",
+      "question": "Does ET Prime offer a free trial?",
+      "answer": "EVAL ERROR: ConfigurationError: All nameservers failed to answer the query _mongodb._tcp.cluster0.9bapwqy.mongodb.net. IN SRV: Server Do53:127.0.0.53@53 answered [Errno 1] Operation not permitted",
+      "recommended_products": [],
+      "source_citations": [],
       "verification_notes": [],
-      "citation_checks": {
-        "ET Prime FAQ or Print Edition page": true
-      },
-      "routing_ok": true,
-      "conflict_ok": true,
-      "hallucination_ok": true,
-      "score": 1.0
+      "score": 0.0,
+      "rubric_scores": {
+        "accuracy": 1,
+        "groundedness": 1,
+        "format_obedience": 1,
+        "tone_quality": 1,
+        "recommendation_consistency": 1,
+        "realism_of_reasoning": 1,
+        "concierge_feel": 1
+      }
     },
     {
-      "id": "eval_018",
-      "question": "Does ET have any learning or executive programs?",
-      "expected_behavior": "Route to ETMasterclass.",
-      "answer": "Yes, ET offers learning and executive programs through ETMasterclass. It is an executive learning portfolio designed for working professionals and business leaders. ETMasterclass provides guru masterclasses, executive workshops, and certification courses across topics like AI, management, HR, and more, with industry-acknowledged certificates.",
-      "recommended_products": [
-        "ETMasterclass"
-      ],
-      "source_citations": [
-        {
-          "label": "ETMasterclass Home",
-          "href": "https://masterclass.economictimes.indiatimes.com/",
-          "source_id": "et_masterclass_home",
-          "verification_status": "official_public",
-          "page_type": "product_home"
-        },
-        {
-          "label": "ETMasterclass New / About-like Page",
-          "href": "https://masterclass.economictimes.indiatimes.com/new",
-          "source_id": "et_masterclass_new",
-          "verification_status": "official_public",
-          "page_type": "about_or_marketing"
-        }
-      ],
+      "id": "trust_conflict_2",
+      "question": "What do you know for sure versus what still needs confirmation?",
+      "answer": "EVAL ERROR: ConfigurationError: All nameservers failed to answer the query _mongodb._tcp.cluster0.9bapwqy.mongodb.net. IN SRV: Server Do53:127.0.0.53@53 answered [Errno 1] Operation not permitted",
+      "recommended_products": [],
+      "source_citations": [],
       "verification_notes": [],
-      "citation_checks": {
-        "ETMasterclass home": true
-      },
-      "routing_ok": true,
-      "conflict_ok": true,
-      "hallucination_ok": true,
-      "score": 1.0
+      "score": 0.0,
+      "rubric_scores": {
+        "accuracy": 1,
+        "groundedness": 1,
+        "format_obedience": 1,
+        "tone_quality": 1,
+        "recommendation_consistency": 1,
+        "realism_of_reasoning": 1,
+        "concierge_feel": 1
+      }
     },
     {
-      "id": "eval_019",
-      "question": "What is ETMasterclass?",
-      "expected_behavior": "Explain programs: masterclasses, workshops, certification courses.",
-      "answer": "ETMasterclass is The Economic Times' executive learning portfolio, designed for working professionals and business leaders. It offers a comprehensive range of guru masterclasses, executive workshops, and certification courses to help brush up skills and develop strategic edge. Programs are developed and delivered by industry experts and academicians, providing flexible learning and industry-acknowledged certificates upon completion.",
-      "recommended_products": [
-        "ETMasterclass"
-      ],
-      "source_citations": [
-        {
-          "label": "ETMasterclass Home",
-          "href": "https://masterclass.economictimes.indiatimes.com/",
-          "source_id": "et_masterclass_home",
-          "verification_status": "official_public",
-          "page_type": "product_home"
-        },
-        {
-          "label": "ETMasterclass New / About-like Page",
-          "href": "https://masterclass.economictimes.indiatimes.com/new",
-          "source_id": "et_masterclass_new",
-          "verification_status": "official_public",
-          "page_type": "about_or_marketing"
-        }
-      ],
+      "id": "trust_conflict_3",
+      "question": "Does ET Portfolio execute trades?",
+      "answer": "EVAL ERROR: ConfigurationError: All nameservers failed to answer the query _mongodb._tcp.cluster0.9bapwqy.mongodb.net. IN SRV: Server Do53:127.0.0.53@53 answered [Errno 1] Operation not permitted",
+      "recommended_products": [],
+      "source_citations": [],
       "verification_notes": [],
-      "citation_checks": {
-        "ETMasterclass home": true
-      },
-      "routing_ok": true,
-      "conflict_ok": true,
-      "hallucination_ok": true,
-      "score": 1.0
+      "score": 0.0,
+      "rubric_scores": {
+        "accuracy": 1,
+        "groundedness": 1,
+        "format_obedience": 1,
+        "tone_quality": 1,
+        "recommendation_consistency": 1,
+        "realism_of_reasoning": 1,
+        "concierge_feel": 1
+      }
     },
     {
-      "id": "eval_020",
-      "question": "Who is ETMasterclass designed for?",
-      "expected_behavior": "Mention working professionals and flexible learning.",
-      "answer": "ETMasterclass is designed for working professionals and business leaders. It is ideal for individuals seeking to upskill in areas like leadership, AI, strategy, finance, or management, through guru masterclasses, executive workshops, and certification courses. The programs offer flexible learning and are developed by industry experts and academicians.",
-      "recommended_products": [
-        "ETMasterclass"
-      ],
-      "source_citations": [
-        {
-          "label": "ETMasterclass Home",
-          "href": "https://masterclass.economictimes.indiatimes.com/",
-          "source_id": "et_masterclass_home",
-          "verification_status": "official_public",
-          "page_type": "product_home"
-        },
-        {
-          "label": "ETMasterclass New / About-like Page",
-          "href": "https://masterclass.economictimes.indiatimes.com/new",
-          "source_id": "et_masterclass_new",
-          "verification_status": "official_public",
-          "page_type": "about_or_marketing"
-        }
-      ],
+      "id": "trust_conflict_4",
+      "question": "Is ET Markets a broker?",
+      "answer": "EVAL ERROR: ConfigurationError: All nameservers failed to answer the query _mongodb._tcp.cluster0.9bapwqy.mongodb.net. IN SRV: Server Do53:127.0.0.53@53 answered [Errno 1] Operation not permitted",
+      "recommended_products": [],
+      "source_citations": [],
       "verification_notes": [],
-      "citation_checks": {
-        "ETMasterclass home": true
-      },
-      "routing_ok": true,
-      "conflict_ok": true,
-      "hallucination_ok": true,
-      "score": 1.0
+      "score": 0.0,
+      "rubric_scores": {
+        "accuracy": 1,
+        "groundedness": 1,
+        "format_obedience": 1,
+        "tone_quality": 1,
+        "recommendation_consistency": 1,
+        "realism_of_reasoning": 1,
+        "concierge_feel": 1
+      }
     },
     {
-      "id": "eval_021",
-      "question": "Does ET offer enterprise learning programs?",
-      "expected_behavior": "Point to For Enterprise on ETMasterclass.",
-      "answer": "Yes, ET offers enterprise learning programs through ETMasterclass. This executive learning portfolio includes Guru Masterclasses, Executive Workshops, and Certification Courses designed for working professionals and business leaders. ETMasterclass provides flexible professional learning with industry-acknowledged certificates and peer cohort learning, covering topics like AI, management, and HR.",
-      "recommended_products": [
-        "ETMasterclass"
-      ],
-      "source_citations": [
-        {
-          "label": "ETMasterclass Home",
-          "href": "https://masterclass.economictimes.indiatimes.com/",
-          "source_id": "et_masterclass_home",
-          "verification_status": "official_public",
-          "page_type": "product_home"
-        },
-        {
-          "label": "ETMasterclass New / About-like Page",
-          "href": "https://masterclass.economictimes.indiatimes.com/new",
-          "source_id": "et_masterclass_new",
-          "verification_status": "official_public",
-          "page_type": "about_or_marketing"
-        }
-      ],
+      "id": "trust_conflict_5",
+      "question": "Show me a confidence-aware recommendation.",
+      "answer": "EVAL ERROR: ConfigurationError: All nameservers failed to answer the query _mongodb._tcp.cluster0.9bapwqy.mongodb.net. IN SRV: Server Do53:127.0.0.53@53 answered [Errno 1] Operation not permitted",
+      "recommended_products": [],
+      "source_citations": [],
       "verification_notes": [],
-      "citation_checks": {
-        "ETMasterclass home": true
-      },
-      "routing_ok": true,
-      "conflict_ok": true,
-      "hallucination_ok": true,
-      "score": 1.0
+      "score": 0.0,
+      "rubric_scores": {
+        "accuracy": 1,
+        "groundedness": 1,
+        "format_obedience": 1,
+        "tone_quality": 1,
+        "recommendation_consistency": 1,
+        "realism_of_reasoning": 1,
+        "concierge_feel": 1
+      }
     },
     {
-      "id": "eval_022",
-      "question": "Can ET help me find industry events or summits?",
-      "expected_behavior": "Explain ET events portals and ask follow-up on vertical interest.",
-      "answer": "Yes, ET can help you find industry events and summits. ET Events offers a network of vertical event portals and summit pages across various domains like Enterprise AI, CIO, and BFSI. It's designed for users looking for conferences, summits, and community touchpoints, providing access to upcoming tech conclaves and industry discussions.",
-      "recommended_products": [
-        "ET Events",
-        "ET Prime"
-      ],
-      "source_citations": [
-        {
-          "label": "ET Enterprise AI Events",
-          "href": "https://enterpriseai.economictimes.indiatimes.com/events",
-          "source_id": "enterprise_ai_events",
-          "verification_status": "official_public",
-          "page_type": "events_portal"
-        },
-        {
-          "label": "ET CIO Events",
-          "href": "https://cio.economictimes.indiatimes.com/events",
-          "source_id": "cio_events",
-          "verification_status": "official_public",
-          "page_type": "events_portal"
-        },
-        {
-          "label": "ET BFSI Events",
-          "href": "https://bfsi.economictimes.indiatimes.com/events",
-          "source_id": "bfsi_events",
-          "verification_status": "official_public",
-          "page_type": "events_portal"
-        },
-        {
-          "label": "ET B2B Events Portal",
-          "href": "https://b2b.economictimes.indiatimes.com/events",
-          "source_id": "et_b2b_events",
-          "verification_status": "official_public",
-          "page_type": "events_portal"
-        },
-        {
-          "label": "ET Prime FAQ",
-          "href": "https://economictimes.indiatimes.com/prime/faq",
-          "source_id": "et_prime_faq",
-          "verification_status": "official_public",
-          "page_type": "faq"
-        },
-        {
-          "label": "ET Prime About Us",
-          "href": "https://economictimes.indiatimes.com/prime/about-us",
-          "source_id": "et_prime_about",
-          "verification_status": "official_public",
-          "page_type": "about"
-        },
-        {
-          "label": "ET Government Events",
-          "href": "https://government.economictimes.indiatimes.com/events",
-          "source_id": "government_events",
-          "verification_status": "official_public",
-          "page_type": "events_portal"
-        }
-      ],
+      "id": "stress_1",
+      "question": "Give me a short answer, then a table, then one recommendation in under 150 words.",
+      "answer": "EVAL ERROR: ConfigurationError: All nameservers failed to answer the query _mongodb._tcp.cluster0.9bapwqy.mongodb.net. IN SRV: Server Do53:127.0.0.53@53 answered [Errno 1] Operation not permitted",
+      "recommended_products": [],
+      "source_citations": [],
       "verification_notes": [],
-      "citation_checks": {
-        "ET events portal": true
-      },
-      "routing_ok": true,
-      "conflict_ok": true,
-      "hallucination_ok": true,
-      "score": 1.0
+      "score": 0.0,
+      "rubric_scores": {
+        "accuracy": 1,
+        "groundedness": 1,
+        "format_obedience": 1,
+        "tone_quality": 1,
+        "recommendation_consistency": 1,
+        "realism_of_reasoning": 1,
+        "concierge_feel": 1
+      }
     },
     {
-      "id": "eval_023",
-      "question": "What kind of ET events exist?",
-      "expected_behavior": "Mention B2B, Enterprise AI, CIO, BFSI, Government portals.",
-      "answer": "ET hosts a variety of events, including conferences and summits across various domains. You can find events focused on B2B, CIO, Enterprise AI, and Government sectors. These events serve as community touchpoints for enterprise buyers, policy professionals, and industry experts.",
-      "recommended_products": [
-        "ET Events",
-        "ET Prime"
-      ],
-      "source_citations": [
-        {
-          "label": "ET B2B Events Portal",
-          "href": "https://b2b.economictimes.indiatimes.com/events",
-          "source_id": "et_b2b_events",
-          "verification_status": "official_public",
-          "page_type": "events_portal"
-        },
-        {
-          "label": "ET CIO Events",
-          "href": "https://cio.economictimes.indiatimes.com/events",
-          "source_id": "cio_events",
-          "verification_status": "official_public",
-          "page_type": "events_portal"
-        },
-        {
-          "label": "ET Enterprise AI Events",
-          "href": "https://enterpriseai.economictimes.indiatimes.com/events",
-          "source_id": "enterprise_ai_events",
-          "verification_status": "official_public",
-          "page_type": "events_portal"
-        },
-        {
-          "label": "ET Government Events",
-          "href": "https://government.economictimes.indiatimes.com/events",
-          "source_id": "government_events",
-          "verification_status": "official_public",
-          "page_type": "events_portal"
-        },
-        {
-          "label": "ET Prime FAQ",
-          "href": "https://economictimes.indiatimes.com/prime/faq",
-          "source_id": "et_prime_faq",
-          "verification_status": "official_public",
-          "page_type": "faq"
-        },
-        {
-          "label": "ET Prime About Us",
-          "href": "https://economictimes.indiatimes.com/prime/about-us",
-          "source_id": "et_prime_about",
-          "verification_status": "official_public",
-          "page_type": "about"
-        },
-        {
-          "label": "ET BFSI Events",
-          "href": "https://bfsi.economictimes.indiatimes.com/events",
-          "source_id": "bfsi_events",
-          "verification_status": "official_public",
-          "page_type": "events_portal"
-        }
-      ],
+      "id": "stress_2",
+      "question": "Recommend ET products for me in bullet points and tell me your assumptions.",
+      "answer": "EVAL ERROR: ConfigurationError: All nameservers failed to answer the query _mongodb._tcp.cluster0.9bapwqy.mongodb.net. IN SRV: Server Do53:127.0.0.53@53 answered [Errno 1] Operation not permitted",
+      "recommended_products": [],
+      "source_citations": [],
       "verification_notes": [],
-      "citation_checks": {
-        "ET events portals": true
-      },
-      "routing_ok": true,
-      "conflict_ok": true,
-      "hallucination_ok": true,
-      "score": 1.0
+      "score": 0.0,
+      "rubric_scores": {
+        "accuracy": 1,
+        "groundedness": 1,
+        "format_obedience": 1,
+        "tone_quality": 1,
+        "recommendation_consistency": 1,
+        "realism_of_reasoning": 1,
+        "concierge_feel": 1
+      }
     },
     {
-      "id": "eval_024",
-      "question": "I work in AI. Which ET event path should I check?",
-      "expected_behavior": "Route to Enterprise AI events.",
-      "answer": "You should check the ET Enterprise AI Events portal, which is specifically focused on enterprise AI events. ET Events offers a network of vertical event portals and summit pages, providing conferences, summits, and community touchpoints across various domains. This path will help you discover relevant events within the AI sector.",
-      "recommended_products": [
-        "ET Events",
-        "ET Prime"
-      ],
-      "source_citations": [
-        {
-          "label": "ET Enterprise AI Events",
-          "href": "https://enterpriseai.economictimes.indiatimes.com/events",
-          "source_id": "enterprise_ai_events",
-          "verification_status": "official_public",
-          "page_type": "events_portal"
-        },
-        {
-          "label": "ET B2B Events Portal",
-          "href": "https://b2b.economictimes.indiatimes.com/events",
-          "source_id": "et_b2b_events",
-          "verification_status": "official_public",
-          "page_type": "events_portal"
-        },
-        {
-          "label": "ET CIO Events",
-          "href": "https://cio.economictimes.indiatimes.com/events",
-          "source_id": "cio_events",
-          "verification_status": "official_public",
-          "page_type": "events_portal"
-        },
-        {
-          "label": "ET Government Events",
-          "href": "https://government.economictimes.indiatimes.com/events",
-          "source_id": "government_events",
-          "verification_status": "official_public",
-          "page_type": "events_portal"
-        },
-        {
-          "label": "ET Prime FAQ",
-          "href": "https://economictimes.indiatimes.com/prime/faq",
-          "source_id": "et_prime_faq",
-          "verification_status": "official_public",
-          "page_type": "faq"
-        },
-        {
-          "label": "ET Prime About Us",
-          "href": "https://economictimes.indiatimes.com/prime/about-us",
-          "source_id": "et_prime_about",
-          "verification_status": "official_public",
-          "page_type": "about"
-        },
-        {
-          "label": "ET BFSI Events",
-          "href": "https://bfsi.economictimes.indiatimes.com/events",
-          "source_id": "bfsi_events",
-          "verification_status": "official_public",
-          "page_type": "events_portal"
-        }
-      ],
+      "id": "stress_3",
+      "question": "Compare four ET products and tell me the best first step.",
+      "answer": "EVAL ERROR: ConfigurationError: All nameservers failed to answer the query _mongodb._tcp.cluster0.9bapwqy.mongodb.net. IN SRV: Server Do53:127.0.0.53@53 answered [Errno 1] Operation not permitted",
+      "recommended_products": [],
+      "source_citations": [],
       "verification_notes": [],
-      "citation_checks": {
-        "Enterprise AI events portal": true
-      },
-      "routing_ok": true,
-      "conflict_ok": true,
-      "hallucination_ok": true,
-      "score": 1.0
+      "score": 0.0,
+      "rubric_scores": {
+        "accuracy": 1,
+        "groundedness": 1,
+        "format_obedience": 1,
+        "tone_quality": 1,
+        "recommendation_consistency": 1,
+        "realism_of_reasoning": 1,
+        "concierge_feel": 1
+      }
     },
     {
-      "id": "eval_025",
-      "question": "What extra benefits do I get with ET Prime besides articles?",
-      "expected_behavior": "Mention ET Benefits/partner offers and tools/editions.",
-      "answer": "Beyond exclusive articles, ET Prime offers a range of additional benefits. You get access to ET market tools like Stock Report Plus, Bigbull Portfolio, and Stock Analyzer, along with the Wealth edition. Members also enjoy a clean, minimal-ads reading experience, ePaper access, and exclusive invites to virtual events with industry leaders. Additionally, your membership includes complimentary subscriptions and partner offers from brands like Times Prime, TOI+, Docubay, Sony LIV, and Amazon Prime.",
-      "recommended_products": [
-        "ET Prime",
-        "ET Partner Benefits"
-      ],
-      "source_citations": [
-        {
-          "label": "ET Prime Plans / Membership Page",
-          "href": "https://economictimes.indiatimes.com/plans.cms?dc=offpricerisewb10&noredirect=1&offerType=Sale&optz=1&planGroup=NonLoggedIn_2",
-          "source_id": "et_prime_plans",
-          "verification_status": "official_public",
-          "page_type": "plans"
-        },
-        {
-          "label": "ET Prime FAQ",
-          "href": "https://economictimes.indiatimes.com/prime/faq",
-          "source_id": "et_prime_faq",
-          "verification_status": "official_public",
-          "page_type": "faq"
-        },
-        {
-          "label": "ET Benefits / Complimentary Benefits",
-          "href": "https://economictimes.indiatimes.com/et_benefits.cms?from=mdr",
-          "source_id": "et_benefits",
-          "verification_status": "official_public",
-          "page_type": "benefits_portal"
-        },
-        {
-          "label": "ET Prime About Us",
-          "href": "https://economictimes.indiatimes.com/prime/about-us",
-          "source_id": "et_prime_about",
-          "verification_status": "official_public",
-          "page_type": "about"
-        }
-      ],
-      "verification_notes": [
-        "Some ET partner benefits have activation constraints. For example, Times Prime activation is limited to an Indian mobile number."
-      ],
-      "citation_checks": {
-        "ET Benefits": true,
-        "ET Prime FAQ/plans": true
-      },
-      "routing_ok": true,
-      "conflict_ok": true,
-      "hallucination_ok": true,
-      "score": 1.0
-    },
-    {
-      "id": "eval_026",
-      "question": "Does ET Prime include Times Prime?",
-      "expected_behavior": "Answer based on benefits portal/plans, with clear phrasing that offers may change.",
-      "answer": "Yes, ET Prime membership includes access to Times Prime as part of its partner benefits. These complimentary subscriptions and offers enhance the value of your ET Prime membership. Please note that Times Prime activation is limited to Indian mobile numbers.",
-      "recommended_products": [
-        "ET Prime",
-        "ET Partner Benefits"
-      ],
-      "source_citations": [
-        {
-          "label": "ET Prime Plans / Membership Page",
-          "href": "https://economictimes.indiatimes.com/plans.cms?dc=offpricerisewb10&noredirect=1&offerType=Sale&optz=1&planGroup=NonLoggedIn_2",
-          "source_id": "et_prime_plans",
-          "verification_status": "official_public",
-          "page_type": "plans"
-        },
-        {
-          "label": "ET Prime FAQ",
-          "href": "https://economictimes.indiatimes.com/prime/faq",
-          "source_id": "et_prime_faq",
-          "verification_status": "official_public",
-          "page_type": "faq"
-        },
-        {
-          "label": "ET Prime About Us",
-          "href": "https://economictimes.indiatimes.com/prime/about-us",
-          "source_id": "et_prime_about",
-          "verification_status": "official_public",
-          "page_type": "about"
-        },
-        {
-          "label": "ET Benefits / Complimentary Benefits",
-          "href": "https://economictimes.indiatimes.com/et_benefits.cms?from=mdr",
-          "source_id": "et_benefits",
-          "verification_status": "official_public",
-          "page_type": "benefits_portal"
-        }
-      ],
+      "id": "stress_4",
+      "question": "Talk to me like a first-time ET user but keep it executive-style.",
+      "answer": "EVAL ERROR: ConfigurationError: All nameservers failed to answer the query _mongodb._tcp.cluster0.9bapwqy.mongodb.net. IN SRV: Server Do53:127.0.0.53@53 answered [Errno 1] Operation not permitted",
+      "recommended_products": [],
+      "source_citations": [],
       "verification_notes": [],
-      "citation_checks": {
-        "ET Benefits or Plans": true
-      },
-      "routing_ok": true,
-      "conflict_ok": true,
-      "hallucination_ok": true,
-      "score": 1.0
+      "score": 0.0,
+      "rubric_scores": {
+        "accuracy": 1,
+        "groundedness": 1,
+        "format_obedience": 1,
+        "tone_quality": 1,
+        "recommendation_consistency": 1,
+        "realism_of_reasoning": 1,
+        "concierge_feel": 1
+      }
     },
     {
-      "id": "eval_027",
-      "question": "Can anyone activate the Times Prime benefit?",
-      "expected_behavior": "Mention Indian mobile number limitation if relevant.",
-      "answer": "ET partner benefits are available through ET Prime, but some offers have activation constraints. For example, Times Prime activation is limited to an Indian mobile number, so I would first confirm that eligibility before suggesting the exact benefit to activate.",
-      "recommended_products": [
-        "ET Partner Benefits",
-        "ET Prime"
-      ],
-      "source_citations": [
-        {
-          "label": "ET Benefits / Complimentary Benefits",
-          "href": "https://economictimes.indiatimes.com/et_benefits.cms?from=mdr",
-          "source_id": "et_benefits",
-          "verification_status": "official_public",
-          "page_type": "benefits_portal"
-        },
-        {
-          "label": "ET Prime Plans / Membership Page",
-          "href": "https://economictimes.indiatimes.com/plans.cms?dc=offpricerisewb10&noredirect=1&offerType=Sale&optz=1&planGroup=NonLoggedIn_2",
-          "source_id": "et_prime_plans",
-          "verification_status": "official_public",
-          "page_type": "plans"
-        },
-        {
-          "label": "ET Prime FAQ",
-          "href": "https://economictimes.indiatimes.com/prime/faq",
-          "source_id": "et_prime_faq",
-          "verification_status": "official_public",
-          "page_type": "faq"
-        },
-        {
-          "label": "ET Prime About Us",
-          "href": "https://economictimes.indiatimes.com/prime/about-us",
-          "source_id": "et_prime_about",
-          "verification_status": "official_public",
-          "page_type": "about"
-        }
-      ],
-      "verification_notes": [
-        "Some ET partner benefits have activation constraints. For example, Times Prime activation is limited to an Indian mobile number."
-      ],
-      "citation_checks": {
-        "ET Benefits": true
-      },
-      "routing_ok": true,
-      "conflict_ok": true,
-      "hallucination_ok": true,
-      "score": 1.0
-    },
-    {
-      "id": "eval_028",
-      "question": "I want personal finance guidance, not trading tools. What ET path fits me?",
-      "expected_behavior": "Prioritize ET Wealth Edition, ET Prime, possibly ETMasterclass for learning.",
-      "answer": "For personal finance guidance and investment planning ideas, the ET Wealth Edition is a great fit. It's a weekly money-management edition offering analysis on mutual funds and stocks, designed for users seeking wealth guidance. You can access the ET Wealth Edition as a benefit of an ET Prime membership, which also provides deeper business analysis and insights across various industries.",
-      "recommended_products": [
-        "ET Markets",
-        "ET Prime",
-        "ET Portfolio",
-        "ET Wealth Edition"
-      ],
-      "source_citations": [
-        {
-          "label": "ET Portfolio Home",
-          "href": "https://etportfolio.economictimes.indiatimes.com/",
-          "source_id": "et_portfolio_home",
-          "verification_status": "official_public",
-          "page_type": "product_home"
-        },
-        {
-          "label": "ET Markets: Stock Tools & News \u2013 Google Play",
-          "href": "https://play.google.com/store/apps/details?hl=en_IN&id=com.et.market",
-          "source_id": "et_markets_google_play",
-          "verification_status": "official_public",
-          "page_type": "app_store_listing"
-        },
-        {
-          "label": "ET Markets \u2013 Apple App Store",
-          "href": "https://apps.apple.com/kw/app/et-markets/id895812527",
-          "source_id": "et_markets_ios",
-          "verification_status": "official_public",
-          "page_type": "app_store_listing"
-        },
-        {
-          "label": "ET Prime FAQ",
-          "href": "https://economictimes.indiatimes.com/prime/faq",
-          "source_id": "et_prime_faq",
-          "verification_status": "official_public",
-          "page_type": "faq"
-        },
-        {
-          "label": "ET Prime About Us",
-          "href": "https://economictimes.indiatimes.com/prime/about-us",
-          "source_id": "et_prime_about",
-          "verification_status": "official_public",
-          "page_type": "about"
-        },
-        {
-          "label": "ET Portfolio Home (mobile)",
-          "href": "https://m.economictimes.com/pf_portfoliohome.cms",
-          "source_id": "et_portfolio_mobile",
-          "verification_status": "official_public",
-          "page_type": "mobile_product_page"
-        },
-        {
-          "label": "Wealth Edition ePaper",
-          "href": "https://epaper.indiatimes.com/wealth_edition.cms",
-          "source_id": "et_wealth_edition",
-          "verification_status": "official_public",
-          "page_type": "edition_page"
-        }
-      ],
+      "id": "stress_5",
+      "question": "Give me a roadmap, not just an answer.",
+      "answer": "EVAL ERROR: ConfigurationError: All nameservers failed to answer the query _mongodb._tcp.cluster0.9bapwqy.mongodb.net. IN SRV: Server Do53:127.0.0.53@53 answered [Errno 1] Operation not permitted",
+      "recommended_products": [],
+      "source_citations": [],
       "verification_notes": [],
-      "citation_checks": {
-        "Wealth Edition": true,
-        "ET Prime": true
-      },
-      "routing_ok": true,
-      "conflict_ok": true,
-      "hallucination_ok": true,
-      "score": 1.0
-    },
-    {
-      "id": "eval_029",
-      "question": "I want market tools, not long articles. What ET path fits me?",
-      "expected_behavior": "Prioritize ET Markets and ET Portfolio, with ET Prime as optional premium layer.",
-      "answer": "ET Markets is an excellent fit for your interest in market tools. It offers a comprehensive suite of features like real-time market data, advanced stock screeners with 700+ data points, technical analysis tools, and smart alerts for various indicators. You'll also find sentiment tools like the proprietary Market Mood indicator to aid your market discovery. This platform is designed to provide intelligence-driven data and decision-support systems for investors.",
-      "recommended_products": [
-        "ET Markets",
-        "ET Portfolio"
-      ],
-      "source_citations": [
-        {
-          "label": "ET Portfolio Home",
-          "href": "https://etportfolio.economictimes.indiatimes.com/",
-          "source_id": "et_portfolio_home",
-          "verification_status": "official_public",
-          "page_type": "product_home"
-        },
-        {
-          "label": "ET Markets: Stock Tools & News \u2013 Google Play",
-          "href": "https://play.google.com/store/apps/details?hl=en_IN&id=com.et.market",
-          "source_id": "et_markets_google_play",
-          "verification_status": "official_public",
-          "page_type": "app_store_listing"
-        },
-        {
-          "label": "ET Markets \u2013 Apple App Store",
-          "href": "https://apps.apple.com/kw/app/et-markets/id895812527",
-          "source_id": "et_markets_ios",
-          "verification_status": "official_public",
-          "page_type": "app_store_listing"
-        },
-        {
-          "label": "ET Mobile Applications",
-          "href": "https://m.economictimes.com/etmobileapps.cms",
-          "source_id": "et_mobile_apps",
-          "verification_status": "official_public",
-          "page_type": "mobile_apps_portal"
-        },
-        {
-          "label": "Market Mood",
-          "href": "https://economictimes.indiatimes.com/markets/stock-market-mood",
-          "source_id": "market_mood",
-          "verification_status": "official_public",
-          "page_type": "tool_page"
-        },
-        {
-          "label": "Stock Screener",
-          "href": "https://m.economictimes.com/markets/stock-screener",
-          "source_id": "stock_screener",
-          "verification_status": "official_public",
-          "page_type": "tool_page"
-        },
-        {
-          "label": "Stock Reports Plus",
-          "href": "https://economictimes.indiatimes.com/markets/benefits/stockreportsplus",
-          "source_id": "stock_reports_plus",
-          "verification_status": "official_public",
-          "page_type": "tool_page"
-        },
-        {
-          "label": "ET Portfolio Home (mobile)",
-          "href": "https://m.economictimes.com/pf_portfoliohome.cms",
-          "source_id": "et_portfolio_mobile",
-          "verification_status": "official_public",
-          "page_type": "mobile_product_page"
-        }
-      ],
-      "verification_notes": [],
-      "citation_checks": {
-        "ET Markets": true,
-        "ET Portfolio": true
-      },
-      "routing_ok": true,
-      "conflict_ok": true,
-      "hallucination_ok": true,
-      "score": 1.0
-    },
-    {
-      "id": "eval_030",
-      "question": "I want to learn AI and leadership. Does ET have something for that?",
-      "expected_behavior": "Route to ETMasterclass and mention topic categories.",
-      "answer": "Yes, ET Masterclass offers programs in both AI and leadership, which aligns perfectly with your career growth goals. It is ET's executive learning platform with guru masterclasses, executive workshops, and certification courses. You can explore topics across AI & Innovation, and find leadership programs designed to develop team efficiency and performance management.",
-      "recommended_products": [
-        "ETMasterclass"
-      ],
-      "source_citations": [
-        {
-          "label": "ETMasterclass Home",
-          "href": "https://masterclass.economictimes.indiatimes.com/",
-          "source_id": "et_masterclass_home",
-          "verification_status": "official_public",
-          "page_type": "product_home"
-        },
-        {
-          "label": "ETMasterclass New / About-like Page",
-          "href": "https://masterclass.economictimes.indiatimes.com/new",
-          "source_id": "et_masterclass_new",
-          "verification_status": "official_public",
-          "page_type": "about_or_marketing"
-        }
-      ],
-      "verification_notes": [],
-      "citation_checks": {
-        "ETMasterclass": true
-      },
-      "routing_ok": true,
-      "conflict_ok": true,
-      "hallucination_ok": true,
-      "score": 1.0
-    },
-    {
-      "id": "eval_031",
-      "question": "What ET product fits a working professional who wants career-oriented learning?",
-      "expected_behavior": "Recommend ETMasterclass first.",
-      "answer": "ETMasterclass is an excellent fit for a working professional seeking career-oriented learning. It offers a comprehensive portfolio of executive workshops, thought-leader masterclasses, and university certifications designed specifically for professionals like you. These programs help brush up skills, develop a strategic edge, and address core professional challenges. You can earn industry-acknowledged certificates upon successful completion, making it ideal for career development.",
-      "recommended_products": [
-        "ET Prime",
-        "ETMasterclass"
-      ],
-      "source_citations": [
-        {
-          "label": "ETMasterclass Home",
-          "href": "https://masterclass.economictimes.indiatimes.com/",
-          "source_id": "et_masterclass_home",
-          "verification_status": "official_public",
-          "page_type": "product_home"
-        },
-        {
-          "label": "ETMasterclass New / About-like Page",
-          "href": "https://masterclass.economictimes.indiatimes.com/new",
-          "source_id": "et_masterclass_new",
-          "verification_status": "official_public",
-          "page_type": "about_or_marketing"
-        },
-        {
-          "label": "ET Prime FAQ",
-          "href": "https://economictimes.indiatimes.com/prime/faq",
-          "source_id": "et_prime_faq",
-          "verification_status": "official_public",
-          "page_type": "faq"
-        },
-        {
-          "label": "ET Prime About Us",
-          "href": "https://economictimes.indiatimes.com/prime/about-us",
-          "source_id": "et_prime_about",
-          "verification_status": "official_public",
-          "page_type": "about"
-        }
-      ],
-      "verification_notes": [],
-      "citation_checks": {
-        "ETMasterclass": true
-      },
-      "routing_ok": true,
-      "conflict_ok": true,
-      "hallucination_ok": true,
-      "score": 1.0
-    },
-    {
-      "id": "eval_032",
-      "question": "Can ET help me beyond articles?",
-      "expected_behavior": "Explain the ecosystem: ET Prime, Markets, Portfolio, Wealth Edition, Masterclass, Events, Benefits.",
-      "answer": "Yes, The Economic Times offers a wide range of products and services beyond just articles. For instance, ET Prime membership provides access to market tools like Stock Report Plus, the digital print edition, and exclusive partner benefits. You can also explore ET Markets for real-time stock updates and investment tools, ETMasterclass for executive learning programs, and ET Events for industry conferences and summits. Additionally, ET Portfolio helps you track your investments and financial goals.",
-      "recommended_products": [
-        "ET Prime",
-        "ET Markets",
-        "ET Portfolio",
-        "ETMasterclass",
-        "ET Events",
-        "ET Wealth Edition",
-        "ET Print Edition",
-        "ET Partner Benefits"
-      ],
-      "source_citations": [
-        {
-          "label": "ET Prime FAQ",
-          "href": "https://economictimes.indiatimes.com/prime/faq",
-          "source_id": "et_prime_faq",
-          "verification_status": "official_public",
-          "page_type": "faq"
-        },
-        {
-          "label": "ET Portfolio Home",
-          "href": "https://etportfolio.economictimes.indiatimes.com/",
-          "source_id": "et_portfolio_home",
-          "verification_status": "official_public",
-          "page_type": "product_home"
-        },
-        {
-          "label": "ET Prime Plans / Membership Page",
-          "href": "https://economictimes.indiatimes.com/plans.cms?dc=offpricerisewb10&noredirect=1&offerType=Sale&optz=1&planGroup=NonLoggedIn_2",
-          "source_id": "et_prime_plans",
-          "verification_status": "official_public",
-          "page_type": "plans"
-        },
-        {
-          "label": "ETMasterclass Home",
-          "href": "https://masterclass.economictimes.indiatimes.com/",
-          "source_id": "et_masterclass_home",
-          "verification_status": "official_public",
-          "page_type": "product_home"
-        },
-        {
-          "label": "ETMasterclass New / About-like Page",
-          "href": "https://masterclass.economictimes.indiatimes.com/new",
-          "source_id": "et_masterclass_new",
-          "verification_status": "official_public",
-          "page_type": "about_or_marketing"
-        },
-        {
-          "label": "ET Prime About Us",
-          "href": "https://economictimes.indiatimes.com/prime/about-us",
-          "source_id": "et_prime_about",
-          "verification_status": "official_public",
-          "page_type": "about"
-        },
-        {
-          "label": "ET Markets: Stock Tools & News \u2013 Google Play",
-          "href": "https://play.google.com/store/apps/details?hl=en_IN&id=com.et.market",
-          "source_id": "et_markets_google_play",
-          "verification_status": "official_public",
-          "page_type": "app_store_listing"
-        },
-        {
-          "label": "ET Markets \u2013 Apple App Store",
-          "href": "https://apps.apple.com/kw/app/et-markets/id895812527",
-          "source_id": "et_markets_ios",
-          "verification_status": "official_public",
-          "page_type": "app_store_listing"
-        },
-        {
-          "label": "ET Portfolio Home (mobile)",
-          "href": "https://m.economictimes.com/pf_portfoliohome.cms",
-          "source_id": "et_portfolio_mobile",
-          "verification_status": "official_public",
-          "page_type": "mobile_product_page"
-        },
-        {
-          "label": "ET B2B Events Portal",
-          "href": "https://b2b.economictimes.indiatimes.com/events",
-          "source_id": "et_b2b_events",
-          "verification_status": "official_public",
-          "page_type": "events_portal"
-        },
-        {
-          "label": "ET Enterprise AI Events",
-          "href": "https://enterpriseai.economictimes.indiatimes.com/events",
-          "source_id": "enterprise_ai_events",
-          "verification_status": "official_public",
-          "page_type": "events_portal"
-        },
-        {
-          "label": "Wealth Edition ePaper",
-          "href": "https://epaper.indiatimes.com/wealth_edition.cms",
-          "source_id": "et_wealth_edition",
-          "verification_status": "official_public",
-          "page_type": "edition_page"
-        }
-      ],
-      "verification_notes": [],
-      "citation_checks": {
-        "multiple": true
-      },
-      "routing_ok": true,
-      "conflict_ok": true,
-      "hallucination_ok": true,
-      "score": 1.0
-    },
-    {
-      "id": "eval_033",
-      "question": "What should I say if data is uncertain?",
-      "expected_behavior": "Model should explicitly say based on current public pages and mention need for verification when conflict exists.",
-      "answer": "If ET data is uncertain, I should say the answer is based on current public ET pages, call out any mixed public signals clearly, and ask the user to verify the latest live ET page, FAQ, checkout, or terms page before acting on it.",
-      "recommended_products": [
-        "ET Prime"
-      ],
-      "source_citations": [
-        {
-          "label": "Market Mood",
-          "href": "https://economictimes.indiatimes.com/markets/stock-market-mood",
-          "source_id": "market_mood",
-          "verification_status": "official_public",
-          "page_type": "tool_page"
-        },
-        {
-          "label": "ET Terms & Conditions",
-          "href": "https://economictimes.indiatimes.com/terms-conditions",
-          "source_id": "et_terms",
-          "verification_status": "official_public",
-          "page_type": "terms"
-        },
-        {
-          "label": "ET Prime Paywall Screen with Trial Messaging",
-          "href": "https://economictimes.indiatimes.com/prime/collections/in-five-stories-how-india-inc-is-warming-up-to-esg/primearticleshow/96550987.cms?ocid=budgethub",
-          "source_id": "et_prime_trial_paywall",
-          "verification_status": "conflicting_public_signals",
-          "page_type": "paywall"
-        },
-        {
-          "label": "ET Prime FAQ",
-          "href": "https://economictimes.indiatimes.com/prime/faq",
-          "source_id": "et_prime_faq",
-          "verification_status": "official_public",
-          "page_type": "faq"
-        },
-        {
-          "label": "ET Prime About Us",
-          "href": "https://economictimes.indiatimes.com/prime/about-us",
-          "source_id": "et_prime_about",
-          "verification_status": "official_public",
-          "page_type": "about"
-        }
-      ],
-      "verification_notes": [],
-      "citation_checks": {
-        "relevant source": true
-      },
-      "routing_ok": true,
-      "conflict_ok": true,
-      "hallucination_ok": true,
-      "score": 1.0
-    },
-    {
-      "id": "eval_034",
-      "question": "Do you have a refund policy for ET Prime?",
-      "expected_behavior": "Use FAQ refund/cancellation language.",
-      "answer": "No, ET Prime does not have a refund policy once the subscription has been purchased. However, if you wish to cancel your subscription to prevent auto-renewal of your next scheduled payment, you can do so from 'My Subscriptions'. For further queries, you can connect with them at care@etprime.com.",
-      "recommended_products": [
-        "ET Prime"
-      ],
-      "source_citations": [
-        {
-          "label": "ET Prime Plans / Membership Page",
-          "href": "https://economictimes.indiatimes.com/plans.cms?dc=offpricerisewb10&noredirect=1&offerType=Sale&optz=1&planGroup=NonLoggedIn_2",
-          "source_id": "et_prime_plans",
-          "verification_status": "official_public",
-          "page_type": "plans"
-        },
-        {
-          "label": "ET Prime FAQ",
-          "href": "https://economictimes.indiatimes.com/prime/faq",
-          "source_id": "et_prime_faq",
-          "verification_status": "official_public",
-          "page_type": "faq"
-        },
-        {
-          "label": "ET Prime About Us",
-          "href": "https://economictimes.indiatimes.com/prime/about-us",
-          "source_id": "et_prime_about",
-          "verification_status": "official_public",
-          "page_type": "about"
-        }
-      ],
-      "verification_notes": [],
-      "citation_checks": {
-        "ET Prime FAQ": true
-      },
-      "routing_ok": true,
-      "conflict_ok": true,
-      "hallucination_ok": true,
-      "score": 1.0
-    },
-    {
-      "id": "eval_035",
-      "question": "Can I get an ET Prime invoice?",
-      "expected_behavior": "Use FAQ support contact guidance.",
-      "answer": "Yes, you can get an invoice for your ET Prime membership. To raise an invoice, please share your billing name, address, and contact number by emailing care@etprime.com. If you require a GST invoice, you will also need to provide your GST number.",
-      "recommended_products": [
-        "ET Prime"
-      ],
-      "source_citations": [
-        {
-          "label": "ET Prime Plans / Membership Page",
-          "href": "https://economictimes.indiatimes.com/plans.cms?dc=offpricerisewb10&noredirect=1&offerType=Sale&optz=1&planGroup=NonLoggedIn_2",
-          "source_id": "et_prime_plans",
-          "verification_status": "official_public",
-          "page_type": "plans"
-        },
-        {
-          "label": "ET Prime FAQ",
-          "href": "https://economictimes.indiatimes.com/prime/faq",
-          "source_id": "et_prime_faq",
-          "verification_status": "official_public",
-          "page_type": "faq"
-        },
-        {
-          "label": "ET Prime About Us",
-          "href": "https://economictimes.indiatimes.com/prime/about-us",
-          "source_id": "et_prime_about",
-          "verification_status": "official_public",
-          "page_type": "about"
-        }
-      ],
-      "verification_notes": [],
-      "citation_checks": {
-        "ET Prime FAQ": true
-      },
-      "routing_ok": true,
-      "conflict_ok": true,
-      "hallucination_ok": true,
-      "score": 1.0
-    },
-    {
-      "id": "eval_036",
-      "question": "Can users outside India become ET Prime members?",
-      "expected_behavior": "Use FAQ international-membership info.",
-      "answer": "Yes, users outside India can become ET Prime members from anywhere in the world. Public ET pages show mixed signals regarding the annual international subscription price, with some listing it at USD 34 and others at USD 99. For international subscriptions, you can email care@etprime.com to verify the latest details or check the live ET Prime page.",
-      "recommended_products": [
-        "ET Prime"
-      ],
-      "source_citations": [
-        {
-          "label": "ET Prime Plans / Membership Page",
-          "href": "https://economictimes.indiatimes.com/plans.cms?dc=offpricerisewb10&noredirect=1&offerType=Sale&optz=1&planGroup=NonLoggedIn_2",
-          "source_id": "et_prime_plans",
-          "verification_status": "official_public",
-          "page_type": "plans"
-        },
-        {
-          "label": "ET Prime FAQ",
-          "href": "https://economictimes.indiatimes.com/prime/faq",
-          "source_id": "et_prime_faq",
-          "verification_status": "official_public",
-          "page_type": "faq"
-        },
-        {
-          "label": "ET Prime About Us",
-          "href": "https://economictimes.indiatimes.com/prime/about-us",
-          "source_id": "et_prime_about",
-          "verification_status": "official_public",
-          "page_type": "about"
-        }
-      ],
-      "verification_notes": [],
-      "citation_checks": {
-        "ET Prime FAQ": true
-      },
-      "routing_ok": true,
-      "conflict_ok": true,
-      "hallucination_ok": true,
-      "score": 1.0
-    },
-    {
-      "id": "eval_037",
-      "question": "Does ET Markets support live streaming ideas?",
-      "expected_behavior": "Use app listing language around Markets Live Stream.",
-      "answer": "Yes, ET Markets includes a 'Live Stream' feature for real-time updates and discussions. The app also provides 'Investment Ideas' and 'Stock Recommendations' to help users with their trading decisions. This makes ET Markets a good fit for active market followers and beginner investors looking for market tools and research in one place.",
-      "recommended_products": [
-        "ET Markets"
-      ],
-      "source_citations": [
-        {
-          "label": "Stock Reports Plus",
-          "href": "https://economictimes.indiatimes.com/markets/benefits/stockreportsplus",
-          "source_id": "stock_reports_plus",
-          "verification_status": "official_public",
-          "page_type": "tool_page"
-        },
-        {
-          "label": "ET Markets: Stock Tools & News \u2013 Google Play",
-          "href": "https://play.google.com/store/apps/details?hl=en_IN&id=com.et.market",
-          "source_id": "et_markets_google_play",
-          "verification_status": "official_public",
-          "page_type": "app_store_listing"
-        },
-        {
-          "label": "ET Markets \u2013 Apple App Store",
-          "href": "https://apps.apple.com/kw/app/et-markets/id895812527",
-          "source_id": "et_markets_ios",
-          "verification_status": "official_public",
-          "page_type": "app_store_listing"
-        },
-        {
-          "label": "ET Mobile Applications",
-          "href": "https://m.economictimes.com/etmobileapps.cms",
-          "source_id": "et_mobile_apps",
-          "verification_status": "official_public",
-          "page_type": "mobile_apps_portal"
-        },
-        {
-          "label": "Market Mood",
-          "href": "https://economictimes.indiatimes.com/markets/stock-market-mood",
-          "source_id": "market_mood",
-          "verification_status": "official_public",
-          "page_type": "tool_page"
-        },
-        {
-          "label": "Stock Screener",
-          "href": "https://m.economictimes.com/markets/stock-screener",
-          "source_id": "stock_screener",
-          "verification_status": "official_public",
-          "page_type": "tool_page"
-        }
-      ],
-      "verification_notes": [],
-      "citation_checks": {
-        "ET Markets Google Play listing": true
-      },
-      "routing_ok": true,
-      "conflict_ok": true,
-      "hallucination_ok": true,
-      "score": 1.0
-    },
-    {
-      "id": "eval_038",
-      "question": "What should a concierge say before recommending partner benefits?",
-      "expected_behavior": "Check eligibility or redemption constraints first.",
-      "answer": "Before recommending partner benefits, I should ask if you have an Indian mobile number, as some benefits like Times Prime require it for activation. This helps ensure I recommend benefits you can fully utilize.",
-      "recommended_products": [
-        "ET Partner Benefits",
-        "ET Prime"
-      ],
-      "source_citations": [
-        {
-          "label": "ET Benefits / Complimentary Benefits",
-          "href": "https://economictimes.indiatimes.com/et_benefits.cms?from=mdr",
-          "source_id": "et_benefits",
-          "verification_status": "official_public",
-          "page_type": "benefits_portal"
-        },
-        {
-          "label": "ET Prime Plans / Membership Page",
-          "href": "https://economictimes.indiatimes.com/plans.cms?dc=offpricerisewb10&noredirect=1&offerType=Sale&optz=1&planGroup=NonLoggedIn_2",
-          "source_id": "et_prime_plans",
-          "verification_status": "official_public",
-          "page_type": "plans"
-        },
-        {
-          "label": "ET Prime FAQ",
-          "href": "https://economictimes.indiatimes.com/prime/faq",
-          "source_id": "et_prime_faq",
-          "verification_status": "official_public",
-          "page_type": "faq"
-        },
-        {
-          "label": "ET Prime About Us",
-          "href": "https://economictimes.indiatimes.com/prime/about-us",
-          "source_id": "et_prime_about",
-          "verification_status": "official_public",
-          "page_type": "about"
-        }
-      ],
-      "verification_notes": [
-        "Some ET partner benefits have activation constraints. For example, Times Prime activation is limited to an Indian mobile number."
-      ],
-      "citation_checks": {
-        "ET Benefits": true
-      },
-      "routing_ok": true,
-      "conflict_ok": true,
-      "hallucination_ok": true,
-      "score": 1.0
-    },
-    {
-      "id": "eval_039",
-      "question": "What ET path fits a beginner investor?",
-      "expected_behavior": "Prime or Markets depending intent; ask clarifying question if needed.",
-      "answer": "For a beginner investor focused on wealth building, ET Markets is an excellent starting point, offering market news, real-time updates, and stock reports to help you understand the market. You can then use ET Portfolio to effectively track your investments, monitor holdings, and manage your financial goals. For deeper insights and simplified explainers to navigate complex market topics, ET Prime provides premium analysis and curated content across various industries.",
-      "recommended_products": [
-        "ET Markets",
-        "ET Portfolio",
-        "ET Prime"
-      ],
-      "source_citations": [
-        {
-          "label": "ET Portfolio Home",
-          "href": "https://etportfolio.economictimes.indiatimes.com/",
-          "source_id": "et_portfolio_home",
-          "verification_status": "official_public",
-          "page_type": "product_home"
-        },
-        {
-          "label": "ET Portfolio Home (mobile)",
-          "href": "https://m.economictimes.com/pf_portfoliohome.cms",
-          "source_id": "et_portfolio_mobile",
-          "verification_status": "official_public",
-          "page_type": "mobile_product_page"
-        },
-        {
-          "label": "ET Markets: Stock Tools & News \u2013 Google Play",
-          "href": "https://play.google.com/store/apps/details?hl=en_IN&id=com.et.market",
-          "source_id": "et_markets_google_play",
-          "verification_status": "official_public",
-          "page_type": "app_store_listing"
-        },
-        {
-          "label": "ET Markets \u2013 Apple App Store",
-          "href": "https://apps.apple.com/kw/app/et-markets/id895812527",
-          "source_id": "et_markets_ios",
-          "verification_status": "official_public",
-          "page_type": "app_store_listing"
-        },
-        {
-          "label": "ET Mobile Applications",
-          "href": "https://m.economictimes.com/etmobileapps.cms",
-          "source_id": "et_mobile_apps",
-          "verification_status": "official_public",
-          "page_type": "mobile_apps_portal"
-        },
-        {
-          "label": "Market Mood",
-          "href": "https://economictimes.indiatimes.com/markets/stock-market-mood",
-          "source_id": "market_mood",
-          "verification_status": "official_public",
-          "page_type": "tool_page"
-        },
-        {
-          "label": "Stock Screener",
-          "href": "https://m.economictimes.com/markets/stock-screener",
-          "source_id": "stock_screener",
-          "verification_status": "official_public",
-          "page_type": "tool_page"
-        },
-        {
-          "label": "Stock Reports Plus",
-          "href": "https://economictimes.indiatimes.com/markets/benefits/stockreportsplus",
-          "source_id": "stock_reports_plus",
-          "verification_status": "official_public",
-          "page_type": "tool_page"
-        },
-        {
-          "label": "ET Prime FAQ",
-          "href": "https://economictimes.indiatimes.com/prime/faq",
-          "source_id": "et_prime_faq",
-          "verification_status": "official_public",
-          "page_type": "faq"
-        },
-        {
-          "label": "ET Prime About Us",
-          "href": "https://economictimes.indiatimes.com/prime/about-us",
-          "source_id": "et_prime_about",
-          "verification_status": "official_public",
-          "page_type": "about"
-        }
-      ],
-      "verification_notes": [],
-      "citation_checks": {
-        "ET Prime FAQ": true,
-        "ET Markets Google Play listing": true
-      },
-      "routing_ok": true,
-      "conflict_ok": true,
-      "hallucination_ok": true,
-      "score": 1.0
-    },
-    {
-      "id": "eval_040",
-      "question": "What ET path fits someone who wants events and community touchpoints?",
-      "expected_behavior": "Route to ET Events portals and mention Prime virtual invites if relevant.",
-      "answer": "ET Events is an excellent path for someone interested in events and community touchpoints. It offers a network of ET-owned vertical event portals and summit pages across various domains like B2B, enterprise AI, and government. This product is specifically designed for users looking for conferences, summits, and community engagement. It helps you discover upcoming events and connect with live touchpoints and communities within the ET ecosystem.",
-      "recommended_products": [
-        "ET Events",
-        "ET Prime"
-      ],
-      "source_citations": [
-        {
-          "label": "ET CIO Events",
-          "href": "https://cio.economictimes.indiatimes.com/events",
-          "source_id": "cio_events",
-          "verification_status": "official_public",
-          "page_type": "events_portal"
-        },
-        {
-          "label": "ET B2B Events Portal",
-          "href": "https://b2b.economictimes.indiatimes.com/events",
-          "source_id": "et_b2b_events",
-          "verification_status": "official_public",
-          "page_type": "events_portal"
-        },
-        {
-          "label": "ET Enterprise AI Events",
-          "href": "https://enterpriseai.economictimes.indiatimes.com/events",
-          "source_id": "enterprise_ai_events",
-          "verification_status": "official_public",
-          "page_type": "events_portal"
-        },
-        {
-          "label": "ET Government Events",
-          "href": "https://government.economictimes.indiatimes.com/events",
-          "source_id": "government_events",
-          "verification_status": "official_public",
-          "page_type": "events_portal"
-        },
-        {
-          "label": "ET Prime FAQ",
-          "href": "https://economictimes.indiatimes.com/prime/faq",
-          "source_id": "et_prime_faq",
-          "verification_status": "official_public",
-          "page_type": "faq"
-        },
-        {
-          "label": "ET Prime About Us",
-          "href": "https://economictimes.indiatimes.com/prime/about-us",
-          "source_id": "et_prime_about",
-          "verification_status": "official_public",
-          "page_type": "about"
-        },
-        {
-          "label": "ET BFSI Events",
-          "href": "https://bfsi.economictimes.indiatimes.com/events",
-          "source_id": "bfsi_events",
-          "verification_status": "official_public",
-          "page_type": "events_portal"
-        }
-      ],
-      "verification_notes": [],
-      "citation_checks": {
-        "ET events portal": true,
-        "ET Prime FAQ": true
-      },
-      "routing_ok": true,
-      "conflict_ok": true,
-      "hallucination_ok": true,
-      "score": 1.0
+      "score": 0.0,
+      "rubric_scores": {
+        "accuracy": 1,
+        "groundedness": 1,
+        "format_obedience": 1,
+        "tone_quality": 1,
+        "recommendation_consistency": 1,
+        "realism_of_reasoning": 1,
+        "concierge_feel": 1
+      }
     }
   ]
 }

@@ -26,6 +26,12 @@ class JourneyEvent(TypedDict):
     roadmap: dict[str, Any] | None
     chips: list[str]
     visual_hint: str | None
+    answer_style: str | None
+    presentation: dict[str, Any] | None
+    decision: dict[str, Any] | None
+    comparison_rows: list[dict[str, Any]]
+    bullet_groups: list[dict[str, Any]]
+    ui_modules: list[dict[str, Any]]
     profile_snapshot: UserProfile
 
 
@@ -39,6 +45,7 @@ class AgentState(TypedDict):
     journey_history: list[JourneyEvent]
     intent: Literal["profiling", "product_query", "chitchat"]
     retrieved_chunks: list[Any]
+    stage2_decision: dict[str, Any] | None
     response: dict[str, Any]
 
 
@@ -90,6 +97,7 @@ def initial_state(
         "questions_asked": list(saved_session.get("questions_asked", [])),
         "journey_history": list(saved_session.get("journey_history", [])),
         "retrieved_chunks": [],
+        "stage2_decision": None,
         "intent": "profiling",
         "response": {},
     }

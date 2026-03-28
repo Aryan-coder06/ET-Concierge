@@ -43,6 +43,13 @@ class ConciergeService:
             "verification_notes": response.get("verification_notes", []),
             "visual_hint": response.get("visual_hint"),
             "response_type": response.get("response_type", "product_query"),
+            "answer_style": response.get("answer_style"),
+            "presentation": response.get("presentation"),
+            "decision": response.get("decision"),
+            "comparison_rows": response.get("comparison_rows", []),
+            "bullet_groups": response.get("bullet_groups", []),
+            "ui_modules": response.get("ui_modules", []),
+            "html_snippets": response.get("html_snippets", []),
         }
 
     def health(self) -> dict[str, Any]:

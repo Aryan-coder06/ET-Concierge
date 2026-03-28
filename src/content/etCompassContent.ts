@@ -13,6 +13,10 @@ export const etCompassContent = {
       bottomLabel: "OPEN LUNA",
       href: "/search",
     },
+    repoCta: {
+      label: "GitHub",
+      href: "https://github.com/Aryan-coder06/ET-Concierge",
+    },
   },
 
   nav: [
@@ -28,8 +32,8 @@ export const etCompassContent = {
     description:
       "A RAG-powered assistant for the ET ecosystem. Ask once, and LUNA helps you discover ET Prime, ET Markets, masterclasses, events, and wealth journeys built around your needs.",
     primaryCta: {
-      label: "Open LUNA",
-      href: "/search",
+      label: "Docs",
+      href: "/docs",
     },
     secondaryCta: {
       label: "Demo",

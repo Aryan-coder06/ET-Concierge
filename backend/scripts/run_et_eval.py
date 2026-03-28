@@ -11,6 +11,7 @@ if str(BACKEND_ROOT) not in sys.path:
 
 from app.chatbot.registry import load_eval_prompts, official_product_names
 from app.chatbot.service import concierge_service
+from app.chatbot.stage2 import load_stage2_eval_suite
 
 
 EVAL_OUTPUT_DIR = BACKEND_ROOT / "eval_results"
@@ -152,6 +153,135 @@ def _score_prompt(prompt: dict, result: dict) -> dict:
     }
 
 
+def _flatten_stage2_prompts() -> list[dict]:
+    suite = load_stage2_eval_suite()
+    prompts: list[dict] = []
+    for group_name, questions in suite.get("prompt_sets", {}).items():
+        for index, question in enumerate(questions, start=1):
+            prompts.append(
+                {
+                    "id": f"{group_name}_{index}",
+                    "group": group_name,
+                    "question": question,
+                }
+            )
+    return prompts
+
+
+def _score_stage2_prompt(prompt: dict, result: dict) -> dict:
+    question = prompt["question"].lower()
+    answer = str(result.get("answer", ""))
+    answer_lower = answer.lower()
+    recommended_products = result.get("recommended_products", [])
+    decision = result.get("decision") or {}
+    primary = (decision.get("primary_recommendation") or {}).get("product")
+    comparison_rows = result.get("comparison_rows", [])
+    bullet_groups = result.get("bullet_groups", [])
+    roadmap = result.get("roadmap") or {}
+    presentation = result.get("presentation") or {}
+    verification_notes = result.get("verification_notes", [])
+    visual_hint = result.get("visual_hint")
+    navigator_summary = result.get("navigator_summary") or {}
+    ui_modules = result.get("ui_modules", [])
+    source_citations = result.get("source_citations", [])
+
+    wants_table = any(keyword in question for keyword in ["table", "compare", "comparison", " vs "])
+    wants_bullets = any(keyword in question for keyword in ["bullet", "bullets", "three bullets"])
+    wants_roadmap = any(keyword in question for keyword in ["roadmap", "7-day", "5-day", "journey", "plan"])
+    wants_short = "short answer" in question or "under 150 words" in question
+    markets_query = any(keyword in question for keyword in ["sensex", "nifty", "markets", "trading"])
+    learning_query = any(keyword in question for keyword in ["learn", "learning", "student", "guided learning", "masterclass"])
+    trust_query = any(keyword in question for keyword in ["free trial", "for sure", "confirmation", "execute trades", "broker", "confidence-aware"])
+
+    accuracy = 4 if answer and not answer.startswith("EVAL ERROR") else 1
+    groundedness = 5 if source_citations else 2
+
+    format_hits = 0
+    format_targets = 0
+    if wants_table:
+        format_targets += 1
+        format_hits += int(bool(comparison_rows))
+    if wants_bullets:
+        format_targets += 1
+        format_hits += int(bool(bullet_groups))
+    if wants_roadmap:
+        format_targets += 1
+        format_hits += int(bool(roadmap.get("steps")))
+    if wants_short:
+        format_targets += 1
+        format_hits += int(len(answer.split()) <= 170)
+    if format_targets == 0:
+        format_targets = 1
+        format_hits = 1
+    format_obedience = max(1, min(5, round((format_hits / format_targets) * 5)))
+
+    robotic_phrases = [
+        "i'm delighted to assist",
+        "i have enough context to guide you now",
+        "please verify your fastapi server",
+    ]
+    tone_quality = 5 if answer and not any(phrase in answer_lower for phrase in robotic_phrases) else 2
+
+    recommendation_consistency = 5
+    if primary and primary != "Mixed Path":
+        recommendation_consistency = 5 if primary in recommended_products else 2
+    if markets_query and visual_hint not in {"markets_tools", "portfolio_view", None}:
+        recommendation_consistency = min(recommendation_consistency, 2)
+    if learning_query and visual_hint == "markets_tools":
+        recommendation_consistency = 1
+
+    realism_of_reasoning = 3
+    if "because" in answer_lower or "best fit" in answer_lower or navigator_summary:
+        realism_of_reasoning = 4
+    if ui_modules and decision.get("next_best_action"):
+        realism_of_reasoning = 5
+
+    concierge_feel = 3
+    if decision.get("next_best_action") or navigator_summary:
+        concierge_feel = 4
+    if ui_modules and presentation:
+        concierge_feel = 5
+
+    if trust_query and (verification_notes or "verify" in answer_lower or "mixed signals" in answer_lower):
+        groundedness = min(5, groundedness + 1)
+        accuracy = min(5, accuracy + 1)
+
+    return {
+        "id": prompt["id"],
+        "group": prompt.get("group"),
+        "question": prompt["question"],
+        "answer": answer,
+        "recommended_products": recommended_products,
+        "decision": decision,
+        "comparison_rows": comparison_rows,
+        "bullet_groups": bullet_groups,
+        "visual_hint": visual_hint,
+        "ui_modules": ui_modules,
+        "rubric_scores": {
+            "accuracy": accuracy,
+            "groundedness": groundedness,
+            "format_obedience": format_obedience,
+            "tone_quality": tone_quality,
+            "recommendation_consistency": recommendation_consistency,
+            "realism_of_reasoning": realism_of_reasoning,
+            "concierge_feel": concierge_feel,
+        },
+        "score": round(
+            (
+                accuracy
+                + groundedness
+                + format_obedience
+                + tone_quality
+                + recommendation_consistency
+                + realism_of_reasoning
+                + concierge_feel
+            )
+            / 35,
+            3,
+        ),
+    }
+
+
 def main() -> None:
     parser = argparse.ArgumentParser(
         description="Run the ET concierge evaluation prompt pack."
@@ -167,14 +297,21 @@ def main() -> None:
         action="store_true",
         help="Use a unique session prefix for this evaluation run instead of reusing eval::<id> sessions.",
     )
+    parser.add_argument(
+        "--suite",
+        choices=["stage1", "stage2"],
+        default="stage1",
+        help="Which evaluation suite to run.",
+    )
     args = parser.parse_args()
 
-    prompts = load_eval_prompts()
+    prompts = load_eval_prompts() if args.suite == "stage1" else _flatten_stage2_prompts()
     if args.limit is not None:
         prompts = prompts[: args.limit]
 
     run_id = datetime.now(timezone.utc).strftime("%Y%m%d%H%M%S")
-    session_prefix = f"eval::{run_id}" if args.fresh_run else "eval"
+    session_prefix_root = "stage2-eval" if args.suite == "stage2" else "eval"
+    session_prefix = f"{session_prefix_root}::{run_id}" if args.fresh_run else session_prefix_root
 
     evaluations: list[dict] = []
     for index, prompt in enumerate(prompts, start=1):
@@ -184,24 +321,39 @@ def main() -> None:
                 session_id=session_id,
                 query=prompt["question"],
             )
-            result = _score_prompt(prompt, response)
+            result = _score_prompt(prompt, response) if args.suite == "stage1" else _score_stage2_prompt(prompt, response)
         except Exception as exc:
             result = {
                 "id": prompt["id"],
                 "question": prompt["question"],
-                "expected_behavior": prompt.get("expected_behavior", ""),
                 "answer": f"EVAL ERROR: {type(exc).__name__}: {exc}",
                 "recommended_products": [],
                 "source_citations": [],
                 "verification_notes": [],
-                "citation_checks": {
-                    required: False for required in prompt.get("must_cite", [])
-                },
-                "routing_ok": False,
-                "conflict_ok": False,
-                "hallucination_ok": True,
                 "score": 0.0,
             }
+            if args.suite == "stage1":
+                result.update(
+                    {
+                        "expected_behavior": prompt.get("expected_behavior", ""),
+                        "citation_checks": {
+                            required: False for required in prompt.get("must_cite", [])
+                        },
+                        "routing_ok": False,
+                        "conflict_ok": False,
+                        "hallucination_ok": True,
+                    }
+                )
+            else:
+                result["rubric_scores"] = {
+                    "accuracy": 1,
+                    "groundedness": 1,
+                    "format_obedience": 1,
+                    "tone_quality": 1,
+                    "recommendation_consistency": 1,
+                    "realism_of_reasoning": 1,
+                    "concierge_feel": 1,
+                }
         evaluations.append(result)
         print(
             f"[{index}/{len(prompts)}] {prompt['id']} score={result['score']}",
@@ -215,6 +367,7 @@ def main() -> None:
 
     payload = {
         "generated_at": datetime.now(timezone.utc).isoformat(),
+        "suite": args.suite,
         "session_prefix": session_prefix,
         "prompt_count": len(evaluations),
         "average_score": average_score,
