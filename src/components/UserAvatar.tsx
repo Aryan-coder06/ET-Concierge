@@ -16,7 +16,7 @@ export function UserAvatar({
   className = "",
 }: UserAvatarProps) {
   const fallbackLabel = displayName || email || "ET Compass user";
-  const source = photoURL?.trim() || "/default-luna-avatar.svg";
+  const source = photoURL?.trim() || "/final_favicon.png";
 
   return (
     <div

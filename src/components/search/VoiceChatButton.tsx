@@ -227,7 +227,7 @@ export function VoiceChatButton({
   }, [stopSpeaking]);
 
   return (
-    <div className="flex flex-col items-end gap-1.5">
+    <div className="relative flex items-center">
       <button
         type="button"
         onClick={isRecording ? stopRecording : startRecording}
@@ -244,9 +244,11 @@ export function VoiceChatButton({
         {isRecording || statusText === "Speaking..." ? <StopIcon /> : <MicIcon />}
       </button>
 
-      <span className="min-h-[14px] text-right text-[9px] font-black uppercase tracking-[0.16em] text-black/55">
-        {statusText}
-      </span>
+      {statusText ? (
+        <span className="absolute -top-6 right-0 whitespace-nowrap text-[9px] font-black uppercase tracking-[0.16em] text-black/55">
+          {statusText}
+        </span>
+      ) : null}
     </div>
   );
 }

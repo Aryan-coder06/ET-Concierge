@@ -11,3 +11,4 @@ langchain-mongodb
 langgraph
 httpx
 python-multipart
+pydub

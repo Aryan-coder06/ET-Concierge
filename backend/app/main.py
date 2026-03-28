@@ -10,7 +10,11 @@ from .chatbot.config import get_settings
 from .chatbot.market_data import get_market_snapshot
 from .chatbot.service import concierge_service
 from .chatbot.voice_providers import SarvamSTTProvider, SarvamTTSProvider
-from .chatbot.voice_utils import format_text_for_voice, voice_used_rag
+from .chatbot.voice_utils import (
+    format_text_for_voice,
+    normalize_audio_for_stt,
+    voice_used_rag,
+)
 
 
 logger = logging.getLogger(__name__)
@@ -207,15 +211,19 @@ async def voice_chat(
 
     try:
         audio_bytes = await audio_file.read()
-        transcript = await stt_provider.transcribe_audio(
+        processed_audio, processed_filename, processed_content_type = normalize_audio_for_stt(
             audio_bytes,
-            filename=audio_file.filename,
-            content_type=audio_file.content_type,
+            original_filename=audio_file.filename,
+        )
+        transcript = await stt_provider.transcribe_audio(
+            processed_audio,
+            filename=processed_filename,
+            content_type=processed_content_type,
         )
         if not transcript:
             raise HTTPException(
                 status_code=422,
-                detail="Voice transcription did not return a readable query.",
+                detail="Voice transcription did not return a readable query. Try speaking for 2 to 4 seconds and retry.",
             )
 
         chat_result = await run_in_threadpool(

@@ -74,9 +74,18 @@ class SarvamSTTProvider:
                     data=data,
                     files=files,
                 )
+                if response.status_code >= 400:
+                    logger.error(
+                        "Sarvam STT rejected audio (%s): %s",
+                        response.status_code,
+                        response.text,
+                    )
                 response.raise_for_status()
                 result = response.json()
                 return str(result.get("transcript", "")).strip()
+        except httpx.HTTPStatusError as exc:
+            logger.error("Sarvam STT failed with HTTP error: %s", exc)
+            return ""
         except Exception as exc:
             logger.error("Sarvam STT failed: %s", exc)
             return ""
@@ -112,12 +121,21 @@ class SarvamTTSProvider:
         try:
             async with httpx.AsyncClient(timeout=30.0) as client:
                 response = await client.post(self.url, headers=headers, json=payload)
+                if response.status_code >= 400:
+                    logger.error(
+                        "Sarvam TTS rejected request (%s): %s",
+                        response.status_code,
+                        response.text,
+                    )
                 response.raise_for_status()
                 result = response.json()
                 audios = result.get("audios", [])
                 if isinstance(audios, list) and audios:
                     return str(audios[0])
                 return None
+        except httpx.HTTPStatusError as exc:
+            logger.error("Sarvam TTS failed with HTTP error: %s", exc)
+            return None
         except Exception as exc:
             logger.error("Sarvam TTS failed: %s", exc)
             return None

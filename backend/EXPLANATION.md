@@ -646,3 +646,15 @@
   - updated the frontend docs page to explain how voice works on top of the main ET RAG path
 - Why: The documentation should match the demo. If voice is now part of the product, it should be represented in both developer docs and user-facing docs.
 - Practical effect in simple English: The repo and frontend docs now describe the real current system, including the new voice capability.
+
+### 6. I fixed the browser-audio problem that was breaking Sarvam STT
+- Where: [backend/app/chatbot/voice_utils.py](/home/aryan-s/Documents/GENAI/ET-Concierge/backend/app/chatbot/voice_utils.py), [backend/app/main.py](/home/aryan-s/Documents/GENAI/ET-Concierge/backend/app/main.py), [backend/app/chatbot/voice_providers.py](/home/aryan-s/Documents/GENAI/ET-Concierge/backend/app/chatbot/voice_providers.py), [backend/requirements.txt](/home/aryan-s/Documents/GENAI/ET-Concierge/backend/requirements.txt)
+- What I changed: Browser recordings were being sent to Sarvam in the raw WebM/Ogg form created by `MediaRecorder`. Sarvam was rejecting that payload with `400 Bad Request`, so I added an audio-normalization step that converts the uploaded recording into WAV before sending it to speech-to-text. I also added better provider-side error logging so the real Sarvam response is visible in logs if a request is still rejected.
+- Why: The route was correct, but the recorded browser audio format was not reliable enough for the speech-to-text API as-is.
+- Practical effect in simple English: Voice input should now transcribe much more reliably, and if it still fails, the backend logs will finally show the exact Sarvam-side reason.
+
+### 7. I fixed the microphone button alignment in the search composer
+- Where: [src/components/search/VoiceChatButton.tsx](/home/aryan-s/Documents/GENAI/ET-Concierge/src/components/search/VoiceChatButton.tsx)
+- What I changed: The old button rendered its status text underneath the icon, which made the mic control sit lower than the send button. I changed the layout so the status text floats above the button instead of taking up extra vertical space.
+- Why: The earlier layout made the composer look broken and unbalanced.
+- Practical effect in simple English: The mic button now lines up properly with the send button in the chat composer while still showing short status feedback like `Listening` or `Processing`.

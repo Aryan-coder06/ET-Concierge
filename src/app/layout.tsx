@@ -14,8 +14,8 @@ export const metadata: Metadata = {
   title: etCompassContent.brand.name,
   description: etCompassContent.footer.description,
   icons: {
-    icon: "/default-luna-avatar.svg",
-    shortcut: "/default-luna-avatar.svg",
+    icon: "/final_favicon.png",
+    shortcut: "/final_favicon.png",
   },
 };
 

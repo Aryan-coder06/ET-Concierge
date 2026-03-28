@@ -259,7 +259,7 @@ export const etCompassContent = {
   },
 
   testimonialsSection: {
-    title: "WHAT PEOPLE SHOULD FEEL",
+    title: "HOW PEOPLE FEEL ABOUT LUNA! ",
     subtitle: "SHORT, HUMAN, USEFUL",
     items: [
       {
