@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState } from "react";
+import { VoiceChatButton } from "@/components/search/VoiceChatButton";
 import { ConciergeRail } from "@/components/search/ConciergeRail";
 import { LunaThinkingPanel } from "@/components/search/LunaThinkingPanel";
 import { ResponseInsightPanel } from "@/components/search/ResponseInsightPanel";
@@ -854,6 +855,7 @@ export default function SearchPage() {
         chips: extractStringArray(data.chips),
         navigatorSummary: extractNavigatorSummary(data),
         visualHint: readString(data.visual_hint) || null,
+        usedRag: (extractSources(data).length > 0 || extractSourceCitations(data).length > 0),
       };
 
       appendMessage(threadId, assistantMessage);
@@ -876,6 +878,42 @@ export default function SearchPage() {
     } finally {
       setIsSending(false);
     }
+  }
+
+  function handleVoiceResponse(userText: string, agentText: string, usedRag?: boolean) {
+    if (!activeThreadId) return;
+
+    const currentThreadMessages = messagesByThread[activeThreadId] || [];
+    const shouldRenameThread =
+      currentThreadMessages.length <= 1 ||
+      threads.find((thread) => thread.id === activeThreadId)?.title === "New thread";
+
+    if (shouldRenameThread) {
+      updateThreadMeta(activeThreadId, makeThreadTitle(userText));
+    } else {
+      updateThreadMeta(activeThreadId);
+    }
+
+    const userMessage: ChatMessage = {
+      id: uid(),
+      role: "user",
+      content: userText,
+      createdAt: new Date().toISOString(),
+    };
+
+    const assistantMessage: ChatMessage = {
+      id: uid(),
+      role: "assistant",
+      content: agentText,
+      createdAt: new Date().toISOString(),
+      visualHint: "concise_voice_reply",
+      usedRag: usedRag,
+    };
+
+    setMessagesByThread((prev) => ({
+      ...prev,
+      [activeThreadId]: [...(prev[activeThreadId] || []), userMessage, assistantMessage],
+    }));
   }
 
   function handleKeyDown(e: React.KeyboardEvent<HTMLTextAreaElement>) {
@@ -1027,13 +1065,20 @@ export default function SearchPage() {
                           }`}
                         >
                           <div className="mb-1.5 flex items-center justify-between gap-4">
-                            <span
-                              className={`text-[10px] font-black uppercase tracking-[0.18em] ${
-                                isUser ? "text-[#1040C0]" : "text-[#D02020]"
-                              }`}
-                            >
-                              {isUser ? "User" : etCompassContent.brand.shortTag}
-                            </span>
+                            <div className="flex items-center gap-2">
+                              {message.usedRag && (
+                                <span className="bg-black text-white text-[8px] font-black px-1 py-0.5 rounded leading-none uppercase tracking-tighter">
+                                  RAG
+                                </span>
+                              )}
+                              <span
+                                className={`text-[10px] font-black uppercase tracking-[0.18em] ${
+                                  isUser ? "text-[#1040C0]" : "text-[#D02020]"
+                                }`}
+                              >
+                                {isUser ? "User" : etCompassContent.brand.shortTag}
+                              </span>
+                            </div>
 
                             <span className="text-[10px] font-bold uppercase tracking-wide text-black/45">
                               {formatTime(message.createdAt)}
@@ -1307,17 +1352,22 @@ export default function SearchPage() {
                         Enter to send · Shift + Enter for new line
                       </p>
 
-                      <button
-                        type="button"
-                        onClick={() => void handleSend()}
-                        disabled={isSending || !input.trim()}
-                        className="inline-flex items-center justify-center gap-2 border-2 border-black bg-[#D02020] px-4 py-2.5 text-xs font-black uppercase tracking-wide text-white shadow-[4px_4px_0px_0px_black] disabled:cursor-not-allowed disabled:opacity-50"
-                      >
-                        <SendIcon />
-                        {etCompassContent.searchPage.primaryButton}
-                      </button>
-                    </div>
-                  </div>
+                      <div className="flex items-center justify-end gap-3">
+                        <VoiceChatButton 
+                          threadId={activeThreadId} 
+                          onResponse={handleVoiceResponse}
+                        />
+                        <button
+                          type="button"
+                          onClick={() => void handleSend()}
+                          disabled={isSending || !input.trim()}
+                          className="inline-flex items-center justify-center gap-2 border-2 border-black bg-[#D02020] px-4 py-2.5 text-xs font-black uppercase tracking-wide text-white shadow-[4px_4px_0px_0px_black] disabled:cursor-not-allowed disabled:opacity-50"
+                        >
+                          <SendIcon />
+                          {etCompassContent.searchPage.primaryButton}
+                        </button>
+                      </div>
+                    </div>                  </div>
                 </div>
               </div>
             </div>

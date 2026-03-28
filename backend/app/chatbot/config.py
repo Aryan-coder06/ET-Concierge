@@ -22,7 +22,7 @@ class Settings(BaseModel):
         default_factory=lambda: _env("EMBEDDING_MODEL", "gemini-embedding-001")
     )
     google_chat_model: str = Field(
-        default_factory=lambda: _env("GOOGLE_CHAT_MODEL")
+        default_factory=lambda: _env("GOOGLE_CHAT_MODEL", "gemini-2.5-flash")
     )
     mongodb_db_name: str = Field(
         default_factory=lambda: _env("MONGODB_DB_NAME", "et_concierge")
@@ -65,7 +65,6 @@ class Settings(BaseModel):
             "gemini-2.5-flash",
             "gemini-flash-latest",
             "gemini-2.0-flash-lite",
-            "gemini-3-flash-preview",
         ]
         unique: list[str] = []
         for candidate in candidates:

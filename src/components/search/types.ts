@@ -54,6 +54,7 @@ export type ChatMessage = {
   chips?: string[];
   navigatorSummary?: NavigatorSummary | null;
   visualHint?: string | null;
+  usedRag?: boolean;
 };
 
 export type ThreadSummary = {

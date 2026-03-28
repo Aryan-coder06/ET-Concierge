@@ -25,6 +25,7 @@ class VoiceChatResponse(BaseModel):
     user_text: str
     agent_text: str
     audio: str | None = None
+    used_rag: bool = False
 
 
 class SourceItem(BaseModel):
@@ -168,18 +169,24 @@ async def voice_chat_rest(
         if not user_text:
             return VoiceChatResponse(user_text="", agent_text="I couldn't hear you.", audio=None)
 
-        # 3. Agent
-        agent_text = ""
-        async for token in voice_agent.stream_response(user_text, thread_id):
-            agent_text += token
+        # 3. Main RAG Graph
+        # We call the EXACT SAME logic as chat messages
+        chat_result = concierge_service.chat(session_id=thread_id, query=user_text)
+        raw_answer = chat_result["answer"]
+        used_rag = (len(chat_result.get("sources", [])) > 0 or len(chat_result.get("source_citations", [])) > 0)
         
-        # 4. TTS
+        # 4. Voice Formatting Node
+        # We take that answer and make it "easily readable" for voice
+        agent_text = await voice_agent.format_response_for_voice(raw_answer)
+        
+        # 5. TTS
         audio_base64 = await tts_provider.synthesize_speech(agent_text)
         
         return VoiceChatResponse(
             user_text=user_text,
             agent_text=agent_text,
-            audio=audio_base64
+            audio=audio_base64,
+            used_rag=used_rag
         )
     except Exception as e:
         logger.error(f"Voice chat REST error: {e}")
@@ -296,29 +303,24 @@ async def voice_websocket_endpoint(websocket: WebSocket):
                         await websocket.send_json({"event": "user_text", "text": user_text})
                         await websocket.send_json({"event": "status", "message": "thinking"})
                         
-                        # 2. Agent & 3. TTS
-                        text_buffer = ""
-                        async for token in voice_agent.stream_response(user_text, thread_id):
-                            text_buffer += token
-                            sentences, remainder = split_into_sentences(text_buffer)
-                            
-                            for sentence in sentences:
-                                sentence = sentence.strip()
-                                if sentence:
-                                    await websocket.send_json({"event": "agent_text", "text": sentence})
-                                    audio_base64 = await tts_provider.synthesize_speech(sentence)
-                                    if audio_base64:
-                                        await websocket.send_json({"event": "audio", "audio": audio_base64})
-                                        
-                            text_buffer = remainder
+                        # 2. Main RAG Graph
+                        chat_result = concierge_service.chat(session_id=thread_id, query=user_text)
+                        raw_answer = chat_result["answer"]
+                        used_rag = (len(chat_result.get("sources", [])) > 0 or len(chat_result.get("source_citations", [])) > 0)
+                        await websocket.send_json({"event": "used_rag", "value": used_rag})
+
+                        # 3. Voice Formatting Node
+                        agent_text = await voice_agent.format_response_for_voice(raw_answer)
                         
-                        # Flush remainder
-                        if text_buffer.strip():
-                            sentence = text_buffer.strip()
-                            await websocket.send_json({"event": "agent_text", "text": sentence})
-                            audio_base64 = await tts_provider.synthesize_speech(sentence)
-                            if audio_base64:
-                                await websocket.send_json({"event": "audio", "audio": audio_base64})
+                        # 4. Stream segments to UI & TTS
+                        sentences, _ = split_into_sentences(agent_text)
+                        for sentence in sentences:
+                            sentence = sentence.strip()
+                            if sentence:
+                                await websocket.send_json({"event": "agent_text", "text": sentence})
+                                audio_base64 = await tts_provider.synthesize_speech(sentence)
+                                if audio_base64:
+                                    await websocket.send_json({"event": "audio", "audio": audio_base64})
                                 
                         await websocket.send_json({"event": "status", "message": "listening"})
                     except Exception as e:

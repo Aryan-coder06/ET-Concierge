@@ -1,4 +1,4 @@
 pymongo
 langchain
 langchain-google-genai
-python-dotenv
+python-doten
