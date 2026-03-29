@@ -66,8 +66,6 @@ User query
   tone + style + natural language behavior
 - `stage2_eval_suite.json`:
   prompts and rubrics for testing the upgraded system
-- `codex_stage2_upgrade_prompt.md`:
-  implementation prompt for Codex
 
 ## Key principle
 The bot should answer naturally first.
