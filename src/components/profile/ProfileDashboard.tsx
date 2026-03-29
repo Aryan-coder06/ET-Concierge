@@ -237,6 +237,16 @@ export function ProfileDashboard() {
     ],
     [latestJourney?.recommended_products, session?.profile.goal, session?.profile.profession, session?.profile.sophistication, session?.recommended_products]
   );
+  const latestRoute = prettyLabel(latestPathSnapshot?.route || latestJourney?.route);
+  const currentLane =
+    latestPathSnapshot?.primary_display_product ||
+    session?.recommended_products?.[0] ||
+    latestJourney?.recommended_products?.[0] ||
+    "ET Compass";
+  const signalCount = Math.max(
+    latestPathSnapshot?.nodes?.length || 0,
+    latestPathSnapshot?.signals?.length || 0
+  );
 
   return (
     <main className="min-h-screen bg-[#F0F0F0] px-4 py-6 sm:px-6 lg:px-8">
@@ -253,9 +263,13 @@ export function ProfileDashboard() {
                   <p className="text-2xl font-black uppercase tracking-tight">Profile Dashboard</p>
                 </div>
               </Link>
-              <h1 className="mt-5 text-4xl font-black uppercase leading-[0.92] sm:text-5xl lg:max-w-4xl">
-                A cleaner view of the user path, profile, and next ET opportunities.
+              <h1 className="mt-5 max-w-5xl text-3xl font-black uppercase leading-[0.94] sm:text-4xl xl:text-[3.3rem]">
+                The live user path, profile state, and next ET opportunities in one place.
               </h1>
+              <p className="mt-4 max-w-3xl text-sm font-medium leading-7 text-black/68 sm:text-base">
+                This dashboard tracks how Luna is shaping the user journey, which ET lane is strongest
+                right now, and what should happen next.
+              </p>
             </div>
 
             <div className="flex flex-wrap gap-3">
@@ -343,117 +357,198 @@ export function ProfileDashboard() {
         ) : null}
 
         {user ? (
-        <div className="mt-8 grid gap-8 lg:grid-cols-[1.15fr_0.85fr]">
+        <div className="mt-8 space-y-8">
+          <div className="grid gap-8 xl:grid-cols-[380px_minmax(0,1fr)]">
+            <section className="border-4 border-black bg-white p-5 shadow-[10px_10px_0px_0px_black] sm:p-6">
+              <div className="flex items-start justify-between gap-3 border-b-4 border-black pb-5">
+                <div>
+                  <p className="text-[11px] font-black uppercase tracking-[0.28em] text-[#D02020]">
+                    Demographic Summary
+                  </p>
+                  <h2 className="mt-2 text-2xl font-black uppercase leading-tight sm:text-3xl">
+                    User profile snapshot
+                  </h2>
+                </div>
+                <span className="border-2 border-black bg-[#F0F0F0] px-3 py-2 text-[10px] font-black uppercase tracking-[0.18em]">
+                  {loading
+                    ? "Loading"
+                    : session?.onboarding_complete
+                      ? "Ready"
+                      : "Needs more answers"}
+                </span>
+              </div>
+
+              <div className="mt-6 border-2 border-black bg-[#FFF7D4] px-4 py-4">
+                <p className="text-[11px] font-black uppercase tracking-[0.2em] text-[#D02020]">
+                  Firebase Account
+                </p>
+                <div className="mt-3 grid gap-3">
+                  <div className="border border-black bg-white px-3 py-3">
+                    <p className="text-[10px] font-black uppercase tracking-[0.16em] text-black/55">
+                      Display Name
+                    </p>
+                    <p className="mt-2 text-sm font-black uppercase">
+                      {user.displayName || "No display name yet"}
+                    </p>
+                  </div>
+                  <div className="border border-black bg-white px-3 py-3">
+                    <p className="text-[10px] font-black uppercase tracking-[0.16em] text-black/55">
+                      Email
+                    </p>
+                    <p className="mt-2 break-all text-sm font-black">
+                      {user.email || "No email found"}
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              <div className="mt-6 grid gap-3">
+                {summaryCards.map((item) => (
+                  <div
+                    key={item.label}
+                    className="border-2 border-black bg-[#F8F8F8] px-4 py-4 shadow-[4px_4px_0px_0px_black]"
+                  >
+                    <span className={`block h-1.5 w-16 ${item.accent}`} />
+                    <p className="mt-3 text-[11px] font-black uppercase tracking-[0.18em] text-black/55">
+                      {item.label}
+                    </p>
+                    <p className="mt-2 text-base font-black uppercase leading-6">{item.value}</p>
+                  </div>
+                ))}
+              </div>
+
+              <div className="mt-6 grid gap-4">
+                <div className="border-2 border-black bg-[#FFF7D4] p-4">
+                  <p className="text-[11px] font-black uppercase tracking-[0.2em] text-[#D02020]">
+                    Interests
+                  </p>
+                  <div className="mt-3 flex flex-wrap gap-2">
+                    {(session?.profile.interests || []).length > 0 ? (
+                      session?.profile.interests?.map((interest) => (
+                        <span
+                          key={interest}
+                          className="border border-black bg-white px-3 py-1.5 text-[10px] font-black uppercase tracking-[0.14em]"
+                        >
+                          {prettyLabel(interest)}
+                        </span>
+                      ))
+                    ) : (
+                      <p className="text-sm font-medium text-black/68">
+                        Interests will appear here as Luna learns more.
+                      </p>
+                    )}
+                  </div>
+                </div>
+
+                <div className="border-2 border-black bg-[#DDE7FF] p-4">
+                  <p className="text-[11px] font-black uppercase tracking-[0.2em] text-[#1040C0]">
+                    Recommended ET Lanes
+                  </p>
+                  <div className="mt-3 flex flex-wrap gap-2">
+                    {(session?.recommended_products || []).length > 0 ? (
+                      session?.recommended_products?.map((product) => (
+                        <span
+                          key={product}
+                          className="border border-black bg-white px-3 py-1.5 text-[10px] font-black uppercase tracking-[0.14em]"
+                        >
+                          {product}
+                        </span>
+                      ))
+                    ) : (
+                      <p className="text-sm font-medium text-black/68">
+                        Luna will surface ET products here once the user path becomes clearer.
+                      </p>
+                    )}
+                  </div>
+                </div>
+              </div>
+            </section>
+
+            <section className="border-4 border-black bg-white p-5 shadow-[10px_10px_0px_0px_black] sm:p-6">
+              <div className="flex flex-col gap-4 border-b-4 border-black pb-5 lg:flex-row lg:items-end lg:justify-between">
+                <div>
+                  <p className="text-[11px] font-black uppercase tracking-[0.28em] text-[#D02020]">
+                    Current Session Pulse
+                  </p>
+                  <h2 className="mt-2 text-2xl font-black uppercase leading-tight sm:text-3xl">
+                    What Luna sees right now
+                  </h2>
+                  <p className="mt-3 max-w-2xl text-sm font-medium leading-7 text-black/68">
+                    This panel shows the live route, the strongest ET lane, and the immediate move Luna is trying to shape from the current conversation.
+                  </p>
+                </div>
+                <div className="grid grid-cols-3 gap-2 lg:min-w-[360px]">
+                  <div className="border-2 border-black bg-[#FFF7D4] px-3 py-3 shadow-[3px_3px_0px_0px_black]">
+                    <p className="text-[9px] font-black uppercase tracking-[0.16em] text-black/55">
+                      Route
+                    </p>
+                    <p className="mt-2 text-[11px] font-black uppercase">{latestRoute}</p>
+                  </div>
+                  <div className="border-2 border-black bg-[#DDE7FF] px-3 py-3 shadow-[3px_3px_0px_0px_black]">
+                    <p className="text-[9px] font-black uppercase tracking-[0.16em] text-black/55">
+                      Active lane
+                    </p>
+                    <p className="mt-2 text-[11px] font-black uppercase">{currentLane}</p>
+                  </div>
+                  <div className="border-2 border-black bg-[#F8F8F8] px-3 py-3 shadow-[3px_3px_0px_0px_black]">
+                    <p className="text-[9px] font-black uppercase tracking-[0.16em] text-black/55">
+                      Path nodes
+                    </p>
+                    <p className="mt-2 text-[11px] font-black uppercase">{signalCount || 0}</p>
+                  </div>
+                </div>
+              </div>
+
+              <div className="mt-6 grid gap-4 xl:grid-cols-[minmax(0,1.25fr)_minmax(320px,0.75fr)]">
+                <div className="border-2 border-black bg-[#FFF7D4] p-4 shadow-[4px_4px_0px_0px_black]">
+                  <p className="text-[11px] font-black uppercase tracking-[0.2em] text-[#D02020]">
+                    Latest Session
+                  </p>
+                  <p className="mt-3 text-xl font-black uppercase leading-tight">
+                    {session?.title || "No active session found"}
+                  </p>
+                  <p className="mt-3 text-sm font-medium leading-7 text-black/72">
+                    {latestJourney?.assistant_message ||
+                      "Open Luna and start a conversation to populate this panel."}
+                  </p>
+                </div>
+
+                <div className="border-2 border-black bg-[#F8F8F8] p-4 shadow-[4px_4px_0px_0px_black]">
+                  <p className="text-[11px] font-black uppercase tracking-[0.2em] text-[#1040C0]">
+                    Current route summary
+                  </p>
+                  <p className="mt-3 text-base font-black uppercase leading-6">
+                    {latestPathSnapshot?.summary || "Luna is still building a stronger ET path for this user."}
+                  </p>
+                  {latestPathSnapshot?.next_action ? (
+                    <div className="mt-4 border-2 border-black bg-white px-3 py-3 shadow-[3px_3px_0px_0px_black]">
+                      <p className="text-[10px] font-black uppercase tracking-[0.16em] text-[#D02020]">
+                        Next move
+                      </p>
+                      <p className="mt-2 text-[11px] font-black uppercase">
+                        {latestPathSnapshot.next_action}
+                      </p>
+                    </div>
+                  ) : null}
+                </div>
+              </div>
+            </section>
+          </div>
+
           <section className="border-4 border-black bg-white p-5 shadow-[10px_10px_0px_0px_black] sm:p-7">
-            <div className="flex flex-col gap-3 border-b-4 border-black pb-5 sm:flex-row sm:items-end sm:justify-between">
+            <div className="flex flex-col gap-3 border-b-4 border-black pb-5 lg:flex-row lg:items-end lg:justify-between">
               <div>
                 <p className="text-[11px] font-black uppercase tracking-[0.28em] text-[#D02020]">
-                  Demographic Summary
+                  Journey Intelligence
                 </p>
                 <h2 className="mt-2 text-3xl font-black uppercase sm:text-4xl">
-                  User profile at a glance
+                  Live path map and trail
                 </h2>
               </div>
-              <span className="border-2 border-black bg-[#F0F0F0] px-3 py-2 text-[10px] font-black uppercase tracking-[0.18em]">
-                {loading
-                  ? "Loading"
-                  : session?.onboarding_complete
-                    ? "Onboarding Complete"
-                    : "Needs more answers"}
-              </span>
-            </div>
-
-            <div className="mt-6 border-2 border-black bg-[#FFF7D4] px-4 py-4">
-              <p className="text-[11px] font-black uppercase tracking-[0.2em] text-[#D02020]">
-                Firebase Account
+              <p className="max-w-xl text-sm font-medium leading-7 text-black/68">
+                This section shows how Luna is actually threading the user through ET routes over time.
               </p>
-              <div className="mt-3 grid gap-3 sm:grid-cols-2">
-                <div className="border border-black bg-white px-3 py-3">
-                  <p className="text-[10px] font-black uppercase tracking-[0.16em] text-black/55">
-                    Display Name
-                  </p>
-                  <p className="mt-2 text-sm font-black uppercase">
-                    {user.displayName || "No display name yet"}
-                  </p>
-                </div>
-                <div className="border border-black bg-white px-3 py-3">
-                  <p className="text-[10px] font-black uppercase tracking-[0.16em] text-black/55">
-                    Email
-                  </p>
-                  <p className="mt-2 text-sm font-black">{user.email || "No email found"}</p>
-                </div>
-              </div>
             </div>
-
-            <div className="mt-6 grid gap-4 sm:grid-cols-2">
-              {summaryCards.map((item) => (
-                <div
-                  key={item.label}
-                  className="border-2 border-black bg-[#F8F8F8] px-4 py-4 shadow-[4px_4px_0px_0px_black]"
-                >
-                  <span className={`block h-1.5 w-16 ${item.accent}`} />
-                  <p className="mt-3 text-[11px] font-black uppercase tracking-[0.18em] text-black/55">
-                    {item.label}
-                  </p>
-                  <p className="mt-2 text-lg font-black uppercase leading-6">{item.value}</p>
-                </div>
-              ))}
-            </div>
-
-            <div className="mt-8 grid gap-6 lg:grid-cols-2">
-              <div className="border-2 border-black bg-[#FFF7D4] p-4">
-                <p className="text-[11px] font-black uppercase tracking-[0.2em] text-[#D02020]">
-                  Interests
-                </p>
-                <div className="mt-3 flex flex-wrap gap-2">
-                  {(session?.profile.interests || []).length > 0 ? (
-                    session?.profile.interests?.map((interest) => (
-                      <span
-                        key={interest}
-                        className="border border-black bg-white px-3 py-1.5 text-[10px] font-black uppercase tracking-[0.14em]"
-                      >
-                        {prettyLabel(interest)}
-                      </span>
-                    ))
-                  ) : (
-                    <p className="text-sm font-medium text-black/68">
-                      Interests will appear here as Luna learns more.
-                    </p>
-                  )}
-                </div>
-              </div>
-
-              <div className="border-2 border-black bg-[#DDE7FF] p-4">
-                <p className="text-[11px] font-black uppercase tracking-[0.2em] text-[#1040C0]">
-                  Recommended ET Lanes
-                </p>
-                <div className="mt-3 flex flex-wrap gap-2">
-                  {(session?.recommended_products || []).length > 0 ? (
-                    session?.recommended_products?.map((product) => (
-                      <span
-                        key={product}
-                        className="border border-black bg-white px-3 py-1.5 text-[10px] font-black uppercase tracking-[0.14em]"
-                      >
-                        {product}
-                      </span>
-                    ))
-                  ) : (
-                    <p className="text-sm font-medium text-black/68">
-                      Luna will surface ET products here once the user path becomes clearer.
-                    </p>
-                  )}
-                </div>
-              </div>
-            </div>
-          </section>
-
-          <section className="border-4 border-black bg-white p-5 shadow-[10px_10px_0px_0px_black] sm:p-7">
-            <p className="text-[11px] font-black uppercase tracking-[0.28em] text-[#D02020]">
-              Journey Intelligence
-            </p>
-            <h2 className="mt-2 text-3xl font-black uppercase sm:text-4xl">
-              Live path map and trail
-            </h2>
 
             <div className="mt-6">
               <JourneyPathMap
@@ -464,9 +559,9 @@ export function ProfileDashboard() {
               />
             </div>
 
-            <div className="mt-8 space-y-3">
+            <div className="mt-8 grid gap-3 xl:grid-cols-2">
               {session?.journey_history?.length ? (
-                session.journey_history.slice(-5).reverse().map((event, index) => (
+                session.journey_history.slice(-6).reverse().map((event, index) => (
                   <div
                     key={`${event.timestamp || "event"}-${index}`}
                     className="border-2 border-black bg-[#F8F8F8] px-4 py-4 shadow-[4px_4px_0px_0px_black]"
@@ -474,7 +569,7 @@ export function ProfileDashboard() {
                     <div className="flex items-start justify-between gap-4">
                       <div>
                         <p className="text-[11px] font-black uppercase tracking-[0.18em] text-[#1040C0]">
-                          {event.route || "product_query"}
+                          {prettyLabel(event.route || "product_query")}
                         </p>
                         <p className="mt-2 text-sm font-bold leading-6">
                           {event.user_message || "No user message stored"}
@@ -500,26 +595,13 @@ export function ProfileDashboard() {
                   </div>
                 ))
               ) : (
-                <div className="border-2 border-black bg-[#F8F8F8] px-4 py-5">
+                <div className="border-2 border-black bg-[#F8F8F8] px-4 py-5 xl:col-span-2">
                   <p className="text-sm font-medium leading-7 text-black/68">
                     No journey data yet. Start chatting with Luna and this dashboard will begin
                     capturing profile evolution and ET recommendations.
                   </p>
                 </div>
               )}
-            </div>
-
-            <div className="mt-6 border-t-4 border-black pt-5">
-              <p className="text-[11px] font-black uppercase tracking-[0.2em] text-[#D02020]">
-                Latest Session
-              </p>
-              <p className="mt-2 text-base font-black uppercase">
-                {session?.title || "No active session found"}
-              </p>
-              <p className="mt-2 text-sm font-medium leading-7 text-black/68">
-                {latestJourney?.assistant_message ||
-                  "Open Luna and start a conversation to populate this panel."}
-              </p>
             </div>
           </section>
         </div>
