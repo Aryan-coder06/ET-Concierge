@@ -35,6 +35,8 @@ const DEFAULT_PRODUCTS = [
 ];
 
 type RailView = "path" | "context" | "products" | "actions";
+type PathLens = "map" | "scores" | "checkpoints";
+type ContextLens = "summary" | "market" | "reasoning" | "evidence" | "compare" | "verify";
 
 type Props = {
   headerHeight: number;
@@ -53,6 +55,12 @@ type ProductCard = {
   prompt?: string;
   reason?: string;
   score?: number;
+};
+
+type SelectorOption = {
+  id: string;
+  label: string;
+  eyebrow?: string;
 };
 
 const VIEW_OPTIONS: Array<{ id: RailView; label: string; eyebrow: string }> = [
@@ -196,6 +204,44 @@ function buildActionBuckets(latestAssistantMessage: ChatMessage | null) {
   };
 }
 
+function LensSelector({
+  activeId,
+  onChange,
+  options,
+}: {
+  activeId: string;
+  onChange: (value: string) => void;
+  options: SelectorOption[];
+}) {
+  if (options.length <= 1) return null;
+
+  return (
+    <section className="border-2 border-black bg-white p-2 shadow-[3px_3px_0px_0px_black]">
+      <div className="flex gap-2 overflow-x-auto pb-1">
+        {options.map((option) => (
+          <button
+            key={option.id}
+            type="button"
+            onClick={() => onChange(option.id)}
+            className={`shrink-0 border-2 border-black px-3 py-2 text-left shadow-[3px_3px_0px_0px_black] transition-transform hover:-translate-y-0.5 ${
+              activeId === option.id ? "bg-[#F0C020]" : "bg-[#F8F8F8]"
+            }`}
+          >
+            {option.eyebrow ? (
+              <p className="text-[8px] font-black uppercase tracking-[0.18em] text-black/50">
+                {option.eyebrow}
+              </p>
+            ) : null}
+            <p className="mt-1 text-[10px] font-black uppercase tracking-[0.14em]">
+              {option.label}
+            </p>
+          </button>
+        ))}
+      </div>
+    </section>
+  );
+}
+
 function ViewSelector({
   activeView,
   onChange,
@@ -305,16 +351,81 @@ function PathView({
 }) {
   const checkpoints = buildRecentCheckpoints(session);
   const scoredProducts = latestAssistantMessage?.decision?.scored_products?.slice(0, 3) || [];
+  const nodeCount = latestAssistantMessage?.pathSnapshot?.nodes?.length || 0;
+  const routeLabel = prettyLabel(
+    latestAssistantMessage?.pathSnapshot?.route || session?.journey_history?.at(-1)?.route
+  );
+  const currentLane =
+    latestAssistantMessage?.pathSnapshot?.primary_display_product ||
+    latestAssistantMessage?.decision?.primary_recommendation?.display_product ||
+    session?.recommended_products?.[0] ||
+    "ET Compass";
+  const pathSignalCount = Math.max(
+    latestAssistantMessage?.pathSnapshot?.signals?.length || 0,
+    latestAssistantMessage?.decision?.signals?.length || 0
+  );
+  const pathOptions = useMemo<SelectorOption[]>(
+    () => [
+      { id: "map", label: "Route Map", eyebrow: "Live" },
+      ...(scoredProducts.length > 0
+        ? [{ id: "scores", label: "Lane Scores", eyebrow: "Scoring" }]
+        : []),
+      ...(checkpoints.length > 0
+        ? [{ id: "checkpoints", label: "Checkpoints", eyebrow: "History" }]
+        : []),
+    ],
+    [checkpoints.length, scoredProducts.length]
+  );
+  const [selectedLens, setSelectedLens] = useState<PathLens>("map");
+  const activeLens = pathOptions.some((option) => option.id === selectedLens)
+    ? selectedLens
+    : (pathOptions[0]?.id as PathLens);
 
   return (
     <div className="space-y-3">
-      <JourneyPathMap
-        snapshot={latestAssistantMessage?.pathSnapshot}
-        history={session?.journey_history}
-        title="How Luna is shaping the current ET route"
+      <section className="border-2 border-black bg-[#F8F8F8] p-3 shadow-[4px_4px_0px_0px_black]">
+        <p className="text-[10px] font-black uppercase tracking-[0.24em] text-[#1040C0]">
+          Live route focus
+        </p>
+        <div className="mt-3 grid grid-cols-3 gap-2">
+          <div className="border-2 border-black bg-white px-3 py-3 shadow-[3px_3px_0px_0px_black]">
+            <p className="text-[9px] font-black uppercase tracking-[0.16em] text-black/55">
+              Route
+            </p>
+            <p className="mt-2 text-[11px] font-black uppercase">{routeLabel}</p>
+          </div>
+          <div className="border-2 border-black bg-white px-3 py-3 shadow-[3px_3px_0px_0px_black]">
+            <p className="text-[9px] font-black uppercase tracking-[0.16em] text-black/55">
+              Active lane
+            </p>
+            <p className="mt-2 text-[11px] font-black uppercase">{currentLane}</p>
+          </div>
+          <div className="border-2 border-black bg-white px-3 py-3 shadow-[3px_3px_0px_0px_black]">
+            <p className="text-[9px] font-black uppercase tracking-[0.16em] text-black/55">
+              Signals
+            </p>
+            <p className="mt-2 text-[11px] font-black uppercase">
+              {Math.max(nodeCount, pathSignalCount)}
+            </p>
+          </div>
+        </div>
+      </section>
+
+      <LensSelector
+        activeId={activeLens}
+        onChange={(value) => setSelectedLens(value as PathLens)}
+        options={pathOptions}
       />
 
-      {scoredProducts.length > 0 ? (
+      {activeLens === "map" ? (
+        <JourneyPathMap
+          snapshot={latestAssistantMessage?.pathSnapshot}
+          history={session?.journey_history}
+          title="How Luna is shaping the current ET route"
+        />
+      ) : null}
+
+      {activeLens === "scores" && scoredProducts.length > 0 ? (
         <section className="border-2 border-black bg-[#F8F8F8] p-3 shadow-[4px_4px_0px_0px_black]">
           <p className="text-[10px] font-black uppercase tracking-[0.24em] text-[#1040C0]">
             Lane scoring
@@ -353,7 +464,7 @@ function PathView({
         </section>
       ) : null}
 
-      {checkpoints.length > 0 ? (
+      {activeLens === "checkpoints" && checkpoints.length > 0 ? (
         <section className="border-2 border-black bg-[#DDE7FF] p-3 shadow-[4px_4px_0px_0px_black]">
           <p className="text-[10px] font-black uppercase tracking-[0.24em] text-[#1040C0]">
             Recent checkpoints
@@ -393,10 +504,16 @@ function ContextView({
 }) {
   const summary = buildContextSummary(latestAssistantMessage, session);
   const decision = latestAssistantMessage?.decision;
+  const uiModules = (latestAssistantMessage?.uiModules || []).filter(
+    (module) => module.visible !== false
+  );
   const showMarketSnapshot =
     !!marketSnapshot &&
     ["markets_tools", "portfolio_view"].includes(latestAssistantMessage?.visualHint || "");
-  const infoCards = [
+  const comparisonRows = latestAssistantMessage?.comparisonRows?.slice(0, 4) || [];
+  const verificationNotes = latestAssistantMessage?.verificationNotes?.slice(0, 4) || [];
+  const sourceCitations = latestAssistantMessage?.sourceCitations?.slice(0, 5) || [];
+  const reasoningCards = [
     {
       label: "Primary lane",
       value:
@@ -404,52 +521,148 @@ function ContextView({
         decision?.primary_recommendation?.display_product ||
         session?.recommended_products?.[0] ||
         "ET Compass",
-      note: "Current front-running ET path",
+      note:
+        decision?.primary_recommendation?.why?.[0] ||
+        summary.bullets[0] ||
+        "Current front-running ET path from the live answer.",
       accent: "bg-[#D02020]",
     },
     {
-      label: "Mode",
-      value: humanizeVisualHint(latestAssistantMessage?.visualHint),
-      note: "UI mode selected from the live answer",
+      label: "Response mode",
+      value:
+        latestAssistantMessage?.answerStyle ||
+        humanizeVisualHint(latestAssistantMessage?.visualHint),
+      note: "Current answer format Luna is using for this thread.",
       accent: "bg-[#1040C0]",
     },
     {
-      label: "Signals",
-      value: `${Math.max(
-        latestAssistantMessage?.pathSnapshot?.signals?.length || 0,
-        decision?.signals?.length || 0,
-        latestAssistantMessage?.sourceCitations?.length || 0
-      )}`,
-      note: "Live cues behind the current answer",
+      label: "Active modules",
+      value: `${uiModules.length || 1}`,
+      note: "Live UI blocks selected from the current answer state.",
       accent: "bg-[#F0C020]",
     },
   ];
+  const contextOptions = useMemo<SelectorOption[]>(
+    () => [
+      { id: "summary", label: "Summary", eyebrow: "Live" },
+      ...(showMarketSnapshot || marketSnapshotLoading
+        ? [{ id: "market", label: "Market", eyebrow: "Snapshot" }]
+        : []),
+      { id: "reasoning", label: "Reasoning", eyebrow: "Route" },
+      ...(sourceCitations.length > 0
+        ? [{ id: "evidence", label: "Evidence", eyebrow: "Sources" }]
+        : []),
+      ...(comparisonRows.length > 0
+        ? [{ id: "compare", label: "Compare", eyebrow: "Structured" }]
+        : []),
+      ...(verificationNotes.length > 0
+        ? [{ id: "verify", label: "Verify", eyebrow: "Trust" }]
+        : []),
+    ],
+    [
+      comparisonRows.length,
+      marketSnapshotLoading,
+      showMarketSnapshot,
+      sourceCitations.length,
+      verificationNotes.length,
+    ]
+  );
+  const [selectedLens, setSelectedLens] = useState<ContextLens>(
+    showMarketSnapshot ? "market" : comparisonRows.length > 0 ? "compare" : "summary"
+  );
+  const preferredLens: ContextLens =
+    showMarketSnapshot || marketSnapshotLoading
+      ? "market"
+      : comparisonRows.length > 0
+        ? "compare"
+        : verificationNotes.length > 0
+          ? "verify"
+          : "summary";
+
+  const activeLens = contextOptions.some((option) => option.id === selectedLens)
+    ? selectedLens
+    : preferredLens;
 
   return (
     <div className="space-y-3">
-      {showMarketSnapshot ? (
+      <section className="border-2 border-black bg-[#FFE6E6] p-3 shadow-[4px_4px_0px_0px_black]">
+        <div className="flex items-start justify-between gap-3">
+          <div>
+            <p className="text-[10px] font-black uppercase tracking-[0.24em] text-[#D02020]">
+              Live context
+            </p>
+            <h3 className="mt-1 text-sm font-black uppercase">{summary.title}</h3>
+          </div>
+          <span className="border border-black bg-white px-2 py-1 text-[9px] font-black uppercase tracking-[0.18em]">
+            {humanizeVisualHint(latestAssistantMessage?.visualHint)}
+          </span>
+        </div>
+
+        <div className="mt-3 grid grid-cols-3 gap-2">
+          <div className="border-2 border-black bg-white px-3 py-3 shadow-[3px_3px_0px_0px_black]">
+            <p className="text-[9px] font-black uppercase tracking-[0.16em] text-black/55">
+              Primary lane
+            </p>
+            <p className="mt-2 text-[11px] font-black uppercase">
+              {reasoningCards[0].value}
+            </p>
+          </div>
+          <div className="border-2 border-black bg-white px-3 py-3 shadow-[3px_3px_0px_0px_black]">
+            <p className="text-[9px] font-black uppercase tracking-[0.16em] text-black/55">
+              Sources
+            </p>
+            <p className="mt-2 text-[11px] font-black uppercase">{sourceCitations.length}</p>
+          </div>
+          <div className="border-2 border-black bg-white px-3 py-3 shadow-[3px_3px_0px_0px_black]">
+            <p className="text-[9px] font-black uppercase tracking-[0.16em] text-black/55">
+              Modules
+            </p>
+            <p className="mt-2 text-[11px] font-black uppercase">{uiModules.length || 1}</p>
+          </div>
+        </div>
+      </section>
+
+      <LensSelector
+        activeId={activeLens}
+        onChange={(value) => setSelectedLens(value as ContextLens)}
+        options={contextOptions}
+      />
+
+      {activeLens === "market" && (showMarketSnapshot || marketSnapshotLoading) ? (
         <section className="border-2 border-black bg-[#FFE6E6] p-3 shadow-[4px_4px_0px_0px_black]">
-          <div className="flex items-start justify-between gap-3">
+          {showMarketSnapshot ? (
             <div>
               <p className="text-[10px] font-black uppercase tracking-[0.24em] text-[#D02020]">
-                Live context
+                Structured market snapshot
               </p>
-              <h3 className="mt-1 text-sm font-black uppercase">Structured market snapshot</h3>
+              <div className="mt-3">
+                <MarketSnapshotPanel snapshot={marketSnapshot} />
+              </div>
             </div>
-            <span className="border border-black bg-white px-2 py-1 text-[9px] font-black uppercase tracking-[0.18em]">
-              Live
-            </span>
-          </div>
-          <div className="mt-3">
-            <MarketSnapshotPanel snapshot={marketSnapshot} />
-          </div>
+          ) : (
+            <div>
+              <p className="text-[10px] font-black uppercase tracking-[0.18em] text-[#D02020]">
+                Pulling live market context
+              </p>
+              <div className="mt-3 flex items-end gap-2">
+                {[1, 2, 3, 4].map((bar) => (
+                  <span
+                    key={bar}
+                    className="signal-bar w-6 border-2 border-black bg-[#D02020]"
+                    style={{ height: `${24 + bar * 10}px`, animationDelay: `${bar * 0.1}s` }}
+                  />
+                ))}
+              </div>
+            </div>
+          )}
         </section>
-      ) : (
-        <section className="border-2 border-black bg-[#FFE6E6] p-3 shadow-[4px_4px_0px_0px_black]">
-          <p className="text-[10px] font-black uppercase tracking-[0.24em] text-[#D02020]">
-            Live context
+      ) : null}
+
+      {activeLens === "summary" ? (
+        <section className="border-2 border-black bg-white p-3 shadow-[4px_4px_0px_0px_black]">
+          <p className="text-[10px] font-black uppercase tracking-[0.24em] text-[#1040C0]">
+            Current thread summary
           </p>
-          <h3 className="mt-1 text-sm font-black uppercase">{summary.title}</h3>
           <p className="mt-3 text-[12px] font-medium leading-6 text-black/78">
             {summary.summary}
           </p>
@@ -458,7 +671,7 @@ function ContextView({
               {summary.bullets.map((item) => (
                 <div
                   key={item}
-                  className="border border-black bg-white px-3 py-2 text-[10px] font-black uppercase tracking-[0.16em]"
+                  className="border border-black bg-[#F8F8F8] px-3 py-2 text-[10px] font-black uppercase tracking-[0.16em]"
                 >
                   {item}
                 </div>
@@ -466,40 +679,110 @@ function ContextView({
             </div>
           ) : null}
         </section>
-      )}
+      ) : null}
 
-      {marketSnapshotLoading && !showMarketSnapshot ? (
-        <section className="border-2 border-black bg-white px-3 py-4 shadow-[4px_4px_0px_0px_black]">
-          <p className="text-[10px] font-black uppercase tracking-[0.18em] text-[#D02020]">
-            Pulling live context
+      {activeLens === "reasoning" ? (
+        <section className="grid gap-2">
+          {reasoningCards.map((card) => (
+            <div
+              key={card.label}
+              className="border-2 border-black bg-white px-3 py-3 shadow-[3px_3px_0px_0px_black]"
+            >
+              <span className={`block h-1.5 w-16 ${card.accent}`} />
+              <p className="mt-3 text-[10px] font-black uppercase tracking-[0.16em] text-black/55">
+                {card.label}
+              </p>
+              <p className="mt-1 text-[12px] font-black uppercase">{card.value}</p>
+              <p className="mt-2 text-[11px] font-medium leading-5 text-black/72">
+                {card.note}
+              </p>
+            </div>
+          ))}
+          {decision?.signals?.length ? (
+            <div className="border-2 border-black bg-[#F8F8F8] px-3 py-3 shadow-[3px_3px_0px_0px_black]">
+              <p className="text-[10px] font-black uppercase tracking-[0.16em] text-[#1040C0]">
+                Signals Luna is reading
+              </p>
+              <div className="mt-3 flex flex-wrap gap-2">
+                {decision.signals.slice(0, 6).map((signal) => (
+                  <span
+                    key={signal}
+                    className="border border-black bg-white px-2.5 py-1.5 text-[10px] font-black uppercase tracking-[0.14em]"
+                  >
+                    {prettyLabel(signal)}
+                  </span>
+                ))}
+              </div>
+            </div>
+          ) : null}
+        </section>
+      ) : null}
+
+      {activeLens === "evidence" && sourceCitations.length > 0 ? (
+        <section className="border-2 border-black bg-white p-3 shadow-[4px_4px_0px_0px_black]">
+          <p className="text-[10px] font-black uppercase tracking-[0.24em] text-[#1040C0]">
+            Source evidence
           </p>
-          <div className="mt-3 flex items-end gap-2">
-            {[1, 2, 3, 4].map((bar) => (
-              <span
-                key={bar}
-                className="signal-bar w-6 border-2 border-black bg-[#D02020]"
-                style={{ height: `${24 + bar * 10}px`, animationDelay: `${bar * 0.1}s` }}
-              />
+          <div className="mt-3 space-y-2">
+            {sourceCitations.map((citation, index) => (
+              <div
+                key={`${citation.label}-${citation.href || index}`}
+                className="border-2 border-black bg-[#F8F8F8] px-3 py-3 shadow-[3px_3px_0px_0px_black]"
+              >
+                <div className="flex items-start justify-between gap-3">
+                  <p className="text-[11px] font-black uppercase">{citation.label}</p>
+                  <span className="border border-black bg-white px-2 py-1 text-[9px] font-black uppercase tracking-[0.14em]">
+                    {citation.pageType || "source"}
+                  </span>
+                </div>
+                <p className="mt-2 text-[10px] font-black uppercase tracking-[0.14em] text-black/55">
+                  {citation.verificationStatus || "grounded"}
+                </p>
+              </div>
             ))}
           </div>
         </section>
       ) : null}
 
-      <section className="grid gap-2">
-        {infoCards.map((card) => (
-          <div
-            key={card.label}
-            className="border-2 border-black bg-white px-3 py-3 shadow-[3px_3px_0px_0px_black]"
-          >
-            <span className={`block h-1.5 w-16 ${card.accent}`} />
-            <p className="mt-3 text-[10px] font-black uppercase tracking-[0.16em] text-black/55">
-              {card.label}
-            </p>
-            <p className="mt-1 text-[12px] font-black uppercase">{card.value}</p>
-            <p className="mt-2 text-[11px] font-medium leading-5 text-black/72">{card.note}</p>
+      {activeLens === "compare" && comparisonRows.length > 0 ? (
+        <section className="border-2 border-black bg-[#DDE7FF] p-3 shadow-[4px_4px_0px_0px_black]">
+          <p className="text-[10px] font-black uppercase tracking-[0.24em] text-[#1040C0]">
+            Structured comparison
+          </p>
+          <div className="mt-3 space-y-2">
+            {comparisonRows.map((row) => (
+              <div
+                key={`${row.item}-${row.best_for}`}
+                className="border-2 border-black bg-white px-3 py-3 shadow-[3px_3px_0px_0px_black]"
+              >
+                <p className="text-[11px] font-black uppercase">{row.item}</p>
+                <p className="mt-2 text-[10px] font-black uppercase tracking-[0.16em] text-[#1040C0]">
+                  Best for {row.best_for}
+                </p>
+                <p className="mt-2 text-[11px] font-medium leading-5 text-black/74">{row.why}</p>
+              </div>
+            ))}
           </div>
-        ))}
-      </section>
+        </section>
+      ) : null}
+
+      {activeLens === "verify" && verificationNotes.length > 0 ? (
+        <section className="border-2 border-black bg-[#FFF7D4] p-3 shadow-[4px_4px_0px_0px_black]">
+          <p className="text-[10px] font-black uppercase tracking-[0.24em] text-[#D02020]">
+            Verification notes
+          </p>
+          <div className="mt-3 space-y-2">
+            {verificationNotes.map((note) => (
+              <div
+                key={note}
+                className="border-2 border-black bg-white px-3 py-3 text-[11px] font-medium leading-5 shadow-[3px_3px_0px_0px_black]"
+              >
+                {note}
+              </div>
+            ))}
+          </div>
+        </section>
+      ) : null}
     </div>
   );
 }

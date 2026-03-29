@@ -123,7 +123,7 @@ function NodeBadge({ node, active }: { node: PathNode; active?: boolean }) {
   const accentClass = ACCENT_CLASSES[node.accent || "black"] || ACCENT_CLASSES.black;
 
   return (
-    <div className="relative min-w-[130px] flex-1">
+    <div className="relative min-w-[160px] shrink-0">
       <div className="absolute left-1/2 top-1/2 hidden h-px w-full -translate-y-1/2 border-t-2 border-dashed border-black/35 md:block" />
       <div className="relative z-10 flex h-full flex-col border-2 border-black bg-white px-3 py-3 shadow-[3px_3px_0px_0px_black]">
         <span className={`mb-3 inline-flex w-fit items-center gap-2 border border-black px-2 py-1 text-[10px] font-black uppercase tracking-[0.16em] ${accentClass}`}>
@@ -180,17 +180,40 @@ export function JourneyPathMap({
       ) : null}
 
       {nodes.length > 0 ? (
-        <div className="relative overflow-hidden border-2 border-black bg-[#F8F8F8] p-4 shadow-[4px_4px_0px_0px_black]">
-          <div className="journey-link-flow absolute inset-x-6 top-1/2 hidden h-px -translate-y-1/2 border-t-2 border-dashed border-black/30 md:block" />
-          <div className="relative z-10 flex flex-col gap-3 md:flex-row">
-            {nodes.map((node, index) => (
-              <NodeBadge
-                key={node.id}
-                node={node}
-                active={index === nodes.length - 1}
-              />
-            ))}
+        <div className="border-2 border-black bg-[#F8F8F8] p-4 shadow-[4px_4px_0px_0px_black]">
+          <div className="mb-3 flex items-center justify-between gap-3">
+            <p className="text-[10px] font-black uppercase tracking-[0.16em] text-black/55">
+              Interactive route map
+            </p>
+            {nodes.length > 3 ? (
+              <span className="border border-black bg-white px-2 py-1 text-[9px] font-black uppercase tracking-[0.14em]">
+                Slide left to right
+              </span>
+            ) : null}
           </div>
+          <div
+            className="relative overflow-x-scroll overflow-y-hidden pb-3 scroll-smooth"
+            role="region"
+            aria-label="Live ET route map"
+          >
+            <div className="relative w-max min-w-full pr-4">
+              <div className="journey-link-flow absolute inset-x-6 top-1/2 hidden h-px -translate-y-1/2 border-t-2 border-dashed border-black/30 md:block" />
+              <div className="relative z-10 flex flex-nowrap gap-3">
+                {nodes.map((node, index) => (
+                  <NodeBadge
+                    key={node.id}
+                    node={node}
+                    active={index === nodes.length - 1}
+                  />
+                ))}
+              </div>
+            </div>
+          </div>
+          {nodes.length > 3 ? (
+            <p className="mt-3 text-[10px] font-black uppercase tracking-[0.14em] text-black/48">
+              Drag the route to inspect the full Luna path.
+            </p>
+          ) : null}
         </div>
       ) : null}
 
