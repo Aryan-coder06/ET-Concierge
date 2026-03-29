@@ -4,7 +4,8 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
 import { useFirebaseAuth } from "@/components/auth/FirebaseAuthProvider";
-import type { JourneyEvent, SessionDocument } from "@/components/search/types";
+import { JourneyPathMap } from "@/components/journey/JourneyPathMap";
+import type { JourneyEvent, PathNode, SessionDocument } from "@/components/search/types";
 import { getApiBaseUrl } from "@/lib/api-base-url";
 const STORAGE_KEY = "et-compass-luna-chat-state";
 
@@ -30,6 +31,43 @@ function extractStringArray(value: unknown): string[] {
   return value
     .map((item) => readString(item))
     .filter((item): item is string => Boolean(item));
+}
+
+function extractPathSnapshot(value: unknown) {
+  if (typeof value !== "object" || value === null) return null;
+  const record = value as Record<string, unknown>;
+
+  const nodes: PathNode[] = [];
+
+  if (Array.isArray(record.nodes)) {
+    for (const item of record.nodes) {
+      if (typeof item !== "object" || item === null) continue;
+      const node = item as Record<string, unknown>;
+      const id = readString(node.id);
+      const label = readString(node.label);
+      const detail = readString(node.detail);
+      if (!id || !label || !detail) continue;
+      nodes.push({
+        id,
+        label,
+        detail,
+        accent: readString(node.accent),
+      });
+    }
+  }
+
+  return {
+    query: readString(record.query),
+    route: readString(record.route),
+    current_lane: readString(record.current_lane),
+    primary_product: readString(record.primary_product),
+    primary_display_product: readString(record.primary_display_product),
+    secondary_products: extractStringArray(record.secondary_products),
+    signals: extractStringArray(record.signals),
+    next_action: readString(record.next_action),
+    summary: readString(record.summary),
+    nodes,
+  };
 }
 
 function prettyLabel(value?: string | null) {
@@ -78,6 +116,7 @@ function extractSessionDocument(data: unknown): SessionDocument | null {
             verification_notes: extractStringArray(event.verification_notes),
             chips: extractStringArray(event.chips),
             visual_hint: readString(event.visual_hint),
+            path_snapshot: extractPathSnapshot(event.path_snapshot),
           } satisfies JourneyEvent;
         })
         .filter(Boolean) as JourneyEvent[]
@@ -177,6 +216,7 @@ export function ProfileDashboard() {
   }, [authLoading, user]);
 
   const latestJourney = session?.journey_history.at(-1);
+  const latestPathSnapshot = latestJourney?.path_snapshot;
   const summaryCards = useMemo(
     () => [
       { label: "Persona", value: prettyLabel(session?.profile.profession), accent: "bg-[#D02020]" },
@@ -409,13 +449,22 @@ export function ProfileDashboard() {
 
           <section className="border-4 border-black bg-white p-5 shadow-[10px_10px_0px_0px_black] sm:p-7">
             <p className="text-[11px] font-black uppercase tracking-[0.28em] text-[#D02020]">
-              Journey Trail
+              Journey Intelligence
             </p>
             <h2 className="mt-2 text-3xl font-black uppercase sm:text-4xl">
-              Recent conversation path
+              Live path map and trail
             </h2>
 
-            <div className="mt-6 space-y-3">
+            <div className="mt-6">
+              <JourneyPathMap
+                snapshot={latestPathSnapshot}
+                history={session?.journey_history}
+                mode="expanded"
+                title="How Luna is currently framing this user"
+              />
+            </div>
+
+            <div className="mt-8 space-y-3">
               {session?.journey_history?.length ? (
                 session.journey_history.slice(-5).reverse().map((event, index) => (
                   <div

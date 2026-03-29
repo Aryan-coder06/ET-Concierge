@@ -9,42 +9,17 @@ from langchain_mongodb import MongoDBAtlasVectorSearch
 from .config import get_settings
 from .db import get_knowledge_collection, get_persona_collection
 from .registry import (
+    analyze_query,
     canonical_product_name,
-    detect_products_in_text,
+    get_product_lane,
+    lane_signal_terms,
     official_product_names,
+    product_signal_terms,
     route_user_intent_to_products,
 )
 
 
 logger = logging.getLogger(__name__)
-
-PRODUCT_QUERY_ALIASES = {
-    "ET Prime": ["et prime", "etprime"],
-    "ET Markets": ["et markets", "etmarkets"],
-    "ET Portfolio": ["et portfolio", "portfolio"],
-    "ET Wealth Edition": ["et wealth edition", "wealth edition"],
-    "ET Print Edition": ["et print edition", "print edition", "epaper"],
-    "ETMasterclass": ["et masterclass", "etmasterclass", "masterclass"],
-    "ET Events": ["et events", "events"],
-    "ET Partner Benefits": ["et benefits", "partner benefits", "times prime", "benefits"],
-}
-
-INTENT_HINTS = {
-    "investing": [
-        "invest",
-        "investing",
-        "trading",
-        "stocks",
-        "sip",
-        "mutual fund",
-        "portfolio",
-    ],
-    "news": ["news", "updates", "business news", "briefing", "policy"],
-    "growing_business": ["startup", "founder", "brand", "marketing", "business growth", "sme"],
-    "learning": ["learn", "learning", "masterclass", "course", "workshop", "certification"],
-    "events": ["event", "events", "summit", "conference", "community", "register"],
-}
-
 
 def _mongo_doc_to_document(raw: dict) -> Document:
     metadata = {key: value for key, value in raw.items() if key not in {"text", "embedding"}}
@@ -57,29 +32,43 @@ def _normalize_text(text: str) -> str:
 
 
 def _extract_query_signals(query: str, profile: dict) -> dict:
-    normalized_query = _normalize_text(query)
-    mentioned_products: list[str] = detect_products_in_text(query)
+    analysis = analyze_query(query, user_profile=profile)
+    normalized_query = analysis["normalized_query"]
+    mentioned_products: list[str] = list(analysis.get("explicit_products", []))
     topic_terms: list[str] = []
     intent_hints: list[str] = []
+    preferred_products = route_user_intent_to_products(query, profile, analysis=analysis)
 
-    for product_name, aliases in PRODUCT_QUERY_ALIASES.items():
-        if any(alias in normalized_query for alias in aliases) and product_name not in mentioned_products:
-            mentioned_products.append(product_name)
+    if analysis.get("primary_intent"):
+        intent_hints.append(str(analysis["primary_intent"]))
+    if profile.get("intent"):
+        intent_hints.append(str(profile["intent"]))
+    if analysis.get("query_mode"):
+        intent_hints.append(str(analysis["query_mode"]))
 
-    for intent, keywords in INTENT_HINTS.items():
-        if any(keyword in normalized_query for keyword in keywords):
-            intent_hints.append(intent)
-            topic_terms.extend(keyword for keyword in keywords if keyword in normalized_query)
+    for product_name in (mentioned_products + preferred_products)[:4]:
+        topic_terms.extend(product_signal_terms(product_name)[:10])
+    for lane in analysis.get("matched_lanes", [])[:3]:
+        topic_terms.extend(lane_signal_terms(lane)[:10])
+    topic_terms.extend(token for token in normalized_query.split() if len(token) > 2)
 
-    if profile.get("intent") and profile["intent"] not in intent_hints:
-        intent_hints.append(profile["intent"])
+    deduped_terms: list[str] = []
+    seen_terms: set[str] = set()
+    for term in topic_terms:
+        normalized_term = _normalize_text(term)
+        if not normalized_term or normalized_term in seen_terms:
+            continue
+        seen_terms.add(normalized_term)
+        deduped_terms.append(normalized_term)
 
     return {
+        "analysis": analysis,
         "normalized_query": normalized_query,
         "mentioned_products": mentioned_products,
-        "intent_hints": intent_hints,
-        "topic_terms": sorted(set(topic_terms)),
-        "preferred_products": route_user_intent_to_products(query, profile),
+        "intent_hints": list(dict.fromkeys(intent_hints)),
+        "topic_terms": deduped_terms[:24],
+        "preferred_products": preferred_products,
+        "matched_lanes": analysis.get("matched_lanes", []),
     }
 
 
@@ -140,6 +129,9 @@ def _query_variants(query: str, profile: dict, signals: dict) -> list[str]:
             f"{query}\nFocus ET products: {', '.join(signals['mentioned_products'])}"
         )
 
+    if signals.get("matched_lanes"):
+        variants.append(f"{query}\nRelevant ET lanes: {', '.join(signals['matched_lanes'][:3])}")
+
     if signals["intent_hints"]:
         variants.append(
             f"{query}\nLikely ET intent: {', '.join(signals['intent_hints'])}"
@@ -177,12 +169,14 @@ def _score_product_document(document: Document, profile: dict, signals: dict) ->
     personas = set(document.metadata.get("personas") or [])
     product_name = str(document.metadata.get("product_name", ""))
     canonical_name = canonical_product_name(product_name) or product_name
+    product_lane = get_product_lane(canonical_name) or str(document.metadata.get("lane") or "")
     query_products = set(profile.get("existing_products") or [])
     normalized_product_name = canonical_name.lower()
     page_content = document.page_content.lower()
     verification_status = str(document.metadata.get("verification_status") or "")
     source_tier = str(document.metadata.get("source_tier") or "")
     page_type = str(document.metadata.get("page_type") or "")
+    analysis = signals.get("analysis", {})
 
     if profile.get("intent") and profile["intent"] in intent_tags:
         score += 3
@@ -196,14 +190,16 @@ def _score_product_document(document: Document, profile: dict, signals: dict) ->
         score += 1
     if canonical_name in signals.get("preferred_products", []):
         score += 4
+    if product_lane and product_lane in signals.get("matched_lanes", []):
+        score += 4
     if signals["topic_terms"]:
         score += min(
-            2,
+            3,
             sum(1 for term in signals["topic_terms"] if term in page_content),
         )
     priority = document.metadata.get("priority")
     if isinstance(priority, int):
-        score += max(0, 3 - min(priority, 3))
+        score += max(1, min(int(priority), 100) // 25)
     if normalized_product_name and normalized_product_name in signals["normalized_query"]:
         score += 2
     if canonical_name in official_product_names():
@@ -233,6 +229,16 @@ def _score_product_document(document: Document, profile: dict, signals: dict) ->
         "edition_page",
     }:
         score += 1
+    if analysis.get("query_mode") == "news_mode" and product_lane in {
+        "world_news_current_affairs",
+        "live_video_business_news",
+    }:
+        score += 3
+    if analysis.get("requires_live_context") and product_lane in {
+        "markets_and_tracking",
+        "live_video_business_news",
+    }:
+        score += 2
     if canonical_name not in official_product_names() and not signals["mentioned_products"]:
         score -= 1
 
@@ -245,6 +251,8 @@ def _score_persona_document(document: Document, profile: dict, signals: dict) ->
         if profile.get(field) and document.metadata.get(field) == profile[field]:
             score += 2
     if profile.get("intent") and profile["intent"] in signals["intent_hints"]:
+        score += 1
+    if signals.get("analysis", {}).get("query_mode") == "concierge_mode":
         score += 1
     if signals["topic_terms"]:
         page_content = document.page_content.lower()
@@ -278,7 +286,17 @@ def _keyword_fallback(
     )
     tokens = [re.escape(token) for token in query.split() if len(token) > 2][:4]
     for product_name in signals["mentioned_products"]:
-        tokens.extend(re.escape(alias) for alias in PRODUCT_QUERY_ALIASES.get(product_name, []))
+        tokens.extend(
+            re.escape(alias)
+            for alias in product_signal_terms(product_name)[:8]
+            if len(_normalize_text(alias).replace(" ", "")) >= 4
+        )
+    for lane in signals.get("matched_lanes", [])[:2]:
+        tokens.extend(
+            re.escape(term)
+            for term in lane_signal_terms(lane)[:6]
+            if len(_normalize_text(term).replace(" ", "")) >= 4
+        )
     if not tokens:
         return []
 

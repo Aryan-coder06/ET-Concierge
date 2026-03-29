@@ -1,0 +1,54 @@
+{
+  "version": "et.nonprime_heavy.v1",
+  "prompt_sets": {
+    "et_money": [
+      "What is ET Money?",
+      "Does ET Money do SIPs, insurance, and fixed deposits?",
+      "Give me ET Money features in bullet points.",
+      "Is ET Money better than ET Prime for personal finance actions?",
+      "What does ET Money cover apart from mutual funds?"
+    ],
+    "et_rise_sme": [
+      "What is ET Rise?",
+      "What is ET SME and who is it for?",
+      "I run a small business. Which ET product fits me best?",
+      "Tell me about ET SME summits.",
+      "Why should a founder use ET Rise instead of ET Prime?"
+    ],
+    "brand_equity": [
+      "What is ET Brand Equity?",
+      "I am a CMO. Which ET lane should I use?",
+      "Give me a short comparison between ET Brand Equity and ET Prime.",
+      "Does ET Brand Equity have events and webinars?",
+      "What topics does Brand Equity cover?"
+    ],
+    "et_government": [
+      "What is ETGovernment?",
+      "Show ETGovernment categories in bullet points.",
+      "I follow policy and PSU news. What ET product fits me?",
+      "Does ETGovernment cover Digital India and cybersecurity?",
+      "Compare ETGovernment and ET Prime for policy readers."
+    ],
+    "et_now": [
+      "What is ET Now?",
+      "What kind of ET Now shows or video formats exist?",
+      "I want business news in video form. Which ET lane should I use?",
+      "Does ET Now only do market coverage?",
+      "Give me ET Now in a simple table."
+    ],
+    "travel_panache_world": [
+      "What is ET TravelWorld?",
+      "What is ET Panache?",
+      "Give me current world affairs in bullet points from categories you know.",
+      "Do not ask me profile questions. Just summarize world news categories.",
+      "Compare ET Panache, ET TravelWorld, and ET Prime."
+    ]
+  },
+  "pass_conditions": [
+    "ET Prime should not appear as primary recommendation on direct ET Money / Rise / Brand Equity / ETGovernment / ET Now / Panache / TravelWorld queries unless explicitly justified.",
+    "World-affairs prompts should not trigger repeated profiling loops.",
+    "Requested bullet-point output should be obeyed.",
+    "Natural information questions should get direct answers before clarifying questions.",
+    "Non-Prime lanes should appear in recommendations and comparisons as first-class products."
+  ]
+}

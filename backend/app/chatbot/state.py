@@ -32,6 +32,7 @@ class JourneyEvent(TypedDict):
     comparison_rows: list[dict[str, Any]]
     bullet_groups: list[dict[str, Any]]
     ui_modules: list[dict[str, Any]]
+    path_snapshot: dict[str, Any] | None
     profile_snapshot: UserProfile
 
 

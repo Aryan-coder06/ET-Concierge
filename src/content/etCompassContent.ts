@@ -290,24 +290,32 @@ export const etCompassContent = {
         description:
           "Find premium stories, deeper context, and the right place to begin.",
         href: "/search",
+        prompt:
+          "Explain how ET Prime should fit into my ET journey, what I should read first, and whether it is my best starting point.",
       },
       {
         title: "FIND THE RIGHT MARKETS TOOLS",
         description:
           "Use LUNA to route users toward sharper market discovery and analysis.",
         href: "/search",
+        prompt:
+          "Show me the right ET Markets tools for my goal, explain what each tool does, and tell me which one I should start with first.",
       },
       {
         title: "DISCOVER LEARNING AND EVENTS",
         description:
           "Surface masterclasses, events, and ecosystem pathways from one query.",
         href: "/search",
+        prompt:
+          "Show me the best ET learning, masterclass, and event path for my interests and explain how these ET experiences connect together.",
       },
       {
         title: "ASK WHAT FITS YOU BEST",
         description:
           "Let users start with intent and get a more personalized ET journey.",
         href: "/search",
+        prompt:
+          "Ask one or two smart questions, then tell me what ET path fits me best and why.",
       },
     ],
   },

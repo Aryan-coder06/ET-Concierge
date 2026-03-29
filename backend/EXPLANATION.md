@@ -658,3 +658,200 @@
 - What I changed: The old button rendered its status text underneath the icon, which made the mic control sit lower than the send button. I changed the layout so the status text floats above the button instead of taking up extra vertical space.
 - Why: The earlier layout made the composer look broken and unbalanced.
 - Practical effect in simple English: The mic button now lines up properly with the send button in the chat composer while still showing short status feedback like `Listening` or `Processing`.
+
+## 2026-03-29 - Registry-driven Stage 2 refactor to reduce ET Prime bias and improve natural answers
+
+### 1. I moved the product and lane logic out of hardcoded Python lists and into the JSON packs
+- Where: [backend/app/chatbot/registry.py](/home/aryan-s/Documents/GENAI/ET-Concierge/backend/app/chatbot/registry.py)
+- What I changed: The registry now merges both data packs:
+  - the older Stage 1 ET pack
+  - the newer non-prime-heavy ET pack
+
+  It now builds these dynamically from JSON:
+  - product aliases
+  - product display names
+  - lane names
+  - lane keyword catalogs
+  - source priorities
+  - source metadata by product and by lane
+- Why: Before this, too much ET behavior was effectively baked into Python code. That made Luna feel like a demo bot with favorite products instead of a realistic assistant guided by ET data.
+- Practical effect in simple English: Luna now reads more of its ET understanding from the registry files instead of acting from hardcoded product shortcuts.
+
+### 2. I removed the old retriever-side hardcoded alias maps and intent maps
+- Where: [backend/app/chatbot/retriever_service.py](/home/aryan-s/Documents/GENAI/ET-Concierge/backend/app/chatbot/retriever_service.py)
+- What I changed: I removed the fixed `PRODUCT_QUERY_ALIASES` and `INTENT_HINTS` maps and replaced them with registry-driven query signals:
+  - explicit product matches from the alias registry
+  - lane matches from the lane catalog
+  - topic terms from product keywords, source tags, and lane keywords
+  - preferred ET products from registry scoring
+- Why: The retriever was still operating like a manually curated ET shortlist, which caused the RAG to overfit to a few products and miss the wider ET ecosystem.
+- Practical effect in simple English: When a user asks about ET Money, ETGovernment, Brand Equity, ET Rise, world affairs, or travel/lifestyle lanes, retrieval now has a much better chance of focusing on the right ET context naturally.
+
+### 3. I made query understanding much more natural and much less “template bot”
+- Where: [backend/app/chatbot/registry.py](/home/aryan-s/Documents/GENAI/ET-Concierge/backend/app/chatbot/registry.py), [backend/app/chatbot/stage2.py](/home/aryan-s/Documents/GENAI/ET-Concierge/backend/app/chatbot/stage2.py)
+- What I changed: I added a registry-backed query analysis layer that now decides:
+  - query mode: `concierge_mode`, `information_mode`, `news_mode`, or `chitchat`
+  - primary intent
+  - lane matches
+  - whether bullets, tables, roadmap, or live context are actually needed
+
+  This analysis now powers Stage 2 instead of the old hand-built `if query contains X then route to Y` style logic.
+- Why: The system was previously too rigid. Direct informational asks were getting treated like personalization flows, and too many questions were pushed toward ET Prime or ET Markets.
+- Practical effect in simple English: Luna now answers direct ET questions more directly and only asks profiling questions when the user is actually asking for a personal ET path.
+
+### 4. I reduced ET Prime-first and ET Markets-first bias in product scoring
+- Where: [backend/app/chatbot/registry.py](/home/aryan-s/Documents/GENAI/ET-Concierge/backend/app/chatbot/registry.py), [backend/app/chatbot/stage2.py](/home/aryan-s/Documents/GENAI/ET-Concierge/backend/app/chatbot/stage2.py)
+- What I changed: Product scoring is now generic and registry-based. It scores products using:
+  - explicit alias matches
+  - lane matches
+  - product retrieval keywords
+  - audience/best-for terms
+  - source metadata tags
+  - user profile terms
+  - recent journey memory
+
+  I also added penalties so the broad default ET entry does **not** outrank a clearly named non-prime lane on information/news queries.
+- Why: The biggest behavior problem was over-bias. The old system could hear a perfectly direct ET Money or ETGovernment question and still lean back toward a broad ET Prime-style answer.
+- Practical effect in simple English: Queries like:
+  - `What is ET Money?`
+  - `Tell me about ET Government`
+  - `What does Brand Equity cover?`
+  - `Give me world affairs in bullet points`
+
+  now naturally rank the correct ET lane instead of drifting into a broad fallback.
+
+### 5. I made the Stage 2 planner consume the registry-driven scoring instead of its own hardcoded assumptions
+- Where: [backend/app/chatbot/stage2.py](/home/aryan-s/Documents/GENAI/ET-Concierge/backend/app/chatbot/stage2.py)
+- What I changed: I rewrote the Stage 2 planner so it now uses the registry analysis and registry product scoring as its source of truth for:
+  - primary recommendation
+  - secondary recommendations
+  - current lane
+  - next best action
+  - comparison rows
+  - bullet groups
+  - UI modules
+- Why: The older Stage 2 planner still had stage-specific hardcoded maps and product preferences that no longer matched the goal of a realistic ET assistant.
+- Practical effect in simple English: The planner is now far more consistent. The same underlying decision logic drives both the text answer and the UI modules, so the answer and the sidebar are less likely to disagree.
+
+### 6. I simplified visual/widget selection so it follows the actual lane instead of showing a fake “default markets” feel
+- Where: [backend/app/chatbot/registry.py](/home/aryan-s/Documents/GENAI/ET-Concierge/backend/app/chatbot/registry.py), [backend/app/chatbot/agents.py](/home/aryan-s/Documents/GENAI/ET-Concierge/backend/app/chatbot/agents.py)
+- What I changed: Visual hint selection is now tied to registry query analysis plus the chosen ET product/lane. It no longer blindly assumes that “interesting” means “show the market widget.”
+- Why: The UI sync problem was real. A learning, policy, or world-news answer should not suddenly light up a markets widget just because that was the old default.
+- Practical effect in simple English: The UI should now feel less random and more truthful to the actual ET path Luna is describing.
+
+### 7. I removed more hardcoded product URLs and source selection logic from the answer formatter
+- Where: [backend/app/chatbot/agents.py](/home/aryan-s/Documents/GENAI/ET-Concierge/backend/app/chatbot/agents.py)
+- What I changed:
+  - source links now come from the product/source registry instead of a hardcoded product-link dictionary
+  - source citations no longer inject a long list of special-case ET source IDs for every keyword branch
+  - verification messages are now more generic and source-aware
+- Why: Static product URLs and query-specific source inserts made the answer layer more brittle and less honest.
+- Practical effect in simple English: The answer is now more grounded in the same ET source registry that powers retrieval, instead of mixing retrieved facts with a second hardcoded source map.
+
+### 8. I made the concierge summaries, chips, and roadmap generation more generic
+- Where: [backend/app/chatbot/agents.py](/home/aryan-s/Documents/GENAI/ET-Concierge/backend/app/chatbot/agents.py)
+- What I changed:
+  - navigator summaries are now built from product registry data instead of a fixed set of product-specific paragraphs
+  - roadmap steps are now generated from the current profile and registry-driven routing instead of hardcoded ET product sequences
+  - follow-up chips now come from the currently recommended ET products instead of a fixed investing/business/news chip set
+- Why: These “small UX outputs” were still hiding a lot of hardcoded ET assumptions.
+- Practical effect in simple English: Luna now feels more like it is reacting to the current ET path, not repeating one scripted set of next questions.
+
+### 9. I extended the eval runner so the new non-prime-heavy prompt pack can be used
+- Where: [backend/scripts/run_et_eval.py](/home/aryan-s/Documents/GENAI/ET-Concierge/backend/scripts/run_et_eval.py)
+- What I changed: The eval script can now run a `nonprime` suite from:
+  - `backend_data_et_nonprime_heavy_eval_prompts.json`
+
+  It flattens those prompt sets, infers the expected ET product lanes from the group names, and scores whether the answer is still overbiased toward ET Prime.
+- Why: Once we add ET Money, ET Rise / SME, Brand Equity, ETGovernment, ET Now, TravelWorld, Panache, and ET World, we need a way to test whether the system is genuinely using them.
+- Practical effect in simple English: We now have a better way to measure whether Luna is still over-routing to the old broad defaults.
+
+### 10. I also fixed a real source-registry bug while doing this refactor
+- Where: [backend/app/chatbot/registry.py](/home/aryan-s/Documents/GENAI/ET-Concierge/backend/app/chatbot/registry.py)
+- What I changed: The old source normalization path was calling `canonical_product_name()` too early, which could create a recursive dependency between source loading and the product alias map. I changed source loading so raw source records load first and then get canonicalized safely.
+- Why: A registry-driven RAG is only useful if the registry itself loads cleanly and predictably.
+- Practical effect in simple English: The ET source pack is now more stable and safer to build on.
+
+### 11. What became more realistic after this refactor
+- Direct ET questions now route more naturally:
+  - `What is ET Money?` -> ET Money
+  - `Tell me about ET Government` -> ETGovernment
+  - `What does Brand Equity cover?` -> ET Brand Equity
+  - `Give me world affairs in bullet points` -> ET World / International
+- Concierge questions still work, but only when they should:
+  - `Which ET product fits me if I am a student learning finance?` now leans toward learning-first ET paths instead of falling into a broad default too early.
+- The system is now much closer to:
+  - answer first
+  - personalize when useful
+  - keep product choice grounded in registry + retrieval + policy
+
+### 12. Remaining unavoidable hardcoding
+- I still kept a very small amount of generic query-shape detection in code for things like:
+  - bullets
+  - tables
+  - roadmap asks
+  - greetings
+  - personalization wording
+
+  This is not ET product hardcoding. It is general conversational structure detection.
+- I also kept one minimal fallback broad ET entry if the JSON default is missing.
+- Why this is acceptable: Those pieces are generic assistant behavior, not hidden ET lane favoritism.
+
+## 2026-03-29 - Final cleanup pass on the registry-driven non-prime refactor
+
+### 1. I removed one more hidden broad fallback for non-concierge queries
+- Where: [backend/app/chatbot/registry.py](/home/aryan-s/Documents/GENAI/ET-Concierge/backend/app/chatbot/registry.py)
+- What I changed: `route_user_intent_to_products()` no longer returns the broad default ET entry when nothing matches on a normal information or chitchat query. It now only uses that broad fallback for true concierge/broad-overview situations.
+- Why: Even after the earlier refactor, a silent broad default could still sneak back in for some weakly matched questions.
+- Practical effect in simple English: Luna is now less likely to “invent” a broad ET product recommendation when the user has not actually asked for one.
+
+### 2. I made the Stage 2 UI modules safer when no real product/lane is selected
+- Where: [backend/app/chatbot/stage2.py](/home/aryan-s/Documents/GENAI/ET-Concierge/backend/app/chatbot/stage2.py)
+- What I changed:
+  - if no products are scored, the planner no longer creates a fake `next_best_action`
+  - the UI no longer shows a low-confidence verification box when there is no real primary product
+  - chitchat turns no longer get a useless `next action` module
+- Why: The backend should not create “helpful-looking” UI chrome when the actual ET decision object is empty.
+- Practical effect in simple English: Greeting-style or weakly matched turns now stay cleaner and more honest.
+
+### 3. I added policy reminders directly into answer generation guidance
+- Where: [backend/app/chatbot/agents.py](/home/aryan-s/Documents/GENAI/ET-Concierge/backend/app/chatbot/agents.py)
+- What I changed: The answer generator now receives the router policy’s format rules and anti-bias rules as part of its answer guidance.
+- Why: It is not enough to use JSON only during routing if the final answer prompt quietly drifts back into broad or product-first language.
+- Practical effect in simple English: The LLM is now reminded at generation time that:
+  - direct questions should be answered directly
+  - bullet requests should really produce bullets
+  - broad ET defaults should not override clearly named non-prime lanes
+
+### 4. I enforced bullet-style output better when the user explicitly asks for points
+- Where: [backend/app/chatbot/agents.py](/home/aryan-s/Documents/GENAI/ET-Concierge/backend/app/chatbot/agents.py)
+- What I changed: If the planner already decided the answer should use bullets and the generated answer comes back as plain prose, the formatter now appends bullet groups from the decision object instead of ignoring the requested structure.
+- Why: The user specifically asked for less robotic clarifying behavior and better formatting obedience.
+- Practical effect in simple English: A question like “Give me world affairs in bullet points” is now much more likely to actually return bullet points instead of only prose.
+
+### 5. What the final local checks proved
+- `What is ET Money?` -> primary ET lane becomes `ET Money`
+- `Give me world affairs in bullet points` -> primary ET lane becomes `ET World / International`
+- `Tell me about ET Government` -> primary ET lane becomes `ETGovernment`
+- `What does Brand Equity cover?` -> primary ET lane becomes `ET Brand Equity`
+- `Which ET product fits me if I am a student learning finance?` -> concierge flow now leans toward `ETMasterclass`, then `ET Money`
+- `hi` -> no fake broad ET recommendation, no forced product widget
+
+### 6. Honest status after this refactor
+- The RAG is now much less hardcoded and much less ET Prime-biased than before.
+- It is significantly more realistic for direct ET questions, especially outside the original narrow product set.
+- But it is still not a magic guarantee for “every ET product in the best possible way” because final answer quality still depends on:
+  - source coverage
+  - chunk quality
+  - live ingest freshness
+  - evaluation coverage
+
+- Practical effect in simple English: The architecture is now much healthier and more believable. The next ceiling is not hidden hardcoded routing anymore; it is data coverage and continued eval tuning.
+
+## 2026-03-29 - Quick stability fix after Stage 2 cleanup
+
+### 1. I fixed a null-handling bug in the compact Stage 2 decision summary
+- Where: [backend/app/chatbot/agents.py](/home/aryan-s/Documents/GENAI/ET-Concierge/backend/app/chatbot/agents.py)
+- What I changed: `_build_compact_decision_summary()` was still assuming `next_best_action` was always a dictionary. After the cleanup pass, some valid turns now intentionally set `next_best_action` to `None`, especially when the query is pure chitchat or there is no meaningful ET action yet. I changed the serializer to safely fall back to an empty object.
+- Why: The planner cleanup correctly removed fake actions, but this serializer had not been updated to handle that new state.
+- Practical effect in simple English: Greeting-style or very weakly matched turns will no longer crash the backend with a `500` just because no next action exists yet.

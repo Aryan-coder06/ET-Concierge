@@ -1,0 +1,321 @@
+{
+  "version": "et.nonprime_heavy.v1",
+  "goal": "Expand ET coverage beyond ET Prime / ET Markets / ET Masterclass and reduce product-bias fallback.",
+  "sources": [
+    {
+      "product": "ET Money",
+      "lane": "personal_finance_app",
+      "url": "https://www.etmoney.com/",
+      "page_type": "home",
+      "source_tier": "official_public",
+      "priority": 100,
+      "tags": [
+        "personal_finance",
+        "mutual_funds",
+        "sip",
+        "goal_based_investing"
+      ]
+    },
+    {
+      "product": "ET Money",
+      "lane": "personal_finance_app",
+      "url": "https://www.etmoney.com/help",
+      "page_type": "help",
+      "source_tier": "official_help_page",
+      "priority": 99,
+      "tags": [
+        "insurance",
+        "loans",
+        "nps",
+        "fixed_deposit",
+        "bonds",
+        "smallcase"
+      ]
+    },
+    {
+      "product": "ET Money",
+      "lane": "personal_finance_app",
+      "url": "https://www.etmoney.com/mutual-funds",
+      "page_type": "product",
+      "source_tier": "official_public",
+      "priority": 97,
+      "tags": [
+        "mutual_funds",
+        "sip",
+        "portfolio_tracking"
+      ]
+    },
+    {
+      "product": "ET Money",
+      "lane": "personal_finance_app",
+      "url": "https://www.etmoney.com/fixed-deposit",
+      "page_type": "product",
+      "source_tier": "official_public",
+      "priority": 96,
+      "tags": [
+        "fixed_deposit",
+        "rates",
+        "guaranteed_returns"
+      ]
+    },
+    {
+      "product": "ET Money",
+      "lane": "personal_finance_app",
+      "url": "https://www.etmoney.com/learn",
+      "page_type": "learn_hub",
+      "source_tier": "official_public",
+      "priority": 94,
+      "tags": [
+        "learn",
+        "financial_planning",
+        "stocks",
+        "insurance",
+        "loans",
+        "retirement"
+      ]
+    },
+    {
+      "product": "ET Rise / ET SME",
+      "lane": "small_business_entrepreneurship",
+      "url": "https://economictimes.indiatimes.com/etrise_msme_list/69636269.cms",
+      "page_type": "vertical_list",
+      "source_tier": "official_secondary",
+      "priority": 95,
+      "tags": [
+        "msme",
+        "small_business",
+        "entrepreneurship",
+        "benchmarking",
+        "growth"
+      ]
+    },
+    {
+      "product": "ET Rise / ET SME",
+      "lane": "small_business_entrepreneurship",
+      "url": "https://economictimes.indiatimes.com/etrise_msme_list/69546080.cms",
+      "page_type": "vertical_list",
+      "source_tier": "official_secondary",
+      "priority": 94,
+      "tags": [
+        "msme",
+        "policy",
+        "exports",
+        "digital",
+        "industry_4"
+      ]
+    },
+    {
+      "product": "ET Rise / ET SME",
+      "lane": "small_business_entrepreneurship",
+      "url": "https://economictimes.indiatimes.com/small-biz/sme-sector/et-rise-top-msmes-ranking-awards-here-are-the-winners/articleshow/88559805.cms",
+      "page_type": "awards_story",
+      "source_tier": "official_event_page",
+      "priority": 92,
+      "tags": [
+        "awards",
+        "rankings",
+        "msme",
+        "innovation",
+        "exporters",
+        "growth"
+      ]
+    },
+    {
+      "product": "ET Rise / ET SME",
+      "lane": "small_business_entrepreneurship",
+      "url": "https://m.economictimes.com/small-biz/sme-sector/et-sme-summit-vadodara-msmes-chart-a-collaborative-path-for-next-phase-of-growth/articleshow/128699766.cms",
+      "page_type": "summit_story",
+      "source_tier": "official_event_page",
+      "priority": 91,
+      "tags": [
+        "regional_summit",
+        "networking",
+        "knowledge_sharing",
+        "growth",
+        "msme"
+      ]
+    },
+    {
+      "product": "ET Rise / ET SME",
+      "lane": "small_business_entrepreneurship",
+      "url": "https://m.economictimes.com/small-biz/sme-sector/et-make-in-india-sme-regional-summits-why-punjabs-entrepreneurs-are-returning-home/amp_articleshow/123285821.cms",
+      "page_type": "summit_story",
+      "source_tier": "official_event_page",
+      "priority": 90,
+      "tags": [
+        "regional_summit",
+        "make_in_india",
+        "entrepreneurship",
+        "local_growth"
+      ]
+    },
+    {
+      "product": "ET Brand Equity",
+      "lane": "marketing_advertising_media",
+      "url": "https://brandequity.economictimes.indiatimes.com/",
+      "page_type": "home",
+      "source_tier": "official_vertical_home",
+      "priority": 100,
+      "tags": [
+        "marketing",
+        "advertising",
+        "media",
+        "research",
+        "digital",
+        "brand_leadership"
+      ]
+    },
+    {
+      "product": "ETGovernment",
+      "lane": "policy_governance_public_sector",
+      "url": "https://government.economictimes.indiatimes.com/",
+      "page_type": "home",
+      "source_tier": "official_vertical_home",
+      "priority": 100,
+      "tags": [
+        "policy",
+        "govtech",
+        "digital_india",
+        "smart_infra",
+        "psu",
+        "cybersecurity"
+      ]
+    },
+    {
+      "product": "ETGovernment",
+      "lane": "policy_governance_public_sector",
+      "url": "https://government.economictimes.indiatimes.com/public-sector-leadership-series",
+      "page_type": "initiative",
+      "source_tier": "official_event_page",
+      "priority": 96,
+      "tags": [
+        "public_sector",
+        "leadership",
+        "interviews",
+        "technology"
+      ]
+    },
+    {
+      "product": "ET Now",
+      "lane": "live_video_business_news",
+      "url": "https://economictimes.indiatimes.com/et-now/videolist/4413218.cms",
+      "page_type": "live_video",
+      "source_tier": "official_public",
+      "priority": 100,
+      "tags": [
+        "live_video",
+        "streaming",
+        "business_news"
+      ]
+    },
+    {
+      "product": "ET Now",
+      "lane": "live_video_business_news",
+      "url": "https://economictimes.indiatimes.com/et-now/videolist/21705271.cms",
+      "page_type": "video_feed",
+      "source_tier": "official_public",
+      "priority": 99,
+      "tags": [
+        "latest_videos",
+        "shows",
+        "analysis"
+      ]
+    },
+    {
+      "product": "ET Now",
+      "lane": "live_video_business_news",
+      "url": "https://economictimes.indiatimes.com/news/economy/policy/budget-2026-full-coverage-on-et-now/articleshow/127808959.cms",
+      "page_type": "coverage_story",
+      "source_tier": "official_event_page",
+      "priority": 96,
+      "tags": [
+        "budget_coverage",
+        "expert_panel",
+        "live_analysis"
+      ]
+    },
+    {
+      "product": "ET Now",
+      "lane": "live_video_business_news",
+      "url": "https://economictimes.indiatimes.com/news/economy/policy/et-titan-talks-sanjeev-krishan-why-india-must-bet-on-skills-scale-and-ai/videoshow/127627711.cms",
+      "page_type": "show_episode",
+      "source_tier": "official_event_page",
+      "priority": 95,
+      "tags": [
+        "titan_talks",
+        "interviews",
+        "leaders"
+      ]
+    },
+    {
+      "product": "ET Now",
+      "lane": "live_video_business_news",
+      "url": "https://economictimes.indiatimes.com/news/india/et-now-gbs-2026-amid-disruptions-this-decade-has-seen-unprecedented-development-for-india-says-pm-modi/articleshow/128353454.cms",
+      "page_type": "event_coverage",
+      "source_tier": "official_event_page",
+      "priority": 94,
+      "tags": [
+        "global_business_summit",
+        "event_coverage"
+      ]
+    },
+    {
+      "product": "ET TravelWorld",
+      "lane": "travel_hospitality_industry",
+      "url": "https://travel.economictimes.indiatimes.com/",
+      "page_type": "home",
+      "source_tier": "official_vertical_home",
+      "priority": 100,
+      "tags": [
+        "travel",
+        "hospitality",
+        "tourism",
+        "industry_updates",
+        "destination"
+      ]
+    },
+    {
+      "product": "ET Panache",
+      "lane": "lifestyle_worklife_panache",
+      "url": "https://economictimes.indiatimes.com/panache",
+      "page_type": "home",
+      "source_tier": "official_public",
+      "priority": 100,
+      "tags": [
+        "lifestyle",
+        "worklife",
+        "entertainment",
+        "tech",
+        "health",
+        "cars_bikes"
+      ]
+    },
+    {
+      "product": "ET World / International",
+      "lane": "world_news_current_affairs",
+      "url": "https://economictimes.indiatimes.com/news/international/",
+      "page_type": "section_home",
+      "source_tier": "official_public",
+      "priority": 100,
+      "tags": [
+        "international",
+        "world_news",
+        "geopolitics",
+        "global_economy"
+      ]
+    },
+    {
+      "product": "ET World / International",
+      "lane": "world_news_current_affairs",
+      "url": "https://economictimes.indiatimes.com/news/international/world-news/",
+      "page_type": "section_home",
+      "source_tier": "official_public",
+      "priority": 99,
+      "tags": [
+        "world_news",
+        "breaking_news",
+        "international_updates"
+      ]
+    }
+  ]
+}

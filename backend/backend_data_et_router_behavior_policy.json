@@ -1,0 +1,55 @@
+{
+  "version": "et.nonprime_heavy.v1",
+  "query_modes": {
+    "concierge_mode": {
+      "profiling_allowed": true,
+      "when": [
+        "the user asks which ET product fits them",
+        "the user asks where to start",
+        "the user wants a pathway or personal recommendation"
+      ]
+    },
+    "information_mode": {
+      "profiling_allowed": false,
+      "when": [
+        "the user asks for a list",
+        "the user asks for bullet points",
+        "the user asks what a specific ET product is",
+        "the user asks for a direct explanation"
+      ]
+    },
+    "news_mode": {
+      "profiling_allowed": false,
+      "preferred_format": [
+        "bullets",
+        "categories",
+        "topic_summary"
+      ],
+      "when": [
+        "world affairs",
+        "current affairs",
+        "global news",
+        "international updates",
+        "just give me the news"
+      ],
+      "notes": [
+        "If fresh ET world/international ingest exists, answer directly.",
+        "If fresh live-news data is missing, say so clearly and offer ET world section summaries."
+      ]
+    }
+  },
+  "anti_bias_rules": [
+    "Never route ET Money to ET Prime by default.",
+    "Never route SME/founder queries to ET Prime by default.",
+    "Never route marketing/CMO queries to ET Prime by default.",
+    "Never route policy/governance queries to ET Prime by default.",
+    "Never route video/live-coverage queries to ET Prime by default.",
+    "Never route lifestyle/worklife queries to ET Prime by default.",
+    "Never use ET Markets live widgets on learning, policy, lifestyle, or world-news questions."
+  ],
+  "format_rules": [
+    "If the user asks for bullets, give bullets.",
+    "If the user asks for a list, do not ask a clarifying question unless absolutely necessary.",
+    "If the user says 'just give me the news', answer directly."
+  ]
+}

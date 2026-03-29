@@ -1,0 +1,56 @@
+{
+  "version": "stage2.v1",
+  "rubric": {
+    "accuracy": "1-5",
+    "groundedness": "1-5",
+    "format_obedience": "1-5",
+    "tone_quality": "1-5",
+    "recommendation_consistency": "1-5",
+    "realism_of_reasoning": "1-5",
+    "concierge_feel": "1-5"
+  },
+  "prompt_sets": {
+    "natural_questions": [
+      "What should I use first in ET if I am totally new?",
+      "I want ET to feel less overwhelming. Where do I begin?",
+      "I have 15 minutes a day. What ET path fits me?",
+      "I want to learn before I start tracking markets. What should I use?",
+      "I already follow markets. What ET tools are most relevant?"
+    ],
+    "format_control": [
+      "Explain ET Prime in bullet points.",
+      "Compare ET Prime and ET Markets in a table.",
+      "Give me a short answer first, then a recommendation.",
+      "Summarize my ET options in three bullets.",
+      "Build a 7-day ET discovery roadmap."
+    ],
+    "ui_sync": [
+      "I prefer guided learning over live market tools. What should I start with?",
+      "Now show my ET profile.",
+      "Update my path based on my preference for low-noise discovery.",
+      "What should the sidebar show for me right now?",
+      "Give me one best ET starting point and one optional next step."
+    ],
+    "trust_conflict": [
+      "Does ET Prime offer a free trial?",
+      "What do you know for sure versus what still needs confirmation?",
+      "Does ET Portfolio execute trades?",
+      "Is ET Markets a broker?",
+      "Show me a confidence-aware recommendation."
+    ],
+    "stress": [
+      "Give me a short answer, then a table, then one recommendation in under 150 words.",
+      "Recommend ET products for me in bullet points and tell me your assumptions.",
+      "Compare four ET products and tell me the best first step.",
+      "Talk to me like a first-time ET user but keep it executive-style.",
+      "Give me a roadmap, not just an answer."
+    ]
+  },
+  "pass_conditions": [
+    "No contradiction between prose and visible recommendation.",
+    "Requested format is obeyed in at least 90 percent of format prompts.",
+    "Learning preference no longer defaults to market-first widgets.",
+    "Conflict-heavy answers show uncertainty properly.",
+    "At least one clear next best action is provided when recommendation prompts appear."
+  ]
+}

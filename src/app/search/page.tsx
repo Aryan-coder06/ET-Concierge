@@ -15,6 +15,7 @@ import type {
   JourneyEvent,
   MarketSnapshot,
   NavigatorSummary,
+  PathNode,
   ProfileSnapshot,
   ResponsePresentation,
   Roadmap,
@@ -242,6 +243,52 @@ function extractProfileSnapshot(value: unknown): ProfileSnapshot {
   };
 }
 
+function extractPathSnapshot(value: unknown) {
+  if (!isJsonRecord(value)) return null;
+
+  const raw = isJsonRecord(value.path_snapshot) ? value.path_snapshot : value;
+  const nodes: PathNode[] = [];
+
+  if (Array.isArray(raw.nodes)) {
+    for (const item of raw.nodes) {
+      if (!isJsonRecord(item)) continue;
+      const id = readString(item.id);
+      const label = readString(item.label);
+      const detail = readString(item.detail);
+      if (!id || !label || !detail) continue;
+      nodes.push({
+        id,
+        label,
+        detail,
+        accent: readString(item.accent),
+      });
+    }
+  }
+
+  if (
+    !readString(raw.query) &&
+    !readString(raw.route) &&
+    !readString(raw.current_lane) &&
+    !readString(raw.primary_display_product) &&
+    nodes.length === 0
+  ) {
+    return null;
+  }
+
+  return {
+    query: readString(raw.query),
+    route: readString(raw.route),
+    current_lane: readString(raw.current_lane),
+    primary_product: readString(raw.primary_product),
+    primary_display_product: readString(raw.primary_display_product),
+    secondary_products: extractStringArray(raw.secondary_products),
+    signals: extractStringArray(raw.signals),
+    next_action: readString(raw.next_action),
+    summary: readString(raw.summary),
+    nodes,
+  };
+}
+
 function extractComparisonRows(value: unknown): ComparisonRow[] {
   if (!isJsonRecord(value) || !Array.isArray(value.comparison_rows)) return [];
 
@@ -406,6 +453,7 @@ function extractJourneyEvent(value: unknown): JourneyEvent | null {
     comparison_rows: extractComparisonRows(value),
     bullet_groups: extractBulletGroups(value),
     ui_modules: extractUiModules(value),
+    path_snapshot: extractPathSnapshot(value.path_snapshot),
     profile_snapshot: extractProfileSnapshot(value.profile_snapshot),
   };
 }
@@ -553,6 +601,7 @@ function buildAssistantMessageFromApi(data: unknown): ChatMessage {
     comparisonRows: extractComparisonRows(data),
     bulletGroups: extractBulletGroups(data),
     uiModules: extractUiModules(data),
+    pathSnapshot: extractPathSnapshot(isJsonRecord(data) ? data.path_snapshot : undefined),
     htmlSnippets:
       isJsonRecord(data) && Array.isArray(data.html_snippets)
         ? data.html_snippets
@@ -610,6 +659,7 @@ export default function SearchPage() {
   const [renameValue, setRenameValue] = useState("");
 
   const messagesRef = useRef<HTMLDivElement | null>(null);
+  const seededPromptRef = useRef(false);
 
   useEffect(() => {
     function syncViewport() {
@@ -713,6 +763,23 @@ export default function SearchPage() {
     if (!messagesRef.current) return;
     messagesRef.current.scrollTop = messagesRef.current.scrollHeight;
   }, [activeThreadId, messagesByThread, isSending]);
+
+  useEffect(() => {
+    if (!isHydrated || seededPromptRef.current) return;
+    if (typeof window === "undefined") return;
+
+    const params = new URLSearchParams(window.location.search);
+    const seededPrompt = params.get("prompt");
+    if (!seededPrompt) return;
+
+    seededPromptRef.current = true;
+    setInput(seededPrompt);
+
+    params.delete("prompt");
+    const nextSearch = params.toString();
+    const nextUrl = `${window.location.pathname}${nextSearch ? `?${nextSearch}` : ""}`;
+    window.history.replaceState({}, "", nextUrl);
+  }, [isHydrated]);
 
   useEffect(() => {
     function handlePointerDown(event: MouseEvent) {

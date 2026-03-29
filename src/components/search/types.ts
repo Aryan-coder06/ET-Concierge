@@ -85,6 +85,26 @@ export type UiModule = {
   payload?: Record<string, unknown>;
 };
 
+export type PathNode = {
+  id: string;
+  label: string;
+  detail: string;
+  accent?: "red" | "blue" | "yellow" | "black" | string;
+};
+
+export type PathSnapshot = {
+  query?: string;
+  route?: string;
+  current_lane?: string;
+  primary_product?: string;
+  primary_display_product?: string;
+  secondary_products?: string[];
+  signals?: string[];
+  next_action?: string;
+  summary?: string;
+  nodes?: PathNode[];
+};
+
 export type AnswerStyle =
   | "brief"
   | "standard"
@@ -132,6 +152,7 @@ export type ChatMessage = {
   comparisonRows?: ComparisonRow[];
   bulletGroups?: BulletGroup[];
   uiModules?: UiModule[];
+  pathSnapshot?: PathSnapshot | null;
   htmlSnippets?: string[];
 };
 
@@ -172,6 +193,7 @@ export type JourneyEvent = {
   comparison_rows?: ComparisonRow[];
   bullet_groups?: BulletGroup[];
   ui_modules?: UiModule[];
+  path_snapshot?: PathSnapshot | null;
   profile_snapshot?: ProfileSnapshot;
 };
 

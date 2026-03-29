@@ -9,7 +9,12 @@ BACKEND_ROOT = Path(__file__).resolve().parents[1]
 if str(BACKEND_ROOT) not in sys.path:
     sys.path.insert(0, str(BACKEND_ROOT))
 
-from app.chatbot.registry import load_eval_prompts, official_product_names
+from app.chatbot.registry import (
+    canonical_product_name,
+    load_eval_prompts,
+    load_nonprime_eval_prompts,
+    official_product_names,
+)
 from app.chatbot.service import concierge_service
 from app.chatbot.stage2 import load_stage2_eval_suite
 
@@ -168,6 +173,43 @@ def _flatten_stage2_prompts() -> list[dict]:
     return prompts
 
 
+def _infer_expected_products_from_group(group_name: str) -> list[str]:
+    normalized_group = _normalize_text(group_name)
+    expected: list[str] = []
+    for product_name in official_product_names():
+        normalized_product = _normalize_text(product_name)
+        product_tokens = [token for token in normalized_product.split() if len(token) > 2]
+        group_tokens = [token for token in normalized_group.split() if len(token) > 2]
+        if normalized_product in normalized_group or all(token in normalized_group for token in product_tokens[:2]):
+            expected.append(product_name)
+            continue
+        if group_tokens and any(token in normalized_product for token in group_tokens):
+            expected.append(product_name)
+    deduped: list[str] = []
+    for product_name in expected:
+        canonical_name = canonical_product_name(product_name) or product_name
+        if canonical_name not in deduped:
+            deduped.append(canonical_name)
+    return deduped
+
+
+def _flatten_nonprime_prompts() -> list[dict]:
+    suite = load_nonprime_eval_prompts()
+    prompts: list[dict] = []
+    for group_name, questions in suite.get("prompt_sets", {}).items():
+        expected_products = _infer_expected_products_from_group(group_name)
+        for index, question in enumerate(questions, start=1):
+            prompts.append(
+                {
+                    "id": f"{group_name}_{index}",
+                    "group": group_name,
+                    "question": question,
+                    "expected_products": expected_products,
+                }
+            )
+    return prompts
+
+
 def _score_stage2_prompt(prompt: dict, result: dict) -> dict:
     question = prompt["question"].lower()
     answer = str(result.get("answer", ""))
@@ -282,6 +324,52 @@ def _score_stage2_prompt(prompt: dict, result: dict) -> dict:
     }
 
 
+def _score_nonprime_prompt(prompt: dict, result: dict) -> dict:
+    stage2_like = _score_stage2_prompt(prompt, result)
+    answer = str(result.get("answer", ""))
+    answer_lower = answer.lower()
+    recommended_products = result.get("recommended_products", [])
+    decision = result.get("decision") or {}
+    primary = canonical_product_name((decision.get("primary_recommendation") or {}).get("product"))
+    expected_products = [
+        canonical_product_name(product_name) or product_name
+        for product_name in prompt.get("expected_products", [])
+    ]
+    expected_products = [product for product in expected_products if product]
+
+    explicit_fit = any(
+        product_name in recommended_products or product_name == primary or product_name.lower() in answer_lower
+        for product_name in expected_products
+    )
+    overbiased_to_prime = (
+        "ET Prime" in recommended_products or primary == "ET Prime"
+    ) and expected_products and all(product_name != "ET Prime" for product_name in expected_products)
+
+    stage2_like["expected_products"] = expected_products
+    stage2_like["explicit_fit"] = explicit_fit
+    stage2_like["overbiased_to_prime"] = overbiased_to_prime
+
+    recommendation_score = 5 if explicit_fit else 2
+    if overbiased_to_prime:
+        recommendation_score = 1
+
+    stage2_like["rubric_scores"]["recommendation_consistency"] = recommendation_score
+    stage2_like["score"] = round(
+        (
+            stage2_like["rubric_scores"]["accuracy"]
+            + stage2_like["rubric_scores"]["groundedness"]
+            + stage2_like["rubric_scores"]["format_obedience"]
+            + stage2_like["rubric_scores"]["tone_quality"]
+            + stage2_like["rubric_scores"]["recommendation_consistency"]
+            + stage2_like["rubric_scores"]["realism_of_reasoning"]
+            + stage2_like["rubric_scores"]["concierge_feel"]
+        )
+        / 35,
+        3,
+    )
+    return stage2_like
+
+
 def main() -> None:
     parser = argparse.ArgumentParser(
         description="Run the ET concierge evaluation prompt pack."
@@ -299,18 +387,27 @@ def main() -> None:
     )
     parser.add_argument(
         "--suite",
-        choices=["stage1", "stage2"],
+        choices=["stage1", "stage2", "nonprime"],
         default="stage1",
         help="Which evaluation suite to run.",
     )
     args = parser.parse_args()
 
-    prompts = load_eval_prompts() if args.suite == "stage1" else _flatten_stage2_prompts()
+    if args.suite == "stage1":
+        prompts = load_eval_prompts()
+    elif args.suite == "stage2":
+        prompts = _flatten_stage2_prompts()
+    else:
+        prompts = _flatten_nonprime_prompts()
     if args.limit is not None:
         prompts = prompts[: args.limit]
 
     run_id = datetime.now(timezone.utc).strftime("%Y%m%d%H%M%S")
-    session_prefix_root = "stage2-eval" if args.suite == "stage2" else "eval"
+    session_prefix_root = {
+        "stage1": "eval",
+        "stage2": "stage2-eval",
+        "nonprime": "nonprime-eval",
+    }[args.suite]
     session_prefix = f"{session_prefix_root}::{run_id}" if args.fresh_run else session_prefix_root
 
     evaluations: list[dict] = []
@@ -321,7 +418,12 @@ def main() -> None:
                 session_id=session_id,
                 query=prompt["question"],
             )
-            result = _score_prompt(prompt, response) if args.suite == "stage1" else _score_stage2_prompt(prompt, response)
+            if args.suite == "stage1":
+                result = _score_prompt(prompt, response)
+            elif args.suite == "stage2":
+                result = _score_stage2_prompt(prompt, response)
+            else:
+                result = _score_nonprime_prompt(prompt, response)
         except Exception as exc:
             result = {
                 "id": prompt["id"],
@@ -344,6 +446,16 @@ def main() -> None:
                         "hallucination_ok": True,
                     }
                 )
+            elif args.suite == "stage2":
+                result["rubric_scores"] = {
+                    "accuracy": 1,
+                    "groundedness": 1,
+                    "format_obedience": 1,
+                    "tone_quality": 1,
+                    "recommendation_consistency": 1,
+                    "realism_of_reasoning": 1,
+                    "concierge_feel": 1,
+                }
             else:
                 result["rubric_scores"] = {
                     "accuracy": 1,
@@ -354,6 +466,9 @@ def main() -> None:
                     "realism_of_reasoning": 1,
                     "concierge_feel": 1,
                 }
+                result["expected_products"] = prompt.get("expected_products", [])
+                result["explicit_fit"] = False
+                result["overbiased_to_prime"] = False
         evaluations.append(result)
         print(
             f"[{index}/{len(prompts)}] {prompt['id']} score={result['score']}",

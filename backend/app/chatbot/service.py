@@ -49,6 +49,7 @@ class ConciergeService:
             "comparison_rows": response.get("comparison_rows", []),
             "bullet_groups": response.get("bullet_groups", []),
             "ui_modules": response.get("ui_modules", []),
+            "path_snapshot": response.get("path_snapshot"),
             "html_snippets": response.get("html_snippets", []),
         }
 

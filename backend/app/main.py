@@ -84,6 +84,7 @@ class ChatResponse(BaseModel):
     comparison_rows: list[dict[str, Any]] = Field(default_factory=list)
     bullet_groups: list[dict[str, Any]] = Field(default_factory=list)
     ui_modules: list[dict[str, Any]] = Field(default_factory=list)
+    path_snapshot: dict[str, Any] | None = None
     html_snippets: list[str] = Field(default_factory=list)
 
 

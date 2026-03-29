@@ -10,6 +10,7 @@ import {
   etCompassContent,
   type EtCompassStatShape,
 } from "@/content/etCompassContent";
+import { buildSearchPromptHref } from "@/lib/luna-prompts";
 
 type VisualShapeKind =
   | "circle"
@@ -850,7 +851,7 @@ export default function HomePage() {
                     </p>
 
                     <Link
-                      href={card.href}
+                      href={buildSearchPromptHref(card.prompt)}
                       className="inline-flex items-center text-base font-black uppercase"
                     >
                       {etCompassContent.finalCtaSection.buttonLabel}

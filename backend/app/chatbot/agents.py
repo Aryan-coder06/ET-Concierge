@@ -11,13 +11,19 @@ from langchain_google_genai import ChatGoogleGenerativeAI
 from .config import get_settings
 from .db import get_sessions_collection
 from .registry import (
+    analyze_query,
     build_verification_notes,
     canonical_product_name,
     canonical_sources_for_product,
     get_source_by_url,
+    get_product_registry,
     get_source_metadata,
+    official_product_names,
+    product_display_name,
+    product_primary_link,
     product_registry_context,
     route_user_intent_to_products,
+    select_visual_hint,
 )
 from .retriever_service import get_persona_chunks, get_product_chunks
 from .state import AgentState, REQUIRED_PROFILE_FIELDS
@@ -29,17 +35,6 @@ from .stage2 import (
 
 
 logger = logging.getLogger(__name__)
-
-PRODUCT_LINKS = {
-    "ET Prime": "https://economictimes.indiatimes.com/prime/about-us",
-    "ET Markets": "https://economictimes.indiatimes.com/markets",
-    "ET Portfolio": "https://economictimes.indiatimes.com/portfolio-home",
-    "ET Wealth Edition": "https://epaper.indiatimes.com/wealth_edition.cms",
-    "ET Print Edition": "https://epaper.indiatimes.com/default.cms?pub=et",
-    "ETMasterclass": "https://masterclass.economictimes.indiatimes.com/",
-    "ET Events": "https://et-edge.com/",
-    "ET Partner Benefits": "https://economictimes.indiatimes.com/et_benefits.cms?from=mdr",
-}
 
 INTENT_ALIASES = {
     "business": "growing_business",
@@ -60,28 +55,6 @@ PROFESSION_ALIASES = {
     "trader": "active_trader",
     "executive": "cxo",
 }
-
-PRODUCT_ALIASES = {
-    "etprime": "ET Prime",
-    "et prime": "ET Prime",
-    "etmarkets": "ET Markets",
-    "et markets": "ET Markets",
-    "et portfolio": "ET Portfolio",
-    "portfolio": "ET Portfolio",
-    "et wealth edition": "ET Wealth Edition",
-    "wealth edition": "ET Wealth Edition",
-    "et print edition": "ET Print Edition",
-    "print edition": "ET Print Edition",
-    "epaper": "ET Print Edition",
-    "et masterclass": "ETMasterclass",
-    "etmasterclass": "ETMasterclass",
-    "masterclass": "ETMasterclass",
-    "et events": "ET Events",
-    "et benefits": "ET Partner Benefits",
-    "partner benefits": "ET Partner Benefits",
-    "times prime": "ET Partner Benefits",
-}
-
 
 def _normalize_scalar(value: str | None, aliases: dict[str, str] | None = None) -> str | None:
     if value in (None, "", "null"):
@@ -147,8 +120,7 @@ def _normalize_products(values: list[str] | None) -> list[str]:
 
     normalized: list[str] = []
     for value in values:
-        key = str(value).strip().lower()
-        normalized_name = PRODUCT_ALIASES.get(key)
+        normalized_name = canonical_product_name(str(value).strip())
         if normalized_name and normalized_name not in normalized:
             normalized.append(normalized_name)
     return normalized
@@ -268,7 +240,7 @@ def _build_compact_decision_summary(stage2_decision: dict[str, Any]) -> str:
     decision = stage2_decision.get("decision", {})
     primary = decision.get("primary_recommendation", {})
     secondary = decision.get("secondary_recommendations", [])[:2]
-    next_action = decision.get("next_best_action", {})
+    next_action = decision.get("next_best_action") or {}
 
     compact_payload = {
         "query_analysis": {
@@ -312,6 +284,8 @@ def _build_answer_generation_guidance(
 ) -> str:
     sections = ", ".join(answer_plan.get("sections", []))
     max_words = answer_plan.get("max_words", 180)
+    format_rules = query_analysis.get("format_rules", [])
+    anti_bias_rules = query_analysis.get("anti_bias_rules", [])
     return "\n".join(
         [
             f"- Primary intent: {query_analysis.get('primary_intent', 'discovery')}.",
@@ -322,8 +296,40 @@ def _build_answer_generation_guidance(
             "- Answer the user directly first, then explain the ET fit.",
             "- If bullet_groups or comparison_rows are already provided, do not repeat them fully in prose.",
             "- Stay grounded in ET facts. If context is thin, be honest and guide the user cleanly.",
+            f"- Format rules from policy: {' | '.join(format_rules) if format_rules else 'No additional format rules.'}",
+            f"- Anti-bias reminders from policy: {' | '.join(anti_bias_rules) if anti_bias_rules else 'No additional anti-bias reminders.'}",
         ]
     )
+
+
+def _reply_has_bullets(text: str) -> bool:
+    return any(marker in text for marker in ["\n- ", "\n* ", "\n1. ", "\n2. "])
+
+
+def _render_bullet_groups(bullet_groups: list[dict[str, Any]]) -> str:
+    blocks: list[str] = []
+    for group in bullet_groups:
+        title = str(group.get("title") or "").strip()
+        items = [str(item).strip() for item in group.get("items", []) if str(item).strip()]
+        if not items:
+            continue
+        if title:
+            blocks.append(f"{title}:")
+        blocks.extend(f"- {item}" for item in items[:4])
+    return "\n".join(blocks).strip()
+
+
+def _enforce_requested_format(
+    reply: str,
+    *,
+    query_analysis: dict[str, Any],
+    bullet_groups: list[dict[str, Any]],
+) -> str:
+    if query_analysis.get("requires_bullets") and bullet_groups and not _reply_has_bullets(reply):
+        bullets = _render_bullet_groups(bullet_groups)
+        if bullets:
+            return f"{reply}\n\n{bullets}".strip()
+    return reply
 
 
 def _has_explicit_profile_signal(message: str) -> bool:
@@ -415,74 +421,8 @@ def _profile_complete(profile: dict) -> bool:
 
 
 def _obvious_product_query(message: str) -> bool:
-    text = message.lower()
-    product_keywords = [
-        "et prime",
-        "etprime",
-        "et markets",
-        "etmarkets",
-        "et portfolio",
-        "portfolio",
-        "et wealth edition",
-        "wealth edition",
-        "et print edition",
-        "print edition",
-        "epaper",
-        "et masterclass",
-        "etmasterclass",
-        "et events",
-        "et benefits",
-        "times prime",
-        "subscription",
-        "product",
-        "membership",
-        "recommend",
-        "trial",
-        "pricing",
-        "benefits",
-        "market mood",
-        "stock reports plus",
-        "stock report plus",
-        "track my investments",
-        "investment tracking",
-        "sip",
-        "learning program",
-        "executive program",
-        "executive learning",
-        "industry events",
-        "summit",
-        "event path",
-        "community touchpoints",
-        "personal finance",
-        "market tools",
-        "trading tools",
-        "what et path",
-        "what path fits",
-        "what fits me",
-        "where do i start",
-        "can et help me",
-        "does et have",
-        "does et offer",
-        "what services do you offer",
-        "what services do u offer",
-        "what can you do",
-        "what can u do",
-        "what all do you offer",
-        "what all can you do",
-        "what all can u do",
-        "what et can do for me",
-        "what et will be of use to me",
-        "what will be of use to me",
-        "what should i use",
-        "which et service",
-        "which et services",
-        "help me find",
-        "beyond articles",
-        "data is uncertain",
-        "uncertain",
-        "verify the latest",
-    ]
-    return any(keyword in text for keyword in product_keywords)
+    analysis = analyze_query(message, user_profile={}, journey_history=[])
+    return analysis.get("query_mode") in {"concierge_mode", "information_mode", "news_mode"}
 
 
 def build_visual_hint(
@@ -490,130 +430,11 @@ def build_visual_hint(
     recommended_products: list[str] | None = None,
     verification_notes: list[str] | None = None,
 ) -> str | None:
-    normalized_query = query.lower()
-    recommended_products = recommended_products or []
-    verification_notes = verification_notes or []
-
-    if verification_notes or any(
-        phrase in normalized_query
-        for phrase in [
-            "free trial",
-            "trial",
-            "pricing",
-            "price",
-            "offer",
-            "discount",
-            "benefits",
-            "activate",
-            "redeem",
-            "voucher",
-            "verify the latest",
-            "uncertain",
-            "mixed signal",
-        ]
-    ):
-        return "trust_signal"
-
-    if any(
-        phrase in normalized_query
-        for phrase in [
-            "portfolio",
-            "track investments",
-            "track my investments",
-            "holdings",
-            "sip",
-            "goals",
-            "alerts",
-            "asset allocation",
-        ]
-    ):
-        return "portfolio_view"
-
-    if any(
-        phrase in normalized_query
-        for phrase in [
-            "market mood",
-            "stock reports plus",
-            "stock report plus",
-            "markets",
-            "trading",
-            "investing",
-            "screeners",
-            "watchlist",
-            "stock tools",
-        ]
-    ):
-        return "markets_tools"
-
-    if any(
-        phrase in normalized_query
-        for phrase in [
-            "masterclass",
-            "learning",
-            "course",
-            "courses",
-            "workshop",
-            "skill",
-            "learn",
-            "leadership",
-            "executive education",
-        ]
-    ):
-        return "learning_lane"
-
-    if any(
-        phrase in normalized_query
-        for phrase in [
-            "events",
-            "event path",
-            "summit",
-            "conference",
-            "conclave",
-            "community",
-            "enterprise ai",
-            "register",
-            "portal",
-        ]
-    ):
-        return "events_network"
-
-    if any(
-        phrase in normalized_query
-        for phrase in [
-            "all products",
-            "all et products",
-            "what all products",
-            "major et products",
-            "all services",
-            "et ecosystem",
-            "tell me all",
-            "show all products",
-            "beyond articles",
-            "what product is right for me",
-            "what et product",
-            "new to et",
-            "where should i start",
-            "best place to begin",
-            "help me find",
-        ]
-    ):
-        return "ecosystem_map"
-
-    primary_product = recommended_products[0] if recommended_products else None
-    if primary_product == "ET Markets":
-        return "markets_tools"
-    if primary_product == "ET Portfolio":
-        return "portfolio_view"
-    if primary_product == "ETMasterclass":
-        return "learning_lane"
-    if primary_product == "ET Events":
-        return "events_network"
-    if primary_product in {"ET Prime", "ET Wealth Edition", "ET Print Edition"}:
-        return "ecosystem_map"
-    if primary_product == "ET Partner Benefits":
-        return "trust_signal"
-
-    return None
+    return select_visual_hint(
+        query,
+        recommended_products or [],
+        verification_notes=verification_notes or [],
+    )
 
 
 def profile_extractor_node(state: AgentState) -> AgentState:
@@ -638,7 +459,7 @@ Return JSON only. Use only these exact enums when clearly inferable:
 - goal: wealth_building | saving_specific | protecting_wealth | career_growth | professional_authority | business_scaling | null
 - profession: salaried_employee | startup_founder | sme_owner | active_trader | corporate_professional | cxo | marketing_head | policy_maker | student | retired | null
 - interests: array of short strings
-- existing_products: array chosen from ET Prime, ET Markets, ET Portfolio, ET Wealth Edition, ET Print Edition, ETMasterclass, ET Events, ET Partner Benefits
+- existing_products: array chosen from {", ".join(official_product_names())}
 
 Never guess. Only include fields with new evidence.
 """
@@ -693,12 +514,27 @@ Never guess. Only include fields with new evidence.
 
 
 def router_node(state: AgentState) -> AgentState:
-    if _obvious_product_query(state["current_message"]) or _is_followup_guidance_request(
+    analysis = analyze_query(
+        state["current_message"],
+        user_profile=state["profile"],
+        journey_history=state.get("journey_history", []),
+    )
+
+    if _is_followup_guidance_request(
         state["current_message"], state.get("messages", [])
     ):
         return {**state, "intent": "product_query"}
 
-    if not state["onboarding_complete"]:
+    if analysis.get("query_mode") in {"information_mode", "news_mode"}:
+        return {**state, "intent": "product_query"}
+
+    if analysis.get("query_mode") == "concierge_mode" and not state["onboarding_complete"]:
+        return {**state, "intent": "profiling"}
+
+    if analysis.get("query_mode") == "concierge_mode":
+        return {**state, "intent": "product_query"}
+
+    if analysis.get("query_mode") == "chitchat" and not state["onboarding_complete"]:
         return {**state, "intent": "profiling"}
 
     routing_prompt = f"""
@@ -812,14 +648,31 @@ def profiler_node(state: AgentState) -> AgentState:
         state["profile"],
         state.get("journey_history", []),
     )
-    starter_query = any(
-        phrase in state["current_message"].lower()
-        for phrase in [
-            "where should i start",
-            "new to et",
-            "what et product is right for me",
-            "best place to begin",
-        ]
+    starter_query = analyze_query(
+        state["current_message"],
+        user_profile=state["profile"],
+        journey_history=state.get("journey_history", []),
+    ).get("query_mode") == "concierge_mode"
+
+    navigator_summary = (
+        build_navigator_summary(
+            state["profile"],
+            starter_products,
+            state["current_message"],
+            [],
+            onboarding_complete=state["onboarding_complete"],
+        )
+        if starter_query
+        else None
+    )
+    path_snapshot = build_path_snapshot(
+        query=state["current_message"],
+        response_type="profiling",
+        recommended_products=starter_products if starter_query else [],
+        decision=None,
+        navigator_summary=navigator_summary,
+        profile=state["profile"],
+        chips=[],
     )
 
     if next_prompt:
@@ -854,22 +707,13 @@ def profiler_node(state: AgentState) -> AgentState:
             if starter_query
             else [],
             "verification_notes": [],
-            "navigator_summary": (
-                build_navigator_summary(
-                    state["profile"],
-                    starter_products,
-                    state["current_message"],
-                    [],
-                    onboarding_complete=state["onboarding_complete"],
-                )
-                if starter_query
-                else None
-            ),
+            "navigator_summary": navigator_summary,
             "visual_hint": (
                 build_visual_hint(state["current_message"], starter_products, [])
                 if starter_query
                 else None
             ),
+            "path_snapshot": path_snapshot,
             "show_roadmap": False,
         },
     }
@@ -878,20 +722,13 @@ def profiler_node(state: AgentState) -> AgentState:
 def rag_retriever_node(state: AgentState) -> AgentState:
     profile = state["profile"]
     query = state["current_message"]
-    normalized_query = query.lower()
-    heavy_structured_query = _looks_like_heavy_structured_query(query)
-    broad_product_query = any(
-        phrase in normalized_query
-        for phrase in [
-            "all products",
-            "what all products",
-            "all et products",
-            "major et products",
-            "tell me all",
-            "ecosystem",
-            "beyond articles",
-        ]
+    analysis = analyze_query(
+        query,
+        user_profile=profile,
+        journey_history=state.get("journey_history", []),
     )
+    heavy_structured_query = _looks_like_heavy_structured_query(query)
+    broad_product_query = bool(analysis.get("broad_overview"))
     if broad_product_query:
         product_k = 5 if heavy_structured_query else 6
     elif heavy_structured_query:
@@ -899,7 +736,11 @@ def rag_retriever_node(state: AgentState) -> AgentState:
     else:
         product_k = 4
 
-    should_fetch_persona = any(profile.get(field) for field in REQUIRED_PROFILE_FIELDS) and not broad_product_query
+    should_fetch_persona = (
+        analysis.get("query_mode") == "concierge_mode"
+        and any(profile.get(field) for field in REQUIRED_PROFILE_FIELDS)
+        and not broad_product_query
+    )
 
     product_chunks = get_product_chunks(query=query, profile=profile, k=product_k)
     persona_chunks = (
@@ -981,22 +822,15 @@ def _stage2_primary_and_secondary_products(stage2_decision: dict[str, Any]) -> l
 
 def _stage2_visual_hint(stage2_decision: dict[str, Any]) -> str | None:
     query_analysis = stage2_decision.get("query_analysis", {})
-    current_lane = stage2_decision.get("decision", {}).get("current_lane")
-    requires_live_context = query_analysis.get("requires_live_context", False)
-
-    if query_analysis.get("primary_intent") == "markets":
-        return "markets_tools" if requires_live_context else None
-    if current_lane == "markets" and requires_live_context:
-        return "portfolio_view"
-    if query_analysis.get("primary_intent") == "learning":
-        return "learning_lane"
-    if query_analysis.get("primary_intent") == "events":
-        return "events_network"
-    if query_analysis.get("primary_intent") == "benefits":
-        return "trust_signal"
-    if query_analysis.get("primary_intent") in {"discovery", "comparison", "product_explanation"}:
-        return "ecosystem_map"
-    return None
+    decision = stage2_decision.get("decision", {})
+    primary = (decision.get("primary_recommendation") or {}).get("product")
+    verification_notes = stage2_decision.get("retrieval_state", {}).get("conflicts_detected", [])
+    query = query_analysis.get("normalized_query") or ""
+    return select_visual_hint(
+        query,
+        [primary] if primary and primary != "Mixed Path" else [],
+        verification_notes=verification_notes,
+    )
 
 
 def _stage2_presentation(stage2_decision: dict[str, Any]) -> dict[str, Any]:
@@ -1089,6 +923,16 @@ def response_generator_node(state: AgentState) -> AgentState:
     query_analysis = stage2_decision.get("query_analysis", {})
     decision = stage2_decision.get("decision", {})
     answer_plan = stage2_decision.get("answer_plan", {})
+    chips = get_chips(state)
+    path_snapshot = build_path_snapshot(
+        query=state["current_message"],
+        response_type=state["intent"],
+        recommended_products=recommended_products,
+        decision=decision,
+        navigator_summary=navigator_summary,
+        profile=state["profile"],
+        chips=chips,
+    )
     heavy_query = _looks_like_heavy_structured_query(
         state["current_message"],
         query_analysis=query_analysis,
@@ -1147,7 +991,7 @@ Rules:
 - If context is weak, be honest and give the best available direction.
 - If verification notes mention mixed public signals, explicitly say public ET pages show mixed signals and tell the user to verify the latest live ET page or checkout.
 - If verification notes mention an activation or eligibility constraint, ask one short follow-up before promising activation.
-- Prefer ET Prime as a broad ET entry point only when the user wants broad ET access. Prefer ET Markets for market tools, ET Portfolio for tracking holdings/goals, ETMasterclass for learning, ET Events for event discovery, and ET Wealth Edition as a Prime benefit lane.
+- Follow the decision object and retrieved ET context. Do not swap in a broader ET fallback unless the decision object itself supports it.
 """
     )
 
@@ -1161,6 +1005,12 @@ Rules:
                 )
             )
         )
+
+    reply = _enforce_requested_format(
+        reply,
+        query_analysis=query_analysis,
+        bullet_groups=bullet_groups,
+    )
 
     if comparison_rows and query_analysis.get("requires_table"):
         table_intro = (
@@ -1200,6 +1050,7 @@ Rules:
             "comparison_rows": comparison_rows,
             "bullet_groups": bullet_groups,
             "ui_modules": ui_modules,
+            "path_snapshot": path_snapshot,
             "html_snippets": stage2_decision.get("html_snippets", []),
             "show_roadmap": False,
         },
@@ -1218,8 +1069,8 @@ def _build_sources(
             "product_name"
         )
         if product_name:
-            label = product_name
-            href = PRODUCT_LINKS.get(product_name)
+            label = product_display_name(product_name) or product_name
+            href = product_primary_link(product_name)
         else:
             label = "Persona Journey"
             href = None
@@ -1231,8 +1082,8 @@ def _build_sources(
         sources.append({"label": label, "href": href})
 
     for product_name in recommended_products or []:
-        label = product_name
-        href = PRODUCT_LINKS.get(product_name)
+        label = product_display_name(product_name) or product_name
+        href = product_primary_link(product_name)
         key = f"{label}|{href or ''}"
         if key in seen:
             continue
@@ -1274,74 +1125,8 @@ def _build_source_citations(
             add_citation(get_source_by_url(url))
 
     for product_name in recommended_products:
-        for source in canonical_sources_for_product(product_name)[:2]:
+        for source in canonical_sources_for_product(product_name)[:3]:
             add_citation(source)
-
-    normalized_query = (query or "").lower()
-
-    if "market mood" in normalized_query:
-        add_citation(get_source_metadata("market_mood"))
-
-    if "stock reports plus" in normalized_query or "stock report plus" in normalized_query:
-        add_citation(get_source_metadata("stock_reports_plus"))
-
-    if "portfolio" in normalized_query or "track my investments" in normalized_query:
-        add_citation(get_source_metadata("et_portfolio_home"))
-        add_citation(get_source_metadata("et_portfolio_mobile"))
-
-    if any(
-        phrase in normalized_query
-        for phrase in [
-            "what kind of et events",
-            "industry events",
-            "event path",
-            "community touchpoints",
-        ]
-    ):
-        for source_id in [
-            "et_b2b_events",
-            "enterprise_ai_events",
-            "cio_events",
-            "bfsi_events",
-            "government_events",
-        ]:
-            add_citation(get_source_metadata(source_id))
-
-    if "enterprise ai" in normalized_query:
-        add_citation(get_source_metadata("enterprise_ai_events"))
-
-    if any(keyword in normalized_query for keyword in ["free trial", "trial", "pricing"]):
-        add_citation(get_source_metadata("et_prime_trial_paywall"))
-        add_citation(get_source_metadata("et_terms"))
-
-    if any(
-        phrase in normalized_query
-        for phrase in [
-            "data is uncertain",
-            "if data is uncertain",
-            "uncertain data",
-            "verify the latest",
-            "current public pages",
-        ]
-    ):
-        add_citation(get_source_metadata("et_terms"))
-        add_citation(get_source_metadata("et_prime_faq"))
-
-    if "beginner investor" in normalized_query:
-        add_citation(get_source_metadata("et_prime_faq"))
-        add_citation(get_source_metadata("et_markets_google_play"))
-
-    if "beyond articles" in normalized_query:
-        for source_id in [
-            "et_prime_faq",
-            "et_markets_google_play",
-            "et_portfolio_home",
-            "et_wealth_edition",
-            "et_masterclass_home",
-            "et_b2b_events",
-            "et_benefits",
-        ]:
-            add_citation(get_source_metadata(source_id))
 
     return citations[:12]
 
@@ -1353,25 +1138,16 @@ def _direct_verified_response(
 ) -> str | None:
     normalized_query = query.lower()
 
-    if (
-        any(keyword in normalized_query for keyword in ["free trial", "trial", "pricing"])
-        and "ET Prime" in recommended_products
-        and verification_notes
-    ):
+    if any(keyword in normalized_query for keyword in ["free trial", "trial", "pricing", "price", "offer"]) and verification_notes:
         return (
-            "Public ET pages show mixed signals on ET Prime trials right now. "
-            "The FAQ says there is no trial, while other public ET surfaces have shown free-trial language. "
-            "Use the latest live ET checkout screen as the final confirmation before treating a trial as available."
+            "Public ET pages can show mixed or fast-changing pricing signals for this detail. "
+            "Use the latest live ET page or checkout flow as the final confirmation before treating a pricing or trial detail as final."
         )
 
-    if (
-        any(keyword in normalized_query for keyword in ["activate", "redeem", "voucher"])
-        and "ET Partner Benefits" in recommended_products
-        and verification_notes
-    ):
+    if any(keyword in normalized_query for keyword in ["activate", "redeem", "voucher", "benefit"]) and verification_notes:
         return (
-            "ET partner benefits are available through ET Prime, but some offers have activation constraints. "
-            "For example, Times Prime activation is limited to an Indian mobile number, so I would first confirm that eligibility before suggesting the exact benefit to activate."
+            "Some ET benefit flows can have activation or eligibility constraints. "
+            "I would confirm the exact live ET page before suggesting a final activation step."
         )
 
     if any(
@@ -1398,236 +1174,189 @@ def build_navigator_summary(
         return None
 
     primary_product = recommended_products[0]
-    intent = profile.get("intent")
-    profession = profile.get("profession")
-    sophistication = profile.get("sophistication")
-    normalized_query = query.lower()
+    product = get_product_registry(primary_product)
+    display_name = product_display_name(primary_product) or primary_product
+    lane = product.get("lane") if product else None
+    best_for = list(product.get("best_for", [])[:3]) if product else []
+    key_features = list(product.get("key_features", [])[:3]) if product else []
+    summary = product.get("summary") if product else None
 
     if not onboarding_complete:
         return {
             "title": "Best ET starting point",
             "summary": (
-                f"{primary_product} is the best broad lane to start with right now. "
-                "I still need one or two quick answers to narrow your ET journey properly."
+                f"{display_name} is the strongest lane from the current query, but I still need a little profile context to personalize it properly."
             ),
             "why_this_path": [
-                "It gives the widest useful ET entry point.",
-                "It helps us narrow into markets, wealth, learning, or events next.",
+                summary or f"{display_name} is a relevant ET starting point for this question.",
+                f"Lane: {str(lane).replace('_', ' ')}" if lane else "Luna will refine the lane after one or two more signals.",
             ],
             "next_move": "Answer the next profiling question so I can tighten your ET path.",
         }
 
-    if primary_product == "ET Markets":
-        return {
-            "title": "Markets Discovery Path",
-            "summary": (
-                "You look like someone who should start with ET Markets for active discovery, "
-                "then use ET Prime for deeper context and ET Portfolio once you begin tracking decisions."
-            ),
-            "why_this_path": [
-                "Best fit for market tools, research discovery, and live signals.",
-                "Strong match for investing or trading-oriented questions.",
-                (
-                    "Good learning bridge for early-stage users."
-                    if profession == "student" or sophistication == "beginner"
-                    else "Useful when you want faster, tool-led decisions."
-                ),
-            ],
-            "next_move": "Ask me which ET Markets tools fit your exact investing style.",
-        }
+    why_this_path = []
+    if summary:
+        why_this_path.append(summary)
+    if best_for:
+        why_this_path.append(f"Best for: {', '.join(best_for)}.")
+    if key_features:
+        why_this_path.append(f"Useful strengths: {', '.join(key_features)}.")
+    if verification_notes:
+        why_this_path.append(verification_notes[0])
 
-    if primary_product == "ET Portfolio":
-        return {
-            "title": "Tracking and Goals Path",
-            "summary": (
-                "You are moving from discovery into monitoring. "
-                "ET Portfolio fits when you want one place for holdings, goals, alerts, and SIP-linked visibility."
-            ),
-            "why_this_path": [
-                "Best fit for tracking instead of only reading or searching.",
-                "Useful if your questions are about holdings, SIPs, goals, or alerts.",
-                "Pairs naturally with ET Markets discovery.",
-            ],
-            "next_move": "Ask me how ET Portfolio and ET Markets work together for you.",
-        }
-
-    if primary_product == "ETMasterclass":
-        return {
-            "title": "Learning and Skill-Building Path",
-            "summary": (
-                "Your current ET lane looks more like structured learning than immediate product usage. "
-                "ETMasterclass fits when you want workshops, executive learning, or guided skill development."
-            ),
-            "why_this_path": [
-                "Best fit for learning, courses, and guided upskilling.",
-                "Useful for working professionals, students, and business leaders.",
-                "Good complement to ET Prime when you want deeper knowledge, not just content.",
-            ],
-            "next_move": "Ask me which ETMasterclass lane fits your goal best.",
-        }
-
-    if primary_product == "ET Events":
-        return {
-            "title": "Events and Community Path",
-            "summary": (
-                "You seem better matched to ET's events ecosystem right now. "
-                "This lane fits when you want summits, conferences, industry touchpoints, and live discovery."
-            ),
-            "why_this_path": [
-                "Best fit for conferences, portals, and community-driven ET experiences.",
-                "Useful for founders, professionals, enterprise users, and policy-focused audiences.",
-                "Can also connect with ET Prime virtual invites depending on context.",
-            ],
-            "next_move": "Ask me which ET event lane fits your industry or goal.",
-        }
-
-    if primary_product == "ET Partner Benefits":
-        return {
-            "title": "Membership Benefits Path",
-            "summary": (
-                "This query is really about ET Prime value and activation flow. "
-                "ET Partner Benefits is the right lane, but activation rules matter."
-            ),
-            "why_this_path": [
-                "Best fit for redeeming or understanding bundled member offers.",
-                "Some benefits have eligibility constraints.",
-                "Should be handled more carefully than a normal product overview.",
-            ],
-            "next_move": (
-                "Ask me which benefit you want to activate first."
-                if not verification_notes
-                else verification_notes[0]
-            ),
-        }
-
-    if primary_product == "ET Wealth Edition":
-        return {
-            "title": "Wealth Content Path",
-            "summary": (
-                "This is a wealth-content lane more than a separate standalone product lane. "
-                "It works best when paired with ET Prime access."
-            ),
-            "why_this_path": [
-                "Best fit for wealth-focused reading and personal-finance guidance.",
-                "Useful if you want mutual fund and stock learning in a weekly edition format.",
-                "Usually connected to ET Prime membership value.",
-            ],
-            "next_move": "Ask me how ET Wealth Edition fits into the wider ET Prime path.",
-        }
-
-    if primary_product == "ET Print Edition":
-        return {
-            "title": "Edition Reading Path",
-            "summary": (
-                "This lane fits if you prefer the newspaper-style ET reading experience digitally."
-            ),
-            "why_this_path": [
-                "Best fit for edition-style reading, not tool-led discovery.",
-                "Useful for users who want ET in digital newspaper form.",
-                "Often part of the wider ET Prime value story.",
-            ],
-            "next_move": "Ask me how ET Print Edition differs from ET Prime and Wealth Edition.",
-        }
+    next_product = recommended_products[1] if len(recommended_products) > 1 else None
+    if next_product:
+        next_move = f"Ask me how {display_name} compares with {product_display_name(next_product) or next_product} for your exact goal."
+    else:
+        next_move = f"Ask me how to use {display_name} for your exact goal."
 
     return {
-        "title": "Broad ET Access Path",
-        "summary": (
-            "ET Prime is the broadest ET path when you want deeper access across the ecosystem instead of only one narrow tool."
-        ),
-        "why_this_path": [
-            "Best broad starting point for ET product discovery.",
-            "Useful when your need is not limited to one specific ET tool.",
-            (
-                "Good fit for news and context-led exploration."
-                if intent == "news"
-                else "Good fit when you want wider ET value before narrowing down."
-            ),
-        ],
-        "next_move": (
-            "Ask me whether ET Markets, ET Portfolio, ETMasterclass, or ET Events fits you next."
-            if "where should i start" in normalized_query or "new to et" in normalized_query
-            else "Ask me what the best ET next step is for your exact goal."
-        ),
+        "title": f"{display_name} Path",
+        "summary": summary or f"Luna is currently steering this conversation toward {display_name}.",
+        "why_this_path": why_this_path[:3] or [f"{display_name} is the current best ET fit."],
+        "next_move": next_move,
+    }
+
+
+def _node_accent_for_product(product_name: str | None) -> str:
+    if not product_name:
+        return "black"
+
+    normalized = product_name.lower()
+    if "market" in normalized or "portfolio" in normalized:
+        return "blue"
+    if "masterclass" in normalized or "event" in normalized or "benefit" in normalized:
+        return "yellow"
+    if "prime" in normalized or "print" in normalized or "wealth" in normalized:
+        return "red"
+    return "black"
+
+
+def build_path_snapshot(
+    *,
+    query: str,
+    response_type: str,
+    recommended_products: list[str],
+    decision: dict[str, Any] | None,
+    navigator_summary: dict[str, Any] | None,
+    profile: dict[str, Any],
+    chips: list[str],
+) -> dict[str, Any] | None:
+    if not (recommended_products or decision or navigator_summary):
+        return None
+
+    decision = decision or {}
+    primary_recommendation = decision.get("primary_recommendation", {}) if isinstance(decision, dict) else {}
+    primary_product = primary_recommendation.get("product") or (recommended_products[0] if recommended_products else None)
+    primary_display = primary_recommendation.get("display_product") or primary_product
+    secondary_products = [
+        canonical_product_name(item.get("product")) or item.get("product")
+        for item in decision.get("secondary_recommendations", [])[:2]
+        if isinstance(item, dict) and item.get("product")
+    ]
+    secondary_products = [product for product in secondary_products if product]
+
+    next_action = None
+    if isinstance(decision.get("next_best_action"), dict):
+        next_action = decision["next_best_action"].get("label") or decision["next_best_action"].get("reason")
+    if not next_action and navigator_summary:
+        next_action = navigator_summary.get("next_move")
+    if not next_action and chips:
+        next_action = chips[0]
+
+    user_goal = profile.get("goal") or profile.get("intent") or "ET discovery"
+    nodes: list[dict[str, Any]] = [
+        {
+            "id": "goal",
+            "label": str(user_goal).replace("_", " ").title(),
+            "detail": "User goal",
+            "accent": "red",
+        },
+        {
+            "id": "route",
+            "label": str(response_type).replace("_", " ").title(),
+            "detail": "Active route",
+            "accent": "black",
+        },
+    ]
+
+    if primary_display:
+        nodes.append(
+            {
+                "id": "primary",
+                "label": str(primary_display),
+                "detail": "Primary ET lane",
+                "accent": _node_accent_for_product(primary_product),
+            }
+        )
+
+    for index, product_name in enumerate(secondary_products, start=1):
+        nodes.append(
+            {
+                "id": f"secondary-{index}",
+                "label": str(product_display_name(product_name) or product_name),
+                "detail": "Support lane",
+                "accent": _node_accent_for_product(product_name),
+            }
+        )
+
+    if next_action:
+        nodes.append(
+            {
+                "id": "action",
+                "label": str(next_action)[:54],
+                "detail": "Next move",
+                "accent": "yellow",
+            }
+        )
+
+    summary = navigator_summary.get("summary") if navigator_summary else None
+    if not summary and primary_display:
+        summary = f"Luna is currently steering this conversation toward {primary_display}."
+
+    return {
+        "query": query,
+        "route": response_type,
+        "primary_product": primary_product,
+        "primary_display_product": primary_display,
+        "secondary_products": secondary_products,
+        "signals": list(decision.get("signals", [])[:4]) if isinstance(decision, dict) else [],
+        "next_action": next_action,
+        "summary": summary,
+        "nodes": nodes,
     }
 
 
 def build_roadmap(profile: dict) -> dict:
-    roadmap_rules = {
-        ("beginner", "investing"): [
-            {
-                "step": 1,
-                "product": "ET Markets",
-                "reason": "Start with market tools, watchlists, and research-oriented discovery.",
-                "url": PRODUCT_LINKS["ET Markets"],
-            },
-            {
-                "step": 2,
-                "product": "ET Prime",
-                "reason": "Layer in deeper context, premium analysis, and broader ET access.",
-                "url": PRODUCT_LINKS["ET Prime"],
-            },
-            {
-                "step": 3,
-                "product": "ET Portfolio",
-                "reason": "Track holdings, goals, and SIP-linked progress in one place.",
-                "url": PRODUCT_LINKS["ET Portfolio"],
-            },
-        ],
-        ("intermediate", "investing"): [
-            {
-                "step": 1,
-                "product": "ET Markets",
-                "reason": "Track opportunities and understand markets more actively.",
-                "url": PRODUCT_LINKS["ET Markets"],
-            },
-            {
-                "step": 2,
-                "product": "ET Portfolio",
-                "reason": "Connect discovery with portfolio tracking and alerts.",
-                "url": PRODUCT_LINKS["ET Portfolio"],
-            },
-            {
-                "step": 3,
-                "product": "ET Prime",
-                "reason": "Use premium analysis and benefits when you want broader ET coverage.",
-                "url": PRODUCT_LINKS["ET Prime"],
-            },
-        ],
-        ("beginner", "news"): [
-            {
-                "step": 1,
-                "product": "ET Prime",
-                "reason": "Start with clearer, deeper business context.",
-                "url": PRODUCT_LINKS["ET Prime"],
-            },
-            {
-                "step": 2,
-                "product": "ET Print Edition",
-                "reason": "Use edition-style reading if you prefer the newspaper format digitally.",
-                "url": PRODUCT_LINKS["ET Print Edition"],
-            },
-        ],
-        ("expert", "growing_business"): [
-            {
-                "step": 1,
-                "product": "ET Events",
-                "reason": "Use ET's event ecosystem for industry access, summits, and community touchpoints.",
-                "url": PRODUCT_LINKS["ET Events"],
-            },
-            {
-                "step": 2,
-                "product": "ETMasterclass",
-                "reason": "Add structured executive learning for leadership, AI, or business skill growth.",
-                "url": PRODUCT_LINKS["ETMasterclass"],
-            },
-        ],
-    }
+    profile_seed = " ".join(
+        str(value).replace("_", " ")
+        for value in [
+            profile.get("intent"),
+            profile.get("goal"),
+            profile.get("profession"),
+            profile.get("sophistication"),
+        ]
+        if value
+    ).strip() or "broad ET discovery"
+    recommended = route_user_intent_to_products(
+        f"Build an ET roadmap for {profile_seed}",
+        profile,
+        [],
+    )[:3]
 
-    key = (
-        profile.get("sophistication", "beginner"),
-        profile.get("intent", "news"),
-    )
-    steps = roadmap_rules.get(key, roadmap_rules[("beginner", "news")])
+    steps = []
+    for index, product_name in enumerate(recommended, start=1):
+        product = get_product_registry(product_name)
+        if not product:
+            continue
+        steps.append(
+            {
+                "step": index,
+                "product": product_display_name(product_name) or product_name,
+                "reason": product.get("summary") or ", ".join(product.get("key_features", [])[:2]) or "Recommended ET lane.",
+                "url": product_primary_link(product_name),
+            }
+        )
 
     return {
         "title": "Your personalized ET journey",
@@ -1645,27 +1374,32 @@ def build_roadmap(profile: dict) -> dict:
 
 
 def get_chips(state: AgentState) -> list[str]:
-    if not state["onboarding_complete"]:
-        return []
+    query = state.get("current_message", "")
+    analysis = analyze_query(
+        query,
+        user_profile=state["profile"],
+        journey_history=state.get("journey_history", []),
+    )
+    recommended = route_user_intent_to_products(
+        query or "show me my ET path",
+        state["profile"],
+        state.get("journey_history", []),
+        analysis=analysis,
+    )[:3]
 
-    intent = state["profile"].get("intent")
-    if intent == "investing":
-        return [
-            "What should I use first: ET Prime or ET Markets?",
-            "Can ET help me track my portfolio?",
-            "Show me a beginner ET path",
-        ]
-    if intent == "growing_business":
-        return [
-            "Which ET product fits events and community discovery?",
-            "How can ET help with executive learning?",
-            "Show me my ET roadmap",
-        ]
-    return [
-        "What is ET Prime?",
-        "Which ET product is right for me?",
-        "Show me my ET roadmap",
-    ]
+    chips: list[str] = []
+    for product_name in recommended[:2]:
+        display_name = product_display_name(product_name) or product_name
+        chips.append(f"What is {display_name}?")
+    if len(recommended) >= 2:
+        chips.append(
+            f"Compare {product_display_name(recommended[0]) or recommended[0]} and {product_display_name(recommended[1]) or recommended[1]}"
+        )
+    elif recommended:
+        chips.append(f"Build me a roadmap using {product_display_name(recommended[0]) or recommended[0]}")
+    if not chips:
+        chips.append("Show me my ET roadmap")
+    return chips[:3]
 
 
 def output_formatter_node(state: AgentState) -> AgentState:
@@ -1716,6 +1450,7 @@ def output_formatter_node(state: AgentState) -> AgentState:
         "comparison_rows": response.get("comparison_rows", []),
         "bullet_groups": response.get("bullet_groups", []),
         "ui_modules": response.get("ui_modules", []),
+        "path_snapshot": response.get("path_snapshot"),
         "html_snippets": response.get("html_snippets", []),
     }
 
@@ -1757,6 +1492,7 @@ def state_updater_node(state: AgentState) -> AgentState:
         "comparison_rows": list(state["response"].get("comparison_rows", [])),
         "bullet_groups": list(state["response"].get("bullet_groups", [])),
         "ui_modules": list(state["response"].get("ui_modules", [])),
+        "path_snapshot": state["response"].get("path_snapshot"),
         "profile_snapshot": {
             "name": state["profile"].get("name"),
             "intent": state["profile"].get("intent"),

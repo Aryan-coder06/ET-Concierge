@@ -13,6 +13,7 @@ from pymongo import UpdateOne
 from .config import get_settings
 from .db import get_knowledge_collection, get_persona_collection
 from .registry import (
+    canonical_product_name,
     get_source_by_url,
     load_bootstrap_chunks,
     load_product_registry,
@@ -258,9 +259,7 @@ def ingest_from_path(
 
 
 def _canonical_product_from_area(product_area: str) -> str:
-    if product_area == "ET Apps":
-        return "ET Markets"
-    return product_area
+    return canonical_product_name(product_area) or product_area
 
 
 def _normalize_html(html: str) -> str:

@@ -1,0 +1,352 @@
+{
+  "version": "et.nonprime_heavy.v1",
+  "router_defaults": {
+    "broad_default_entry": "ET Prime",
+    "hard_rules": [
+      "Do not recommend ET Prime as the primary lane when the query is explicitly about ET Money, ET Rise/SME, ETGovernment, ET Brand Equity, ET Now, ET TravelWorld, ET Panache, or world news.",
+      "Do not ask profiling questions first for world affairs, current news, or general news requests.",
+      "If the query is informational rather than concierge-oriented, answer directly first and ask follow-up only if it clearly improves the answer."
+    ]
+  },
+  "products": [
+    {
+      "product_name": "ET Money",
+      "aliases": [
+        "ET Money",
+        "et money",
+        "etmoney",
+        "money app"
+      ],
+      "lane": "personal_finance_app",
+      "summary": "ET Money is ET's personal finance and investing app with guided investing, mutual funds, SIPs, portfolio tracking, fixed deposits, NPS, bonds, insurance, calculators, and personal finance learning surfaces.",
+      "best_for": [
+        "goal-based investing",
+        "personal finance management",
+        "SIP setup",
+        "mutual fund discovery",
+        "insurance discovery",
+        "fixed-deposit comparison"
+      ],
+      "sub_lanes": [
+        "mutual funds and SIPs",
+        "portfolio tracking",
+        "insurance",
+        "loans and credit-linked help content",
+        "fixed deposits",
+        "bonds",
+        "NPS",
+        "guaranteed returns",
+        "smallcase support",
+        "financial calculators and learning"
+      ],
+      "reason_not_to_route_to_prime": "A direct ET Money query should stay in the personal finance app lane rather than being collapsed into ET Prime.",
+      "retrieval_keywords": [
+        "SIP",
+        "mutual funds",
+        "insurance",
+        "loans",
+        "FD",
+        "NPS",
+        "goal-based",
+        "investor personality",
+        "portfolio track",
+        "calculator"
+      ],
+      "source_priority": [
+        "https://www.etmoney.com/",
+        "https://www.etmoney.com/help",
+        "https://www.etmoney.com/mutual-funds",
+        "https://www.etmoney.com/fixed-deposit",
+        "https://www.etmoney.com/learn"
+      ]
+    },
+    {
+      "product_name": "ET Rise / ET SME",
+      "aliases": [
+        "ET Rise",
+        "ET SME",
+        "ET SME Summit",
+        "ET Rise MSME",
+        "rise",
+        "sme"
+      ],
+      "lane": "small_business_entrepreneurship",
+      "summary": "ET Rise / ET SME is ET's entrepreneurship and MSME lane covering small-business content, operational guidance, benchmarking, awards, rankings, and regional MSME summits.",
+      "best_for": [
+        "entrepreneur stories",
+        "MSME growth",
+        "regional networking",
+        "small business opportunities",
+        "benchmarking and awards"
+      ],
+      "sub_lanes": [
+        "small-biz content",
+        "MSME rankings and awards",
+        "regional summits",
+        "entrepreneurship stories",
+        "policy and operational insights for SMEs"
+      ],
+      "reason_not_to_route_to_prime": "Small-business and MSME intent belongs to ET Rise / SME first, not ET Prime.",
+      "retrieval_keywords": [
+        "MSME",
+        "small business",
+        "entrepreneur",
+        "summit",
+        "awards",
+        "benchmarking",
+        "make in india",
+        "regional summit"
+      ],
+      "source_priority": [
+        "https://economictimes.indiatimes.com/etrise_msme_list/69636269.cms",
+        "https://economictimes.indiatimes.com/etrise_msme_list/69546080.cms",
+        "https://economictimes.indiatimes.com/small-biz/sme-sector/et-rise-top-msmes-ranking-awards-here-are-the-winners/articleshow/88559805.cms",
+        "https://m.economictimes.com/small-biz/sme-sector/et-sme-summit-vadodara-msmes-chart-a-collaborative-path-for-next-phase-of-growth/articleshow/128699766.cms"
+      ]
+    },
+    {
+      "product_name": "ET Brand Equity",
+      "aliases": [
+        "Brand Equity",
+        "ET Brand Equity",
+        "brand equity",
+        "BE"
+      ],
+      "lane": "marketing_advertising_media",
+      "summary": "ET Brand Equity is ET's marketing, advertising, media, digital, research, awards, and event-focused vertical with app, newsletters, webinars, and industry coverage.",
+      "best_for": [
+        "marketing and advertising news",
+        "brand strategy",
+        "media trends",
+        "industry research",
+        "awards and webinars"
+      ],
+      "sub_lanes": [
+        "marketing",
+        "advertising",
+        "media",
+        "digital and martech",
+        "research",
+        "leaders speak",
+        "awards and webinars"
+      ],
+      "reason_not_to_route_to_prime": "Marketing and brand-management intent is vertical-specific and should stay in Brand Equity.",
+      "retrieval_keywords": [
+        "marketing",
+        "advertising",
+        "brand",
+        "media",
+        "digital",
+        "martech",
+        "CMO",
+        "campaigns",
+        "awards"
+      ],
+      "source_priority": [
+        "https://brandequity.economictimes.indiatimes.com/"
+      ]
+    },
+    {
+      "product_name": "ETGovernment",
+      "aliases": [
+        "ETGovernment",
+        "ET Government",
+        "et government",
+        "government et"
+      ],
+      "lane": "policy_governance_public_sector",
+      "summary": "ETGovernment is ET's governance and public-sector vertical covering policy, GovTech, Digital India, cybersecurity, smart infrastructure, PSU, state initiatives, and public-sector events.",
+      "best_for": [
+        "policy updates",
+        "governance trends",
+        "govtech coverage",
+        "PSU and smart infrastructure insights",
+        "public-sector events"
+      ],
+      "sub_lanes": [
+        "policy",
+        "GovTech",
+        "Digital India",
+        "smart infrastructure",
+        "PSU",
+        "cybersecurity",
+        "leaders speak",
+        "events and webinars"
+      ],
+      "reason_not_to_route_to_prime": "Policy and public-sector intent should stay in ETGovernment, not in a general premium business lane.",
+      "retrieval_keywords": [
+        "policy",
+        "government",
+        "public sector",
+        "PSU",
+        "GovTech",
+        "Digital India",
+        "cybersecurity",
+        "smart infra"
+      ],
+      "source_priority": [
+        "https://government.economictimes.indiatimes.com/",
+        "https://government.economictimes.indiatimes.com/public-sector-leadership-series"
+      ]
+    },
+    {
+      "product_name": "ET Now",
+      "aliases": [
+        "ET Now",
+        "ET NOW",
+        "et now",
+        "live ET",
+        "ET business channel"
+      ],
+      "lane": "live_video_business_news",
+      "summary": "ET Now is ET's live/video-first business news lane with streaming pages, latest video feeds, event coverage, and interview-style programming such as Titan Talks.",
+      "best_for": [
+        "live business coverage",
+        "video explainers",
+        "budget-day coverage",
+        "business interviews",
+        "event highlights"
+      ],
+      "sub_lanes": [
+        "live business news streaming",
+        "latest videos",
+        "budget coverage",
+        "Titan Talks",
+        "event coverage"
+      ],
+      "reason_not_to_route_to_prime": "Video-first and live-coverage intent belongs to ET Now before Prime.",
+      "retrieval_keywords": [
+        "live stream",
+        "channel",
+        "ET Now",
+        "shows",
+        "videos",
+        "budget coverage",
+        "Titan Talks",
+        "GBS"
+      ],
+      "source_priority": [
+        "https://economictimes.indiatimes.com/et-now/videolist/4413218.cms",
+        "https://economictimes.indiatimes.com/et-now/videolist/21705271.cms",
+        "https://economictimes.indiatimes.com/news/economy/policy/budget-2026-full-coverage-on-et-now/articleshow/127808959.cms",
+        "https://economictimes.indiatimes.com/news/economy/policy/et-titan-talks-sanjeev-krishan-why-india-must-bet-on-skills-scale-and-ai/videoshow/127627711.cms"
+      ]
+    },
+    {
+      "product_name": "ET TravelWorld",
+      "aliases": [
+        "ET Travel",
+        "ET TravelWorld",
+        "travel et",
+        "travel world"
+      ],
+      "lane": "travel_hospitality_industry",
+      "summary": "ET TravelWorld is ET's travel and hospitality industry vertical with travel-sector updates, destination coverage, leaders speak, events, awards, webinars, and app/newsletter surfaces.",
+      "best_for": [
+        "travel sector news",
+        "hospitality and airline updates",
+        "tourism industry context",
+        "destination and policy coverage"
+      ],
+      "sub_lanes": [
+        "travel news",
+        "destination",
+        "leaders speak",
+        "events",
+        "awards",
+        "webinars"
+      ],
+      "reason_not_to_route_to_prime": "Travel-industry intent belongs to ET TravelWorld.",
+      "retrieval_keywords": [
+        "travel",
+        "tourism",
+        "hospitality",
+        "destination",
+        "airlines",
+        "travelworld"
+      ],
+      "source_priority": [
+        "https://travel.economictimes.indiatimes.com/"
+      ]
+    },
+    {
+      "product_name": "ET Panache",
+      "aliases": [
+        "Panache",
+        "ET Panache",
+        "et panache"
+      ],
+      "lane": "lifestyle_worklife_panache",
+      "summary": "ET Panache is ET's lifestyle and worklife lane with tech, entertainment, cars and bikes, health, web stories, slideshows, videos, and broad culture/worklife coverage.",
+      "best_for": [
+        "lifestyle reading",
+        "worklife",
+        "popular culture",
+        "aspirational content",
+        "light-format explainers"
+      ],
+      "sub_lanes": [
+        "worklife",
+        "entertainment",
+        "tech",
+        "health",
+        "cars and bikes",
+        "videos",
+        "slideshows",
+        "web stories"
+      ],
+      "reason_not_to_route_to_prime": "Lifestyle intent should not be collapsed into ET Prime.",
+      "retrieval_keywords": [
+        "lifestyle",
+        "worklife",
+        "entertainment",
+        "health",
+        "cars",
+        "bikes",
+        "panache"
+      ],
+      "source_priority": [
+        "https://economictimes.indiatimes.com/panache"
+      ]
+    },
+    {
+      "product_name": "ET World / International",
+      "aliases": [
+        "world affairs",
+        "world news",
+        "international news",
+        "current affairs",
+        "global news",
+        "ET world"
+      ],
+      "lane": "world_news_current_affairs",
+      "summary": "ET World / International is ET's current-affairs and world-news lane for international updates, geopolitics, global economy, and breaking world events.",
+      "best_for": [
+        "current affairs",
+        "world news",
+        "international explainers",
+        "global economy updates"
+      ],
+      "sub_lanes": [
+        "international news",
+        "world news",
+        "geopolitics",
+        "global economy",
+        "breaking updates"
+      ],
+      "reason_not_to_route_to_prime": "World-affairs or current-news questions are not concierge profiling questions and should route to a direct information mode.",
+      "retrieval_keywords": [
+        "world affairs",
+        "world news",
+        "international",
+        "current affairs",
+        "global conflict",
+        "global economy"
+      ],
+      "source_priority": [
+        "https://economictimes.indiatimes.com/news/international/",
+        "https://economictimes.indiatimes.com/news/international/world-news/"
+      ]
+    }
+  ]
+}
