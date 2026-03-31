@@ -24,6 +24,11 @@
 .DS_Store
 *.pem
 PPT/
+COMPLETE_FLOWCHART.png
+END_END_ARCHITECTURE.png
+ET_Compass_Jury_Report.html
+ET_Compass_Jury_Report.odt
+ET_Compass_Jury_Report.pdf
 
 # debug
 npm-debug.log*

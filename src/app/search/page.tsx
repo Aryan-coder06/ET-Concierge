@@ -32,6 +32,7 @@ import { getApiBaseUrl, getApiConfigurationError } from "@/lib/api-base-url";
 type JsonRecord = Record<string, unknown>;
 
 const STORAGE_KEY = "et-compass-luna-chat-state";
+const SEARCH_JUDGE_NOTE_KEY = "et-compass-search-judge-note-seen";
 const API_CHAT_PATH = "/chat";
 
 const SHELL_HEADER_H = 68;
@@ -650,6 +651,7 @@ export default function SearchPage() {
   const [isDesktop, setIsDesktop] = useState(false);
   const [showControlRail, setShowControlRail] = useState(false);
   const [showEntryAnimation, setShowEntryAnimation] = useState(true);
+  const [showJudgeNote, setShowJudgeNote] = useState(false);
   const [isSending, setIsSending] = useState(false);
   const [isVoiceBusy, setIsVoiceBusy] = useState(false);
   const [sidebarOpen, setSidebarOpen] = useState(true);
@@ -681,6 +683,17 @@ export default function SearchPage() {
     }, 1750);
 
     return () => window.clearTimeout(timeout);
+  }, []);
+
+  useEffect(() => {
+    try {
+      const noteSeen = window.localStorage.getItem(SEARCH_JUDGE_NOTE_KEY);
+      if (!noteSeen) {
+        setShowJudgeNote(true);
+      }
+    } catch {
+      setShowJudgeNote(true);
+    }
   }, []);
 
   useEffect(() => {
@@ -1166,6 +1179,13 @@ export default function SearchPage() {
 
   const showEmptyState = activeMessages.every((message) => message.role !== "user");
 
+  function dismissJudgeNote() {
+    setShowJudgeNote(false);
+    try {
+      window.localStorage.setItem(SEARCH_JUDGE_NOTE_KEY, "true");
+    } catch {}
+  }
+
   return (
     <div className="h-screen overflow-hidden bg-[#F0F0F0] text-[#121212]">
       <div
@@ -1178,6 +1198,61 @@ export default function SearchPage() {
           <LunaThinkingPanel />
         </div>
       </div>
+
+      {showJudgeNote ? (
+        <div className="fixed inset-0 z-[70] flex items-center justify-center bg-black/35 px-4 py-6">
+          <div className="w-full max-w-2xl border-4 border-black bg-white p-5 shadow-[10px_10px_0px_0px_black] sm:p-6">
+            <div className="flex items-start justify-between gap-4">
+              <div>
+                <p className="text-[10px] font-black uppercase tracking-[0.24em] text-[#D02020] sm:text-[11px]">
+                  Note For Judges / Jury
+                </p>
+                <h2 className="mt-2 text-2xl font-black uppercase leading-tight sm:text-3xl">
+                  Render cold start may delay the first ET response
+                </h2>
+              </div>
+              <button
+                type="button"
+                onClick={dismissJudgeNote}
+                className="inline-flex h-10 w-10 shrink-0 items-center justify-center border-2 border-black bg-white shadow-[4px_4px_0px_0px_black]"
+                aria-label="Close jury note"
+              >
+                <CloseIcon />
+              </button>
+            </div>
+
+            <div className="mt-4 border-2 border-black bg-[#FFF7D4] p-4">
+              <p className="text-sm font-medium leading-7 text-black/80 sm:text-[15px]">
+                Our backend is deployed on <span className="font-black uppercase">Render</span>.
+                If there has been no recent interaction, the backend can take a little longer to
+                wake up and accept the first request.
+              </p>
+              <ul className="mt-3 space-y-2 text-sm font-bold leading-6 text-black/82">
+                <li>• Please allow up to around 1 minute for the first response.</li>
+                <li>• If the first request feels delayed, refresh the page once and try again.</li>
+                <li>• After wake-up, the experience becomes much faster and stable.</li>
+              </ul>
+            </div>
+
+            <div className="mt-5 flex flex-wrap gap-3">
+              <button
+                type="button"
+                onClick={dismissJudgeNote}
+                className="inline-flex items-center justify-center border-2 border-black bg-[#D02020] px-4 py-3 text-xs font-black uppercase tracking-[0.18em] text-white shadow-[4px_4px_0px_0px_black]"
+              >
+                I Understand
+              </button>
+              <button
+                type="button"
+                onClick={() => window.location.reload()}
+                className="inline-flex items-center justify-center border-2 border-black bg-white px-4 py-3 text-xs font-black uppercase tracking-[0.18em] shadow-[4px_4px_0px_0px_black]"
+              >
+                Refresh Page
+              </button>
+            </div>
+          </div>
+        </div>
+      ) : null}
 
       <header className="fixed left-0 right-0 top-0 z-50 border-b-4 border-black bg-white">
         <div
