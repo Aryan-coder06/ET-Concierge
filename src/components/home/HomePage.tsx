@@ -261,11 +261,10 @@ export default function HomePage() {
   const [introState, setIntroState] = useState<"checking" | "showing" | "hidden">(
     "checking"
   );
+  const [showDemoModal, setShowDemoModal] = useState(false);
   const ecosystemScrollRef = useRef<HTMLDivElement | null>(null);
+  const demoVideoRef = useRef<HTMLVideoElement | null>(null);
   const { authLoading, user } = useFirebaseAuth();
-  const heroDemoIsExternal = /^https?:\/\//.test(
-    etCompassContent.hero.secondaryCta.href
-  );
   const repoHref = etCompassContent.brand.repoCta.href;
   const repoIsExternal = /^https?:\/\//.test(repoHref);
   const brandParts = etCompassContent.brand.logoText.split(" ");
@@ -315,6 +314,33 @@ export default function HomePage() {
     return () => window.clearTimeout(timeout);
   }, [introState]);
 
+  useEffect(() => {
+    if (!showDemoModal) return;
+
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Escape") {
+        setShowDemoModal(false);
+      }
+    };
+
+    const originalOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    window.addEventListener("keydown", handleKeyDown);
+
+    return () => {
+      document.body.style.overflow = originalOverflow;
+      window.removeEventListener("keydown", handleKeyDown);
+    };
+  }, [showDemoModal]);
+
+  function closeDemoModal() {
+    setShowDemoModal(false);
+    if (demoVideoRef.current) {
+      demoVideoRef.current.pause();
+      demoVideoRef.current.currentTime = 0;
+    }
+  }
+
   return (
     <div className="min-h-screen overflow-x-hidden bg-[#F0F0F0] text-[#121212] selection:bg-[#F0C020] selection:text-black">
       {introState !== "hidden" ? (
@@ -341,6 +367,104 @@ export default function HomePage() {
               </button>
             </>
           ) : null}
+        </div>
+      ) : null}
+
+      {showDemoModal ? (
+        <div className="fixed inset-0 z-[130] flex items-center justify-center bg-black/45 px-4 py-10 backdrop-blur-[2px] sm:px-6 sm:py-12 lg:py-14">
+          <div className="max-h-[calc(100vh-5rem)] w-full max-w-[1180px] overflow-hidden border-4 border-black bg-white shadow-[10px_10px_0px_0px_black] sm:max-h-[calc(100vh-6rem)] lg:max-h-[calc(100vh-7rem)]">
+            <div className="flex items-center justify-between gap-4 border-b-4 border-black bg-[#F0F0F0] px-4 py-4 sm:px-5">
+              <div className="flex items-center gap-3">
+                <LogoMark />
+                <div>
+                  <p className="text-[10px] font-black uppercase tracking-[0.24em] text-[#D02020] sm:text-[11px]">
+                    ET Compass
+                  </p>
+                  <p className="text-lg font-black uppercase tracking-tight sm:text-xl">
+                    Luna Demo Window
+                  </p>
+                </div>
+              </div>
+
+              <button
+                type="button"
+                onClick={closeDemoModal}
+                className="inline-flex h-11 items-center justify-center border-2 border-black bg-white px-4 text-[11px] font-black uppercase tracking-[0.18em] shadow-[4px_4px_0px_0px_black]"
+              >
+                Close
+              </button>
+            </div>
+
+            <div className="grid max-h-[calc(100vh-9.5rem)] gap-0 xl:grid-cols-[minmax(0,1.15fr)_360px] xl:max-h-[calc(100vh-10rem)]">
+              <div className="flex min-h-0 items-center justify-center border-b-4 border-black bg-black xl:border-b-0 xl:border-r-4">
+                <video
+                  ref={demoVideoRef}
+                  controls
+                  autoPlay
+                  playsInline
+                  preload="metadata"
+                  className="aspect-video h-auto max-h-[58vh] w-full max-w-full bg-black object-contain lg:max-h-[60vh]"
+                >
+                  <source src="/Demo_video.mp4" type="video/mp4" />
+                </video>
+              </div>
+
+              <div className="max-h-[calc(100vh-9.5rem)] overflow-y-scroll bg-white p-5 sm:p-6 xl:max-h-[calc(100vh-10rem)]">
+                <p className="text-[10px] font-black uppercase tracking-[0.24em] text-[#D02020] sm:text-[11px]">
+                  Guided Walkthrough
+                </p>
+                <h3 className="mt-2 text-2xl font-black uppercase leading-[0.95] sm:text-3xl">
+                  See how Luna maps users into the ET ecosystem
+                </h3>
+                <p className="mt-4 text-sm font-medium leading-7 text-black/78 sm:text-[15px]">
+                  This demo shows how ET Compass uses grounded retrieval, product scoring, session
+                  memory, live path mapping, and selective UI assistance to turn ET discovery into
+                  a guided journey.
+                </p>
+
+                <div className="mt-5 space-y-3">
+                  <div className="border-2 border-black bg-[#FFF7D4] px-4 py-4 shadow-[4px_4px_0px_0px_black]">
+                    <p className="text-[10px] font-black uppercase tracking-[0.16em] text-[#D02020]">
+                      What to watch for
+                    </p>
+                    <ul className="mt-3 space-y-2 text-sm font-bold leading-6 text-black/82">
+                      <li>• Natural ET query understanding</li>
+                      <li>• Product and lane recommendations</li>
+                      <li>• Live control center adaptation</li>
+                      <li>• Dashboard and journey memory</li>
+                    </ul>
+                  </div>
+
+                  <div className="border-2 border-black bg-[#DDE7FF] px-4 py-4 shadow-[4px_4px_0px_0px_black]">
+                    <p className="text-[10px] font-black uppercase tracking-[0.16em] text-[#1040C0]">
+                      After the demo
+                    </p>
+                    <p className="mt-3 text-sm font-medium leading-7 text-black/78">
+                      Jump directly into Luna and try the same flows live inside the search
+                      experience.
+                    </p>
+                  </div>
+                </div>
+
+                <div className="mt-6 flex flex-wrap gap-3">
+                  <button
+                    type="button"
+                    onClick={closeDemoModal}
+                    className={`${btnSecondary} h-12 rounded-none px-5 text-sm`}
+                  >
+                    Close Window
+                  </button>
+                  <Link
+                    href="/search"
+                    onClick={closeDemoModal}
+                    className={`${btnPrimary} h-12 rounded-none px-5 text-sm`}
+                  >
+                    Open Luna
+                  </Link>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
       ) : null}
 
@@ -506,15 +630,14 @@ export default function HomePage() {
                     {etCompassContent.hero.primaryCta.label}
                   </Link>
 
-                  <Link
-                    href={etCompassContent.hero.secondaryCta.href}
-                    target={heroDemoIsExternal ? "_blank" : undefined}
-                    rel={heroDemoIsExternal ? "noreferrer" : undefined}
+                  <button
+                    type="button"
+                    onClick={() => setShowDemoModal(true)}
                     className={`${btnSecondary} h-14 w-full gap-2 rounded-none px-8 text-base sm:w-auto sm:text-lg`}
                   >
                     <PlayIcon className="h-5 w-5" />
                     {etCompassContent.hero.secondaryCta.label}
-                  </Link>
+                  </button>
                 </div>
 
                 <div className="mt-7 flex flex-col items-start gap-3 text-xs font-bold uppercase tracking-widest sm:mt-8 sm:flex-row sm:items-center sm:gap-4 sm:text-sm">
